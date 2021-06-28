@@ -1,17 +1,20 @@
 import '../styles/globals.css'
 import type { AppContext, AppInitialProps, AppProps } from 'next/app'
 import React from 'react';
-import { CssBaseline } from '@material-ui/core';
+import { CssBaseline, ThemeProvider } from '@material-ui/core';
+import { darkTheme, whiteTheme } from '../styles/theme';
 
 function MyApp({ Component, pageProps }: AppProps) {
-
   return (
     <React.Fragment>
       <title>PICODE</title>
       <meta name="description" content="PICODE" />
       <link rel="icon" href="/favicon.ico" />
-      <CssBaseline />
-      <Component {...pageProps} />
+      <ThemeProvider theme={pageProps.theme === "dark" ? darkTheme : whiteTheme}>
+        <CssBaseline />
+        <Component {...pageProps} />
+      </ThemeProvider>
+
     </React.Fragment>)
 }
 

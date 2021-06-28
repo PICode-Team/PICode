@@ -1,51 +1,31 @@
 import { makeStyles } from "@material-ui/styles";
 import createStyles from "@material-ui/styles/createStyles";
-import { darkThemeColor, whiteThemeColor } from "../color";
 
-export const sidebarStyle = (ctx: any) => {
-  return makeStyles(() =>
+export const SidebarStyle = makeStyles((theme: any) =>
     createStyles({
-      root: {
-        backgroundColor:
-          ctx === "dark"
-            ? darkThemeColor.backgroundColor.step1
-            : whiteThemeColor.backgroundColor.step1,
-        width: "216px",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        padding: "10px 0px",
-      },
-    })
-  );
-};
-
-export const rowStyle = (ctx: any) => {
-  return makeStyles(() =>
-    createStyles({
-      root: {
-        width: "100%",
-        height: "46px",
-        padding: "6px 12px",
-      },
-      row: {
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        "&>svg": {
-          marginRight: "6px",
-          color: "#ffffff",
-          width: "24px",
-          height: "24px",
+        sideBar: {
+            backgroundColor: theme.backgroundColor.step1,
+            width: "200px",
+            height: "calc(100% - 70px)",
+            position: "absolute",
+            left: "0",
+            top: "70px",
         },
-      },
-      text: {
-        color: "#ffffff",
-        fontWeight: "bold",
-        lineHeight: "16px",
-        fontSize: "24px",
-      },
     })
-  );
-};
+);
+
+export const RowStyle = makeStyles((theme: any) =>
+    createStyles({
+        row: {
+            width: "100%",
+            height: "50px",
+            display: "inline-block",
+            paddingLeft: "20px",
+            textDecoration: "none",
+            lineHeight: "50px",
+            cursor: "pointer",
+            fontSize: theme.font.low.size,
+            color: theme.font.medium.color,
+        },
+    })
+);

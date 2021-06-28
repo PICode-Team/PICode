@@ -5,9 +5,8 @@ import { loginStyle } from "../../styles/service/login";
 import { TextField } from "@material-ui/core"
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 
-export default function Login(ctx: any) {
-    const theme = loginStyle(ctx.theme);
-    const classes = theme();
+export default function Login() {
+    const classes  = loginStyle();
 
     return (
         <div className={classes.root}>
