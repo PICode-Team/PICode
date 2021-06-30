@@ -1,4 +1,3 @@
-import thunkMiddleware from "redux-thunk";
 import { createStore, applyMiddleware, Store as ReduxStore } from "redux";
 import rootReducers from "./reducers";
 
