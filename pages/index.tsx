@@ -4,13 +4,11 @@ import { Layout } from "../components/layout";
 import { RootState } from "../modules";
 import { toDark } from "../modules/theme";
 
-
 export default function Home(pageProps: any) {
 
   return (
     <React.Fragment>
-      <Layout {...pageProps}>
-      </Layout>
+      <Layout {...pageProps}></Layout>
     </React.Fragment>
-  )
+  );
 }

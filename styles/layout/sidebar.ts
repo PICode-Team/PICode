@@ -11,7 +11,7 @@ export const sidebarStyle = makeStyles((theme: any) =>
     sideBar: {
       width: "200px",
       height: "calc(100% - 64px)",
-      transition: "all ease-in 0.4s",
+      transition: "width ease-in 0.4s",
     },
     toggle: {
       width: "64px",
@@ -45,17 +45,18 @@ export const rowStyle = makeStyles((theme: any) =>
       cursor: "pointer",
       fontSize: theme.font.low.size,
       color: theme.font.medium.color,
-      transition: "all ease-in 0.4s",
+      transition: "width ease-in 0.4s",
       "&>svg": {
-        marginRight: "8px",
-        marginBottom: "2px",
+        position: "absolute",
+        left: 20,
       },
     },
     text: {
       whiteSpace: "nowrap",
+      marginLeft: "34px",
     },
     hidden: {
-      display: "none",
+      visibility: "hidden",
     },
     toggle: {
       width: "64px",
