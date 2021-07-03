@@ -18,15 +18,12 @@ function App({ Component, pageProps }: AppProps) {
       <title>PICODE</title>
       <meta name="description" content="PICODE" />
       <link rel="icon" href="/favicon.ico" />
-      <PersistGate persistor={store.__persistor} loading={<>페이지를 불러오는 중입니다.</>}>
-        <ThemeProvider
-          theme={theme.theme === "dark" ? darkTheme : whiteTheme}
-        >
-          <CssBaseline />
-          <Component {...pageProps} />
-        </ThemeProvider>
-      </PersistGate>
-
+      <ThemeProvider
+        theme={theme.theme === "dark" ? darkTheme : whiteTheme}
+      >
+        <CssBaseline />
+        <Component {...pageProps} />
+      </ThemeProvider>
     </React.Fragment>
   );
 }
