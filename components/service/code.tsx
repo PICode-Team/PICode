@@ -42,7 +42,7 @@ function Tabbar({ path, setPath }: TTabbarProps) {
     { path: "components/service/code.tsx" },
   ]);
 
-  useEffect(() => {}, [path]);
+  useEffect(() => { }, [path]);
 
   return (
     <div className={classes.wrapper}>
