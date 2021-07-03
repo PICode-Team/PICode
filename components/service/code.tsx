@@ -156,8 +156,8 @@ function CombinedEditor() {
       </div>
       <div className={classes.editorWrapper}>
         <Editor
-          width="100%"
-          height="calc(100% - 54px)"
+          width="calc(100% - 1px)"
+          height="calc(100% - 55px)"
           theme="vs-dark"
           path={renderData?.path}
           defaultLanguage={renderData?.ext}
