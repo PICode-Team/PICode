@@ -8,6 +8,7 @@ function Sidebar(): JSX.Element {
 }
 
 export default function Code() {
+
   const classes = codeStyle();
 
   return (
