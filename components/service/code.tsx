@@ -75,7 +75,12 @@ function Tabbar({ path, setPath }: TTabbarProps) {
               {o.path}
               <div className={classes.icon}></div>
               <div className={classes.text}>{lastPath}</div>
-              <div className={classes.closeButton}>
+              <div
+                className={classes.closeButton}
+                onClick={() => {
+                  setTabList(tabList.filter((tab) => tab.path !== o.path));
+                }}
+              >
                 <Clear />
               </div>
             </div>
@@ -113,6 +118,7 @@ function CombinedEditor() {
   const classes = editorStyle();
   const [path, setPath] = useState<string>("components/service/code.tsx");
   const [renderData, setRenderData] = useState<TRender | undefined>(undefined);
+  const [pathStack, setPathStack] = useState<TRender[]>([]);
 
   function getFileExt(filePath: string) {
     const ext = filePath.split(".")[1];
@@ -156,8 +162,8 @@ function CombinedEditor() {
       </div>
       <div className={classes.editorWrapper}>
         <Editor
-          width="100%"
-          height="calc(100% - 54px)"
+          width="calc(100% - 1px)"
+          height="calc(100% - 55px)"
           theme="vs-dark"
           path={renderData?.path}
           defaultLanguage={renderData?.ext}
