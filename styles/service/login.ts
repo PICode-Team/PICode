@@ -13,16 +13,16 @@ export const loginStyle = makeStyles((theme: any) =>
         },
         loginForm: {
             backgroundColor: theme.backgroundColor.step1,
-
+            padding: "5%",
             borderRadius: "15px",
             maxWidth: "1105px",
             maxHeight: "722px",
-            width: "70%",
+            width: "50%",
             height: "50%",
             display: "flex",
         },
         loginImage: {
-            width: "40%",
+            width: "30%",
             height: "100%",
             display: "flex",
             color: theme.font.low.color,
@@ -30,10 +30,10 @@ export const loginStyle = makeStyles((theme: any) =>
             justifyContent: "center",
         },
         inputForm: {
-            width: "60%",
+            width: "70%",
             display: "grid",
             color: theme.font.high.color,
-            padding: "10%",
+            padding: "0 10%",
             verticalAlign: "middle",
             height: "100%",
         },

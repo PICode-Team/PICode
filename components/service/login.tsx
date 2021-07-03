@@ -16,17 +16,18 @@ export default function Login() {
 
     return (
         <div className={classes.root}>
+            <div className={classes.themeChangeButton}>
+                {theme === "dark" ? <IconButton onClick={() => dispatch(toWhite())} style={{ color: "#fff" }}>
+                    <Brightness7Icon />
+                </IconButton> : <IconButton onClick={() => dispatch(toDark())} style={{ color: "black" }}>
+                    <Brightness4Icon />
+                </IconButton>}
+            </div>
             <div className={classes.loginForm}>
-                <div className={classes.themeChangeButton}>
-                    {theme === "dark" ? <IconButton onClick={() => dispatch(toWhite())} style={{ color: "#fff" }}>
-                        <Brightness7Icon />
-                    </IconButton> : <IconButton onClick={() => dispatch(toDark())} style={{ color: "black" }}>
-                        <Brightness4Icon />
-                    </IconButton>}
-                </div>
                 <div className={classes.loginImage}>
-                    <AccountCircleRoundedIcon style={{ width: "60%", height: "60%" }} />
+                    <AccountCircleRoundedIcon style={{ width: "100%", height: "100%" }} />
                 </div>
+
                 <div className={classes.inputForm}>
                     <div className={classes.subject}>
                         <span>
@@ -34,8 +35,8 @@ export default function Login() {
                         </span>
                     </div>
                     <div className={classes.inputBox}>
-                        <TextField id="standard-basic" label="Email" />
-                        <TextField id="standard-basic" label="Password" />
+                        <TextField id="standard-basic" label="Email" style={{ width: "70%" }} />
+                        <TextField id="standard-basic" label="Password" style={{ width: "70%" }} type="password" />
                     </div>
                     <div className={classes.buttonBox}>
                         <Button style={{ width: "100%", paddingBottom: "5%" }}>Login</Button>

@@ -1,5 +1,21 @@
 import { createMuiTheme } from "@material-ui/core/styles";
 
+export interface IThemeStyle {
+    backgroundColor: {
+        step0: string;
+        step1: string;
+        step2: string;
+        step3: string;
+        step4: string;
+    };
+    font: {
+        [key: string]: {
+            color: string;
+            size: string;
+        };
+    };
+}
+
 export const darkTheme = createMuiTheme({
     backgroundColor: {
         step0: "#192428",
