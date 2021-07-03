@@ -13,7 +13,6 @@ const rootReducer = (
             const combineReducer = combineReducers({
                 theme,
             });
-            console.log(combineReducer(state, action));
             return combineReducer(state, action);
         }
     }

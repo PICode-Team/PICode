@@ -4,10 +4,13 @@ import React from "react";
 import withRedux from 'next-redux-wrapper';
 import { CssBaseline, ThemeProvider } from "@material-ui/core";
 import { darkTheme, whiteTheme } from "../styles/theme";
-
 import wrapper from "../stores";
+import { useSelector } from "react-redux";
+import { persistReducer } from "redux-persist"
 
 function App({ Component, pageProps }: AppProps) {
+  const theme = useSelector((state: any) => state.theme)
+  console.log(theme)
   return (
     <React.Fragment>
       <title>PICODE</title>
@@ -15,7 +18,7 @@ function App({ Component, pageProps }: AppProps) {
       <link rel="icon" href="/favicon.ico" />
 
       <ThemeProvider
-        theme={pageProps.theme === "dark" ? darkTheme : whiteTheme}
+        theme={theme.theme === "dark" ? darkTheme : whiteTheme}
       >
         <CssBaseline />
         <Component {...pageProps} />
@@ -32,7 +35,7 @@ App.getInitialProps = async ({ Component, ctx }: AppContext): Promise<AppInitial
     pageProps = await Component.getInitialProps(ctx);
   }
 
-  pageProps = { ...pageProps, theme: "dark", path: ctx.pathname };
+  pageProps = { ...pageProps, path: ctx.pathname };
   return { pageProps };
 };
 
