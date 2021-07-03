@@ -4,8 +4,8 @@ import React from "react"
 import Brightness7Icon from '@material-ui/icons/Brightness7';
 import Brightness4Icon from '@material-ui/icons/Brightness4';
 import { useDispatch, useSelector } from "react-redux";
-import { toDark, toWhite } from "../../modules/theme";
-import { loginStyle } from "../../styles/service/login";
+import { toDark, toWhite } from "../../../modules/theme";
+import { loginStyle } from "../../../styles/service/login";
 import { TextField } from "@material-ui/core"
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 
