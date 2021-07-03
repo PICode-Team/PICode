@@ -12,6 +12,7 @@ export const LayoutStyle = makeStyles((theme: any) =>
       width: "100%",
       height: "calc(100% - 70px)",
       display: "flex",
+      overflowX: "hidden",
     },
   })
 );
