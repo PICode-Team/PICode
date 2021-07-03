@@ -51,5 +51,10 @@ export const loginStyle = makeStyles((theme: any) =>
             fontSize: theme.font.small.size,
             width: "100%",
         },
+        themeChangeButton: {
+            position: "absolute",
+            right: "20px",
+            top: "20px",
+        },
     })
 );

@@ -1,16 +1,29 @@
-import { Button, InputBase } from "@material-ui/core";
+import { Button, IconButton, InputBase } from "@material-ui/core";
 import dynamic from "next/dynamic"
 import React from "react"
+import Brightness7Icon from '@material-ui/icons/Brightness7';
+import Brightness4Icon from '@material-ui/icons/Brightness4';
+import { useDispatch, useSelector } from "react-redux";
+import { toDark, toWhite } from "../../modules/theme";
 import { loginStyle } from "../../styles/service/login";
 import { TextField } from "@material-ui/core"
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 
 export default function Login() {
-    const classes  = loginStyle();
+    const classes = loginStyle();
+    const theme = useSelector((state: any) => state.theme).theme
+    const dispatch = useDispatch();
 
     return (
         <div className={classes.root}>
             <div className={classes.loginForm}>
+                <div className={classes.themeChangeButton}>
+                    {theme === "dark" ? <IconButton onClick={() => dispatch(toWhite())} style={{ color: "#fff" }}>
+                        <Brightness7Icon />
+                    </IconButton> : <IconButton onClick={() => dispatch(toDark())} style={{ color: "black" }}>
+                        <Brightness4Icon />
+                    </IconButton>}
+                </div>
                 <div className={classes.loginImage}>
                     <AccountCircleRoundedIcon style={{ width: "60%", height: "60%" }} />
                 </div>

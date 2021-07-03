@@ -30,27 +30,27 @@ export const darkTheme = createMuiTheme({
 
 export const whiteTheme = createMuiTheme({
     backgroundColor: {
-        step0: "#fff",
-        step1: "#2D383C",
-        step2: "#414C50",
-        step3: "#515C60",
-        step4: "#626262",
+        step0: "#f8fbff",
+        step1: "#d6eaff  ",
+        step2: "#84c1ff  ",
+        step3: "#eaf4ff",
+        step4: "#f8fbff ",
     },
     font: {
         high: {
-            color: "#f6f6f6",
+            color: "#000000",
             size: "30px",
         },
         medium: {
-            color: "#eaeaea",
+            color: "#121212",
             size: "24px",
         },
         low: {
-            color: "#D5D5D5",
+            color: "#232323",
             size: "18px",
         },
         small: {
-            color: "#D5D5D5",
+            color: "#343434",
             size: "12px",
         },
     },
