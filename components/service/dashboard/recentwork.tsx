@@ -7,6 +7,10 @@ export default function RecentWork() {
         <div className={classes.title}>
             Recent Work
         </div>
-        <div className={classes.content}>test</div>
+        <div className={classes.content}>
+            <div className={classes.carousal}>
+
+            </div>
+        </div>
     </div>
 }

@@ -21,5 +21,8 @@ export const recentWorkStyle = makeStyles((theme: IThemeStyle) =>
             background: theme.backgroundColor.step1,
             padding: "24px",
         },
+        carousal: {
+            width: "80%",
+        },
     })
 );
