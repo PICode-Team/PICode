@@ -14,7 +14,10 @@ export function Topbar() {
     const dispatch = useDispatch();
     const classes = TopbarStyle();
     const [open, setOpen] = React.useState<boolean>(false);
-    let user = JSON.parse(localStorage.getItem("user"));
+    let user: string | null = localStorage.getItem("user");
+    if (user !== null) {
+        user = JSON.parse(user);
+    }
 
     return (
         <React.Fragment>
