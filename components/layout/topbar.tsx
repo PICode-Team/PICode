@@ -5,20 +5,33 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toDark, toWhite } from "../../modules/theme";
 import { TopbarStyle } from "../../styles/layout/topbar";
+import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
+import { useState } from "react";
+import UserInfo from "./item/tooltip";
 
 export function Topbar() {
     const theme = useSelector((state: any) => state.theme).theme
     const dispatch = useDispatch();
     const classes = TopbarStyle();
+    const [open, setOpen] = React.useState<boolean>(false);
+    let user = JSON.parse(localStorage.getItem("user"));
+
     return (
-        <div className={classes.topBar}>
-            <div className={classes.themeButton}>
-                {theme === "dark" ? <IconButton onClick={() => dispatch(toWhite())} style={{ color: "#fff" }}>
-                    <Brightness7Icon />
-                </IconButton> : <IconButton onClick={() => dispatch(toDark())} style={{ color: "#ffffff" }}>
-                    <Brightness4Icon />
-                </IconButton>}
+        <React.Fragment>
+            <div className={classes.topBar}>
+                <div className={classes.userInfo}>
+                    <IconButton style={{ color: theme === "dark" ? "#fff" : "#121212" }} onClick={() => setOpen(!open)}>
+                        <AccountCircleRoundedIcon />
+                    </IconButton>
+                </div>
+                <div className={classes.themeButton}>
+                    <IconButton onClick={() => theme === "dark" ? dispatch(toWhite()) : dispatch(toDark())} style={{ color: theme === "dark" ? "#fff" : "#121212" }}>
+                        <Brightness4Icon />
+                    </IconButton>
+
+                </div>
             </div>
-        </div>
+            {open === true && <UserInfo open={open} setOpen={setOpen} data={user} theme={theme} />}
+        </React.Fragment >
     )
 }
