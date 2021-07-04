@@ -61,7 +61,6 @@ export default function SignUp() {
                 </div>
                 <div className={classes.inputBox}>
                     <CustomTextField label="Name" onChange={(e: any) => setName(e.target.value)} />
-                    {console.log(validate)}
                     <CustomTextField label="Email" type="email" onChange={(e: any) => handleEmail(e)} error={!validate.email} errorText={"Is only Email"} />
                     <CustomTextField label="Password" type="password" onChange={(e: any) => setPw(e.target.value)} error={!validate.pw} errorText={"Isn't required password"} />
                     <CustomTextField label="Confirm Password" type="password" onChange={(e: any) => setConfirmPw(e.target.value)} error={pw !== confirmPw} errorText={"Password is wrong"} />

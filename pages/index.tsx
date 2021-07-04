@@ -6,8 +6,10 @@ import { RootState } from "../modules";
 import { toDark } from "../modules/theme";
 
 export default function Home(pageProps: any) {
-  if (localStorage.getItem("user") === null) {
-    window.location.href = "/login"
+  if (process.browser) {
+    if (localStorage.getItem("user") === null) {
+      window.location.href = "/login"
+    }
   }
 
   return (

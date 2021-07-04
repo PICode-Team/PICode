@@ -14,9 +14,10 @@ export function Topbar() {
     const dispatch = useDispatch();
     const classes = TopbarStyle();
     const [open, setOpen] = React.useState<boolean>(false);
-    let user: string | null = localStorage.getItem("user");
-    if (user !== null) {
-        user = JSON.parse(user);
+    let user = {
+        id: "test@test.com",
+        pw: "1234",
+        name: "test"
     }
 
     return (
