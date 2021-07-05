@@ -6,10 +6,11 @@ import route from './route'
 
 const server = express()
 const Port = 4000
+server.set('trust proxy', 1)
 
 server.use(setting)
 server.use(logging)
-server.use(route)
+server.use('/api', route)
 
 server.listen(Port, () => {
     console.log(`██████╗░██╗  ░█████╗░░█████╗░██████╗░███████╗  ░██████╗███████╗██████╗░██╗░░░██╗███████╗██████╗░`)

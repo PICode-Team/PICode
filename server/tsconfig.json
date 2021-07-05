@@ -5,10 +5,8 @@
         "resolveJsonModule": true,
         "moduleResolution": "node",
         "outDir": "./dist",
-        "typeRoots": ["./node_modules/@types"],
-        "allowJs": true, 
-        "checkJs": true,
-  
+        "typeRoots": ["./node_modules/@types", "./server/src/define", "./src/define"],
+
         "strict": true,
         "strictNullChecks": true,
         "strictFunctionTypes": true,
