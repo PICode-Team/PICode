@@ -1,4 +1,4 @@
-import { createMuiTheme } from "@material-ui/core/styles";
+import { createTheme } from "@material-ui/core/styles";
 
 export interface IThemeStyle {
     backgroundColor: {
@@ -17,7 +17,7 @@ export interface IThemeStyle {
     button: string;
 }
 
-export const darkTheme = createMuiTheme({
+export const darkTheme = createTheme({
     backgroundColor: {
         step0: "#192428",
         step1: "#2D383C",
@@ -46,7 +46,7 @@ export const darkTheme = createMuiTheme({
     },
 } as any);
 
-export const whiteTheme = createMuiTheme({
+export const whiteTheme = createTheme({
     backgroundColor: {
         step0: "#ffffff",
         step1: "#F3F3F3  ",

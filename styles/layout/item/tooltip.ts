@@ -6,6 +6,7 @@ export const UserInfoStyle = makeStyles((theme: IThemeStyle) =>
     createStyles({
         userInfo: {
             position: "absolute",
+            zIndex: 3,
             right: "43px",
             top: "35px",
             backgroundColor: theme.backgroundColor.step4,

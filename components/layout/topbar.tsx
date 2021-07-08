@@ -8,17 +8,33 @@ import { TopbarStyle } from "../../styles/layout/topbar";
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 import { useState } from "react";
 import UserInfo from "./item/tooltip";
+import { useEffect } from "react";
 
 export function Topbar() {
     const theme = useSelector((state: any) => state.theme).theme
     const dispatch = useDispatch();
     const classes = TopbarStyle();
     const [open, setOpen] = React.useState<boolean>(false);
+
     let user = {
-        id: "test@test.com",
-        pw: "1234",
-        name: "test"
+        id: "Test",
+        name: "Test"
     }
+
+    const getUserData = async () => {
+        // let data = await fetch(`http://picode.nevation.io:4000/api/user`, {
+        //     method: "GET",
+        //     mode: "cors",
+        //     headers: {
+        //         'Content-Type': 'application/json'
+        //     },
+        // }).then((res) => res.json())
+        // console.log(data)
+    }
+
+    useEffect(() => {
+        getUserData();
+    }, [])
 
     return (
         <React.Fragment>
