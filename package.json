@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "server:dev": "npx nodemon --config ./server/nodemon.json",
+    "client:dev": "NODE_ENV=development;ts-node --files ./server/src",
+    "server:dev": "MODE=server;npx nodemon --config ./server/nodemon.json",
     "server:build": "npx tsc -p ./server/tsconfig.json",
     "preserver:start": "npm run-script server:build",
     "server:start": "node ./server/dist"
@@ -19,6 +20,7 @@
     "apollo-server-express": "^2.25.2",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "express-session": "^1.17.2",
     "moment": "^2.29.1",
