@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "client:dev": "NODE_ENV=development;ts-node --files ./server/src",
+    "client:dev": "NODE_ENV=development;ts-node  --project ./server/tsconfig.json --files ./server/src",
     "server:dev": "MODE=server;npx nodemon --config ./server/nodemon.json",
     "server:build": "npx tsc -p ./server/tsconfig.json",
     "preserver:start": "npm run-script server:build",
