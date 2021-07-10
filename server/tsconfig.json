@@ -5,8 +5,10 @@
         "resolveJsonModule": true,
         "moduleResolution": "node",
         "outDir": "./dist",
-        "typeRoots": ["./node_modules/@types", "./server/src/define", "./src/define"],
-
+        "typeRoots": [
+            "../node_modules/@types",
+            "./src/define"
+        ],
         "strict": true,
         "strictNullChecks": true,
         "strictFunctionTypes": true,
@@ -16,16 +18,15 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "noImplicitReturns": true,
-        "experimentalDecorators": true,    
+        "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-  
         "esModuleInterop": true,
         "sourceMap": true
     },
     "include": [
-        "./server/**/*"
+        "./src/**/*"
     ],
     "exclude": [
-        "./node_modules"
+        "./dist/**/*"
     ]
-  }
+}
