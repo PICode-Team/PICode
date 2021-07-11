@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors'
 import session from 'express-session'
+import compression from 'compression'
 const router = express.Router()
 
 // body-parser setting
@@ -19,5 +20,8 @@ router.use(session({
     resave: false,
     saveUninitialized: false
 }))
+
+// compression setting
+router.use(compression())
 
 export default router
