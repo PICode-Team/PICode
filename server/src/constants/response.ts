@@ -8,6 +8,7 @@ export const ResponseCode = {
     notFoundSession: 410,
     invaildPasswd: 411,
     invaildRequest: 420,
+    confilct: 409,
 
     internalError: 500,
 }

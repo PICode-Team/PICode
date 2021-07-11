@@ -17,6 +17,7 @@
     "@material-ui/icons": "^4.11.2",
     "@monaco-editor/react": "^4.2.1",
     "cors": "^2.8.5",
+    "download-git-repo": "^3.0.2",
     "express": "^4.17.1",
     "express-session": "^1.17.2",
     "moment": "^2.29.1",
