@@ -1,12 +1,32 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { chatStyle } from "../../../styles/service/chat/chat";
-import { RadioButtonUnchecked, ArrowDropDown } from "@material-ui/icons";
+import {
+  RadioButtonUnchecked,
+  ArrowDropDown,
+  FiberManualRecord,
+} from "@material-ui/icons";
+import Messenger from "./messenger";
 
 interface TChat {
   user: string;
   time: string;
   message: string;
+}
+
+interface TDayBoundary {
+  text: string;
+}
+
+function DayBoundary({ text }: TDayBoundary) {
+  const classes = chatStyle();
+
+  return (
+    <div className={classes.timeWrapper}>
+      <div className={classes.dayBoundary}></div>
+      <div className={classes.timeTicket}>{text}</div>
+    </div>
+  );
 }
 
 function MessageBox() {
@@ -16,19 +36,38 @@ function MessageBox() {
     <div className={classes.messageBox}>
       <div className={classes.user}></div>
       <div>
-        <div className={classes.info}>
-          <span className={classes.name}>김진구</span>
-          <span className={classes.time}>오전 8:57</span>
-        </div>
+        <div className={classes.name}>kim</div>
         <div className={classes.textWrapper}>
-          <div className={classes.messageText}>테스트 텍스트 어쩌고 젖쩌고</div>
-          <div className={classes.emojiWrapper}>
-            <span className={classes.emoji}></span>
-            <span className={classes.addEmoji}></span>
-          </div>
+          <span className={classes.messageText}>
+            gna. Sed consequat, leo eget bibendum sodales, augue velit cursus
+            nunc, gna. Sed consequat, leo eget bibendum sodales, augue velit
+            cursus nunc,
+          </span>
+          <span className={classes.time}>AM 11:51</span>
         </div>
       </div>
-      <div className={classes.interaction}></div>
+    </div>
+  );
+}
+
+function MessageReverseBox() {
+  const classes = chatStyle();
+
+  return (
+    <div
+      className={classes.messageBox}
+      style={{ display: "flex", justifyContent: "flex-end" }}
+    >
+      <div
+        className={classes.textWrapper}
+        style={{ display: "flex", flexDirection: "row-reverse" }}
+      >
+        <div className={classes.messageText}>
+          gna. Sed consequat, leo eget bibendum sodales, augue velit cursus
+          nunc,
+        </div>
+        <span className={classes.time}>AM 11:51</span>
+      </div>
     </div>
   );
 }
@@ -44,22 +83,23 @@ export default function Chat() {
         <div className={classes.toolWrapper}>
           <div className={classes.tool}>
             <RadioButtonUnchecked />
-            스레드
+            Thread
           </div>
           <div className={classes.tool}>
             <RadioButtonUnchecked />
-            모든 DM
+            Direct Message
           </div>
           <div className={classes.tool}>
             <RadioButtonUnchecked />
-            멘션 및 반응
+            Mention
           </div>
           <div className={classes.tool}>
             <RadioButtonUnchecked />
-            Slack Connect
+            Connect
           </div>
           <div className={classes.tool}>
-            <RadioButtonUnchecked />더 보기
+            <RadioButtonUnchecked />
+            Etc
           </div>
         </div>
         <div className={classes.channelList}>
@@ -72,7 +112,7 @@ export default function Chat() {
             }}
           >
             <ArrowDropDown />
-            <span>채널</span>
+            <span>Channel</span>
           </div>
           <div className={`${classes.channel} ${classes.join}`}>
             <span className={classes.box}>#</span>
@@ -98,7 +138,7 @@ export default function Chat() {
           </div>
           <div className={classes.channel}>
             <span className={classes.addChannel}>+</span>
-            채널 추가
+            Add Channel
           </div>
         </div>
         <div className={classes.directList}>
@@ -111,7 +151,7 @@ export default function Chat() {
             }}
           >
             <ArrowDropDown />
-            <span>다이렉트 메시지</span>
+            <span>Direct Message</span>
           </div>
           <div className={classes.direct}>
             <div className={classes.directUserWrapper}>
@@ -157,34 +197,52 @@ export default function Chat() {
           </div>
           <div className={classes.channel}>
             <span className={classes.addChannel}>+</span>
-            팀원 추가
+            Add Colleague
           </div>
         </div>
       </div>
-      <div className={classes.content}>
+      <div className={classes.contentWrapper}>
         <div className={classes.header}>
           <div className={classes.headerInfo}>
             <div className={classes.headerUser}></div>
-            <div className={classes.headerName}>김진구</div>
+            <div className={classes.headerName}>kim</div>
           </div>
           <div className={classes.participant}></div>
         </div>
-        <div className={classes.contentWrapper}>
-          <MessageBox />
-          <MessageBox />
-          <div className={classes.timeWrapper}>
-            <div className={classes.dayBoundary}></div>
-            <div className={classes.timeTicket}>어제</div>
+        <div className={classes.contentBox}>
+          <div className={classes.content}>
+            <MessageBox />
+            <MessageReverseBox />
+            <MessageBox />
+            <MessageReverseBox />
+            <MessageBox /> <MessageReverseBox />
+            <MessageBox /> <MessageBox />
+            <MessageReverseBox />
+            <MessageBox />
+            <DayBoundary text="yesterday" />
+            <MessageReverseBox />
+            <MessageBox /> <MessageReverseBox />
+            <MessageBox /> <MessageBox />
+            <MessageReverseBox />
+            <MessageBox />
+            <MessageReverseBox />
+            <MessageBox /> <MessageReverseBox />
+            <MessageBox />
           </div>
-          <MessageBox />
-          <MessageBox />
-          <MessageBox />
         </div>
         <div className={classes.input}>
           <input type="text" />
-          <div className={classes.entering}></div>
+          <div className={classes.entering}>
+            <span className={classes.enterIcon}>
+              <FiberManualRecord />
+              <FiberManualRecord />
+              <FiberManualRecord />
+            </span>
+            <span className={classes.enterText}>kim is typing...</span>
+          </div>
         </div>
       </div>
+      <Messenger />
     </div>
   );
 }

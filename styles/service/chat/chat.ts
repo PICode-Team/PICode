@@ -16,7 +16,7 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       backgroundColor: theme.backgroundColor.step3,
     },
 
-    content: {
+    contentWrapper: {
       width: "calc(100% - 220px)",
       height: "100%",
     },
@@ -190,12 +190,22 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
     participant: {},
     number: {},
 
-    contentWrapper: {
-      height: "calc(100% - 155px)",
+    content: {
+      height: "fit-content",
+      minHeight: "calc(100% - 20px)",
+      width: "100%",
       display: "flex",
       flexDirection: "column",
       justifyContent: "flex-end",
       marginBottom: "10px",
+      marginTop: "10px",
+    },
+    contentBox: {
+      height: "calc(100% - 155px)",
+      width: "100%",
+      flex: 1,
+      display: "flex",
+      overflow: "auto",
     },
 
     input: {
@@ -213,6 +223,27 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
     },
     entering: {
       height: "24px",
+      display: "flex",
+      alignItems: "center",
+    },
+    enterIcon: {
+      marginRight: "2px",
+      "&>svg": {
+        width: "10px",
+        height: "9px",
+        color: "rgba(255, 255, 255, 0.7)",
+        transition: "all ease-in 0.2s",
+        animation: "$entering 2s infinite",
+        "&:nth-child(1)": {},
+        "&:nth-child(2)": { animationDelay: "0.25s" },
+        "&:nth-child(3)": { animationDelay: "0.5s" },
+      },
+    },
+    enterText: {
+      color: "rgba(255, 255, 255, 0.7)",
+      fontSize: "11px",
+      fontWeight: "bold",
+      lineHeight: "24px",
     },
 
     timeWrapper: {
@@ -245,41 +276,56 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
     messageBox: {
       padding: "8px 20px",
       display: "flex",
-      paddingBottom: "4px",
-    },
-    user: {
-      backgroundColor: "#E8912D",
-      width: "22px",
-      height: "22px",
-      borderTopLeftRadius: "2px",
-      borderTopRightRadius: "4px",
-      borderBottomLeftRadius: "4px",
-      borderBottomRightRadius: "2px",
-      marginRight: "6px",
     },
 
-    info: {
-      display: "flex",
-      alignItems: "flex-end",
-    },
-    name: {
-      fontWeight: "bold",
-      color: "#ffffff",
-      marginRight: "4px",
-    },
-    time: {
-      color: "rgba(255, 255, 255, 0.8)",
-      fontSize: "10px",
-    },
-    textWrapper: {},
-    messageText: {
-      color: "rgba(255, 255, 255, 0.9)",
-      fontWeight: "bold",
-      fontSize: "12px",
-    },
     interaction: {},
     emojiWrapper: {},
     emoji: {},
     addEmoji: {},
+
+    user: {
+      backgroundColor: "#E8912D",
+      width: "22px",
+      height: "22px",
+      borderRadius: "11px",
+    },
+    name: {
+      color: "rgba(255, 255, 255, 1)",
+      fontWeight: "bold",
+      marginLeft: "6px",
+    },
+    textWrapper: {
+      marginLeft: "6px",
+      marginTop: "4px",
+      display: "flex",
+      alignItems: "flex-end",
+    },
+    messageText: {
+      backgroundColor: "rgba(255, 255, 255, 0.3)",
+      borderRadius: "3px",
+      padding: "4px 10px",
+      color: "#ffffff",
+      maxWidth: "750px",
+    },
+    time: {
+      color: "#ffffff",
+      fontSize: "10px",
+      margin: "0px 5px",
+    },
+
+    "@keyframes entering": {
+      "0%": {
+        transform: "translateY(0)",
+      },
+      "25%": {
+        transform: "translateY(-2px)",
+      },
+      "50%": {
+        transform: "translateY(0)",
+      },
+      "100%": {
+        transform: "translateY(0)",
+      },
+    },
   })
 );

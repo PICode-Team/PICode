@@ -9,7 +9,7 @@ body {
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 
-#__next{
+#__next {
   padding: 0;
   margin: 0;
   width: 100%;
@@ -24,4 +24,19 @@ a {
 
 * {
   box-sizing: border-box;
+}
+
+div::-webkit-scrollbar {
+  height: 10px;
+  width: 8px;
+  background-color: #1e1e2f;
+}
+
+div::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: #555;
+}
+div::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background-color: #1e1e2f;
 }
