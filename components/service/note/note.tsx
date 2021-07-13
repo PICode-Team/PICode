@@ -1,25 +1,52 @@
 import React from "react";
+import { EditorState } from "draft-js";
+import "draft-js/dist/Draft.css";
+import Editor from "draft-js-plugins-editor";
 import { noteStyle } from "../../../styles/service/note/note";
-import MDEditor from '@uiw/react-md-editor';
-import "@uiw/react-md-editor/dist/markdown-editor.css";
-import "@uiw/react-markdown-preview/dist/markdown.css";
+import createMarkdownShortcutsPlugin from 'draft-js-markdown-shortcuts-plugin';
+import createBlockDndPlugin from '@draft-js-plugins/drag-n-drop';
+import createInlineToolbarPlugin from '@draft-js-plugins/inline-toolbar';
+import "draft-js/dist/Draft.css";
+import { useState } from "react";
 import { useEffect } from "react";
+
 
 export default function Note() {
     const classes = noteStyle();
-    const [markDown, setMarkdown] = React.useState<string | undefined>("");
+    const [test, setState] = useState(false);
+    const [editorState, setEditorState] = React.useState(() => EditorState.createEmpty())
+    const [editorPlugins, setEditorPlugins] = React.useState([createMarkdownShortcutsPlugin(), createBlockDndPlugin(), createInlineToolbarPlugin()])
+    const editor = React.useRef(null);
 
-    return <div className={classes.root}>
-        <div className={classes.fileView}>
+    const focus = React.useCallback(() => {
+        if (editor.current) (editor.current as any).focus()
+    }, [])
+
+    useEffect(() => {
+        setState(true)
+    }, [])
+
+    const onChange = React.useCallback(editorState => {
+        console.log(editorState)
+        setEditorState(editorState)
+    }, [])
+
+    useEffect(() => {
+        console.log(editorState)
+    }, [editorState])
+
+    return (
+        <div className={classes.root}>
+            <div className={classes.fileView}></div>
+            <div className={classes.writeContent} onClick={focus}>
+                {test && <Editor
+                    ref={editor}
+                    editorState={editorState}
+                    onChange={onChange}
+                    placeholder="Write something!"
+                    plugins={editorPlugins}
+                />}
+            </div>
         </div>
-        <div className={classes.writeContent} id="note">
-            <MDEditor
-                height={100}
-                value={markDown}
-                onChange={(value: string | undefined) => setMarkdown(value)}
-                fullscreen={false}
-                tabSize={2}
-            />
-        </div>
-    </div>
+    )
 }

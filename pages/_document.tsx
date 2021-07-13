@@ -29,6 +29,9 @@ class MyDocument extends Document {
     render() {
         return (
             <Html>
+                <head>
+                    <meta charSet="utf-8" />
+                </head>
                 <Head />
                 <body>
                     <Main />
