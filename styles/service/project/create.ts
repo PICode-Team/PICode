@@ -11,19 +11,6 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
       display: "flex",
       justifyContent: "center",
     },
-    wrapper: {},
-
-    headerWrapper: {},
-    header: {},
-    description: {},
-    import: {},
-
-    projectName: {},
-    organization: {},
-    project: {},
-    projectDescription: {},
-
-    optionTitle: {},
 
     stepWrapper: {
       padding: "30px",
