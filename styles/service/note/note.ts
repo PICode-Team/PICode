@@ -61,7 +61,7 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
             marginLeft: "-60px",
             cursor: "text",
         },
-        defaultInput: {
+        defaultTitle: {
             background: "inherit",
             border: "none",
             "&:focus": {
@@ -76,6 +76,29 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
             padding: "8px 0",
             overflowaY: "hidden",
             boxSizing: "border-box",
+        },
+        defaultInput: {
+            background: "inherit",
+            border: "none",
+            "&:focus": {
+                border: "none",
+                outline: "none",
+            },
+            lineHeight: "22px",
+            textAlign: "left",
+            resize: "none",
+            minHeight: "22px",
+            height: "fit-content",
+            overflowWrap: "break-word",
+            width: "100%",
+            fontSize: "14px",
+            overflowY: "hidden",
+            boxSizing: "border-box",
+            whiteSpace: "pre-wrap",
+            "&:empty:before": {
+                content: "attr(placeholder)",
+                display: "inline-block",
+            },
         },
         h1Input: {
             fontSize: "28px",

@@ -34,10 +34,10 @@ export default function TestNote() {
         <div id="writeSomeThing" className={classes.content}>
             <div className={classes.title}>
                 <div className={classes.titleContent}>
-                    <input className={clsx(classes.defaultInput, classes.h1Input)} placeholder={"제목"} />
-                    <input className={clsx(classes.defaultInput, classes.h2Input)} placeholder={"작성자"} />
-                    <input className={clsx(classes.defaultInput, classes.h3Input)} placeholder={"구분"} />
-                    <input className={clsx(classes.defaultInput, classes.h3Input)} placeholder={"날짜"} />
+                    <input className={clsx(classes.defaultTitle, classes.h1Input)} placeholder={"제목"} />
+                    <input className={clsx(classes.defaultTitle, classes.h2Input)} placeholder={"작성자"} />
+                    <input className={clsx(classes.defaultTitle, classes.h3Input)} placeholder={"구분"} />
+                    <input className={clsx(classes.defaultTitle, classes.h3Input)} placeholder={"날짜"} />
                 </div>
             </div>
             <div className={classes.writeRoot} onKeyDown={(e) => {
@@ -74,17 +74,14 @@ export default function TestNote() {
                                 <input
                                     className={clsx(classes.defaultInput, v.type !== undefined && classes[v.type])}
                                     id={String(idx)}
-                                    placeholder={"내용을 입력해주세요."}
-                                    value={v.text}
+                                    contentEditable={true}
                                     onChange={(e: any) => {
-                                        let tmpheight = document.getElementById(`${idx}`)
-                                        if (tmpheight) {
-                                            tmpheight.style.height = `${tmpheight.scrollHeight}px`
-                                        }
                                         let tmpContent = cloneDeep(test);
                                         tmpContent[idx].text = e.target.value;
                                         setTest(tmpContent)
                                     }}
+                                    value={v.text}
+                                    placeholder="Plz Input Text"
                                     onKeyDown={(event: any) => {
                                         if (event.key === "Enter") {
                                             if (event.target.value === "/h1") {
