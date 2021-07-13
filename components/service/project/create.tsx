@@ -153,7 +153,7 @@ function Step2({ setStep, setCreateInfo }: TStepProps) {
           <div className={classes.privacyText}>
             <div className={classes.privacyTitle}>Choose a license</div>
             <div className={classes.privacyDescription}>
-              A license tells others what they can and can't do with your code.
+              {`A license tells others what they can and can't do with your code.`}
               <span className={classes.learnMore}>Learn more.</span>
             </div>
           </div>
@@ -267,7 +267,7 @@ function Step3({ setStep, setCreateInfo }: TStepProps) {
           <div className={classes.privacyText}>
             <div className={classes.privacyTitle}>Choose a license</div>
             <div className={classes.privacyDescription}>
-              A license tells others what they can and can't do with your code.
+              {`A license tells others what they can and can't do with your code.`}
               <span className={classes.learnMore}>Learn more.</span>
             </div>
           </div>
