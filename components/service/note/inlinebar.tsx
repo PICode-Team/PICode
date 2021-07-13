@@ -71,8 +71,6 @@ export default function TestNote() {
                                 </IconButton>
                             </div>
                             <div className={classes.write}>
-                                <input className={classes.defaultInput} />
-
                                 <input
                                     className={clsx(classes.defaultInput, v.type !== undefined && classes[v.type])}
                                     id={String(idx)}

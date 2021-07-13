@@ -64,17 +64,17 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
         defaultInput: {
             background: "inherit",
             border: "none",
-            wordWrap: "break-word",
-            wordBreak: "break-all",
             "&:focus": {
                 border: "none",
                 outline: "none",
             },
             resize: "none",
+            height: "auto",
             overflowWrap: "break-word",
             width: "100%",
             fontSize: "14px",
             padding: "8px 0",
+            overflowaY: "hidden",
             boxSizing: "border-box",
         },
         h1Input: {
