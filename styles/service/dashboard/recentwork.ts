@@ -20,9 +20,21 @@ export const recentWorkStyle = makeStyles((theme: IThemeStyle) =>
             height: "calc(100% - 66px)",
             background: theme.backgroundColor.step1,
             padding: "24px",
+            display: "flex",
+            justifyContent: "center",
+            alignContent: "center",
         },
-        carousal: {
-            width: "80%",
+        view: {
+            alignContent: "center",
+            width: "100%",
+            position: "relative",
+            overflow: "hidden",
+        },
+        selectView: {
+            position: "absolute",
+            right: "80px",
+            zIndex: 2,
+            color: "#fff",
         },
     })
 );

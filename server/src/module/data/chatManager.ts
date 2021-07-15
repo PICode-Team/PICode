@@ -28,9 +28,9 @@ export default class DataChatManager {
         return [...directMessageList, ...channelMessageList].filter(v => chatName === undefined || v === chatName)
     }
 
-    static getChatContent(userId: string, chatName: string) {
+    // static getChatContent(userId: string, chatName: string) {
 
-    }
+    // }
 
     static createChannel(channelData: TChatChannelData) {
         if (this.isExistsChannel(channelData.channelName)) {

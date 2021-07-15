@@ -6,7 +6,6 @@ import route from './route'
 import graphQLServer from './lib/graphql'
 import next from 'next'
 import envConfig from './config/env'
-import fs from 'fs'
 import expressWs from 'express-ws'
 import { webSocketInit } from './module/socket/socket'
 

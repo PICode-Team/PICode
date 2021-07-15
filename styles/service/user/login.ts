@@ -1,7 +1,8 @@
 import { makeStyles } from "@material-ui/styles";
 import createStyles from "@material-ui/styles/createStyles";
+import { IThemeStyle } from "../../theme";
 
-export const loginStyle = makeStyles((theme: any) =>
+export const loginStyle = makeStyles((theme: IThemeStyle) =>
     createStyles({
         root: {
             backgroundColor: theme.backgroundColor.step0,
@@ -20,20 +21,22 @@ export const loginStyle = makeStyles((theme: any) =>
             width: "50%",
             height: "50%",
             display: "flex",
+            justifyContent: "center",
         },
         loginImage: {
-            width: "30%",
+            width: "40%",
             height: "100%",
             display: "flex",
             color: theme.font.low.color,
             alignItems: "center",
-            justifyContent: "center",
+            "@media (max-width: 1183px)": {
+                display: "none",
+            },
         },
         inputForm: {
-            width: "70%",
+            width: "60%",
             display: "grid",
             color: theme.font.high.color,
-            padding: "0 10%",
             verticalAlign: "middle",
             height: "100%",
         },

@@ -12,9 +12,9 @@ function sendMessage(sender: string, target: string, message: string) {
     getSocket(target)?.send(sendData)
 }
 
-function createChannel(creator: string, channelName: string, data: {}) {
+// function createChannel(creator: string, channelName: string, data: {}) {
 
-}
+// }
 
 
 

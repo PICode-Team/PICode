@@ -1,4 +1,4 @@
-import { createMuiTheme } from "@material-ui/core/styles";
+import { createTheme } from "@material-ui/core/styles";
 
 export interface IThemeStyle {
     backgroundColor: {
@@ -14,9 +14,10 @@ export interface IThemeStyle {
             size: string;
         };
     };
+    button: string;
 }
 
-export const darkTheme = createMuiTheme({
+export const darkTheme = createTheme({
     backgroundColor: {
         step0: "#192428",
         step1: "#2D383C",
@@ -24,6 +25,7 @@ export const darkTheme = createMuiTheme({
         step3: "#515C60",
         step4: "#626262",
     },
+    button: "#192428",
     font: {
         high: {
             color: "#f6f6f6",
@@ -44,14 +46,15 @@ export const darkTheme = createMuiTheme({
     },
 } as any);
 
-export const whiteTheme = createMuiTheme({
+export const whiteTheme = createTheme({
     backgroundColor: {
-        step0: "#f8fbff",
-        step1: "#d6eaff  ",
-        step2: "#84c1ff  ",
-        step3: "#eaf4ff",
-        step4: "#f8fbff ",
+        step0: "#ffffff",
+        step1: "#F3F3F3  ",
+        step2: "#DDDDDD  ",
+        step3: "#C6C6C6",
+        step4: "#ECECEC ",
     },
+    button: "#C6C6C6",
     font: {
         high: {
             color: "#000000",
@@ -62,7 +65,7 @@ export const whiteTheme = createMuiTheme({
             size: "24px",
         },
         low: {
-            color: "#232323",
+            color: "#414C50",
             size: "18px",
         },
         small: {
