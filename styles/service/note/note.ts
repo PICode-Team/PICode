@@ -29,13 +29,17 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
             display: "inline-block",
             height: "16px",
             visibility: "hidden",
+            position: "absolute",
+            top: 0,
+            left: 0,
             "&:hover": {
                 visibility: "visible",
             },
         },
         write: {
+            paddingLeft: "60px",
             display: "inline-block",
-            width: "calc(100% - 60px)",
+            width: "100%",
             height: "fit-content",
         },
         title: {
@@ -114,6 +118,36 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
             fontSize: "16px",
             fontWeight: 700,
             padding: "16px 0",
+        },
+        mouseOver: {
+            "&:hover": {
+                background: "black",
+            },
+        },
+        settingTool: {
+            background: theme.backgroundColor.step2,
+            fontSize: theme.font.small.size,
+            width: "100px",
+            height: "fit-content",
+            zIndex: 3,
+            position: "absolute",
+        },
+        settingLine: {
+            display: "flex",
+            width: "100%",
+            padding: "2.5px 10px",
+            justifyContent: "space-between",
+            alignContent: "center",
+            height: "25px",
+            lineHeight: "20px",
+        },
+        settingButton: {
+            border: "none",
+            background: "inherit",
+            cursor: "pointer",
+        },
+        clicked: {
+            backdropFilter: " sepia(90%)",
         },
     })
 );
