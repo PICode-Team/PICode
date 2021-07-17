@@ -103,34 +103,7 @@ export default function TestNote() {
                                 let tool = document.getElementById(`${idx}tool`);
                                 if (tool) { tool.style.visibility = "hidden"; }
                             }}>
-                            <div className={classes.leftTool} id={`${idx}tool`}
-                                onDragStart={(e) => {
-                                    console.log(1)
-                                    setDrag(e.currentTarget.id)
-                                    for (let i of test) {
-                                        let node = document.getElementById(`${i.text}`);
-                                        if (node) {
-                                            tmpPosition.push(node.getBoundingClientRect().bottom)
-                                        }
-                                    }
-                                    console.log(2)
-                                }}
-                                onDragEndCapture={(e) => {
-                                    console.log(3)
-                                    let tmpContent = cloneDeep(test);
-                                    let tmpNode: any = tmpContent.splice(Number(drag), 1)
-                                    for (let i in tmpPosition) {
-                                        console.log(tmpPosition[i], e.clientY)
-                                        if (tmpPosition[i] > e.clientY) {
-                                            tmpContent.splice(Number(i) - 1, 0, tmpNode)
-                                            setTest(tmpContent)
-                                            return;
-                                        }
-                                    }
-                                    console.log(tmpContent)
-                                    console.log(4)
-                                }}
-                            >
+                            <div className={classes.leftTool} id={`${idx}tool`}>
                                 <IconButton style={{ float: "left", width: "20px", height: "20px" }}
                                     className={classes.mouseOver}
                                     onClick={(e) => {
@@ -155,6 +128,35 @@ export default function TestNote() {
                                 <div
                                     className={clsx(classes.defaultInput, v.type !== undefined && classes[v.type])}
                                     id={String(idx)}
+                                    onDragStart={(e) => {
+                                        console.log(1)
+                                        setDrag(e.currentTarget.id)
+                                        for (let i in test) {
+                                            let node = document.getElementById(`${i}`);
+                                            if (node) {
+                                                console.log(test)
+                                                tmpPosition.push(node.getBoundingClientRect().bottom)
+                                            }
+                                        }
+                                        console.log(tmpPosition)
+                                        console.log(2)
+                                    }}
+                                    onDragEnd={(e) => {
+                                        console.log(3)
+                                        let tmpContent = cloneDeep(test);
+                                        let tmpNode: any = tmpContent.splice(Number(drag), 1)
+                                        console.log(tmpPosition)
+                                        for (let i in tmpPosition) {
+                                            console.log(tmpPosition[i], e.clientY)
+                                            if (tmpPosition[i] > e.clientY) {
+                                                tmpContent.splice(Number(i) - 1, 0, tmpNode)
+                                                setTest(tmpContent)
+                                                return;
+                                            }
+                                        }
+                                        console.log(tmpContent)
+                                        console.log(4)
+                                    }}
                                     contentEditable={true}
                                     placeholder="Plz Input Text"
                                     onInput={(e) => {

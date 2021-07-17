@@ -28,14 +28,15 @@ function App({ Component, pageProps }: AppProps) {
   );
 }
 
-App.getInitialProps = async ({ Component, ctx }: AppContext): Promise<AppInitialProps> => {
+App.getInitialProps = async ({ Component, ctx }: any): Promise<AppInitialProps> => {
+
   let pageProps = {};
 
   if (Component.getInitialProps) {
     pageProps = await Component.getInitialProps(ctx);
   }
 
-  pageProps = { ...pageProps, path: ctx.pathname };
+  pageProps = { ...pageProps, path: ctx.pathname, session: ctx.req.session };
   return { pageProps };
 };
 

@@ -24,7 +24,7 @@ export default function Login() {
             passwd: passwd
         }
 
-        let data: { code: number; } = await fetch(`http://picode.nevation.io:4000/api/user/sign`, {
+        let data: { code: number; } = await fetch(`http://localhost:8000/api/user/sign`, {
             method: "POST",
             mode: "cors",
             credentials: 'same-origin',
@@ -33,8 +33,7 @@ export default function Login() {
             },
             body: JSON.stringify(payload)
         }).then((res) => res.json())
-
-        console.log(resultType[data.code])
+        window.location.reload()
     }
 
     return (
@@ -61,7 +60,8 @@ export default function Login() {
                         <CustomTextField label="Email" type="email" onChange={(e: any) => setUserId(e.target.value)} />
                         <CustomTextField label="Password" type="password" onChange={(e: any) => setPasswd(e.target.value)} onKeyPress={(e: any) => {
                             if (e.key === "Enter") {
-                                window.location.href = "/"
+                                submitLogin();
+
                             }
                         }} />
                     </div>

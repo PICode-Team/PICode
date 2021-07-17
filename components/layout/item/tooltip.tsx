@@ -16,11 +16,19 @@ export default function UserInfo(props: any) {
         <div className={classes.content}>
             <AccountCircleRoundedIcon style={{ width: "50%", height: "50%", color: props.theme === "dark" ? "#fff" : "#121212" }} />
             <div className={classes.contentText}>
-                Hello, {props.data.name}
+                Hello, {props.data.userName}
             </div>
             <div className={classes.logout}>
-                <CustomButton text={"logout"} height={"24px"} width={"50%"} onClick={() => {
-                    window.location.href = "/login"
+                <CustomButton text={"logout"} height={"24px"} width={"50%"} onClick={async () => {
+                    let data = await fetch(`http://localhost:8000/api/user/sign`, {
+                        method: "DELETE",
+                        mode: "cors",
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    window.location.reload()
                 }} />
             </div>
         </div>
