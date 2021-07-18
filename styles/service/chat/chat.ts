@@ -329,3 +329,63 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
     },
   })
 );
+
+export const createChannelStyle = makeStyles((theme: IThemeStyle) =>
+  createStyles({
+    overlay: {
+      width: "100%",
+      height: "100%",
+      position: "absolute",
+      display: "fixed",
+      backgroundColor: "black",
+      top: 0,
+      left: 0,
+      opacity: 0.4,
+      zIndex: 9999,
+    },
+    modal: {
+      width: "30%",
+      height: "40%",
+      position: "absolute",
+      display: "fixed",
+      backgroundColor: theme.backgroundColor.step1,
+      zIndex: 9999,
+      marginLeft: "35%",
+      marginTop: "10%",
+      padding: "30px",
+      borderRadius: "12px",
+    },
+    modalHeader: {
+      fontWeight: "bold",
+      fontSize: "28px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      color: "#CFCFCF",
+      "&>div": {
+        display: "flex",
+        alignItems: "center",
+      },
+      "&>div>svg": {
+        width: "28px",
+        height: "28px",
+        cursor: "pointer",
+      },
+    },
+    modalBody: {
+      height: "70%",
+    },
+    modalFooter: {
+      width: "100%",
+      display: "flex",
+      justifyContent: "flex-end",
+      alignItems: "flex-end",
+      "&>button": {
+        marginBottom: "-24px",
+      },
+    },
+    visibility: {
+      visibility: "hidden",
+    },
+  })
+);

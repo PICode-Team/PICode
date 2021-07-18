@@ -1,12 +1,18 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
-import { chatStyle } from "../../../styles/service/chat/chat";
+import {
+  chatStyle,
+  createChannelStyle,
+} from "../../../styles/service/chat/chat";
 import {
   RadioButtonUnchecked,
   ArrowDropDown,
   FiberManualRecord,
+  Close,
 } from "@material-ui/icons";
 import Messenger from "./messenger";
+import CustomButton from "../../items/input/button";
+import CustomTextField from "../../items/input/textfield";
 
 interface TChat {
   user: string;
@@ -72,9 +78,52 @@ function MessageReverseBox() {
   );
 }
 
+function CreateChannel({
+  modal,
+  setModal,
+}: {
+  modal: boolean;
+  setModal: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+  const classes = createChannelStyle();
+
+  return (
+    <React.Fragment>
+      <div
+        className={`${classes.overlay} ${!modal && classes.visibility}`}
+        onClick={(event: React.MouseEvent<HTMLElement>) => {
+          event.preventDefault();
+
+          setModal(false);
+        }}
+      ></div>
+      <div className={`${classes.modal} ${!modal && classes.visibility}`}>
+        <div className={classes.modalHeader}>
+          <span>Create Channel</span>
+          <div
+            onClick={(event: React.MouseEvent<HTMLElement>) => {
+              setModal(false);
+            }}
+          >
+            <Close />
+          </div>
+        </div>
+        <div className={classes.modalBody}>
+          <CustomTextField label="Name" />
+          <CustomTextField label="Description" />
+        </div>
+        <div className={classes.modalFooter}>
+          <CustomButton text="CREATE" width="76px" />
+        </div>
+      </div>
+    </React.Fragment>
+  );
+}
+
 export default function Chat() {
   const classes = chatStyle();
   const [chatList, setChatList] = useState<TChat[]>([]);
+  const [modal, setModal] = useState<boolean>(false);
 
   return (
     <div className={classes.root}>
@@ -136,7 +185,12 @@ export default function Chat() {
             </span>
             <span className={classes.deleteChannel}>X</span>
           </div>
-          <div className={classes.channel}>
+          <div
+            className={classes.channel}
+            onClick={() => {
+              setModal(true);
+            }}
+          >
             <span className={classes.addChannel}>+</span>
             Add Channel
           </div>
@@ -243,6 +297,7 @@ export default function Chat() {
         </div>
       </div>
       <Messenger />
+      <CreateChannel modal={modal} setModal={setModal} />
     </div>
   );
 }
