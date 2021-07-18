@@ -5,6 +5,13 @@ import { Sidebar } from "./sidebar";
 
 export function Layout(ctx: any) {
   const classes = LayoutStyle();
+
+  if (typeof window !== "undefined") {
+    if (ctx.session.userId === undefined) {
+      window.location.href = "/"
+    }
+  }
+
   return (
     <div className={classes.main}>
       <Topbar {...ctx} />
