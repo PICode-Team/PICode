@@ -8,7 +8,7 @@
     "lint": "next lint",
     "client:start": "next start",
     "client:dev": "export NODE_ENV=development && ts-node  --project ./server/tsconfig.json --files ./server/src",
-    "server:dev": "export MODE=server && npx tsc-watch --onSuccess \"node ./server/dist\"",
+    "server:dev": "export MODE=server && npx tsc-watch -p ./server/tsconfig.json --onSuccess \"node ./server/dist\"",
     "server:build": "npx tsc -p ./server/tsconfig.json",
     "preserver:start": "npm run-script server:build",
     "server:start": "node ./server/dist",
