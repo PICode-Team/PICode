@@ -15,6 +15,7 @@ function sendMessage(sender: string, target: string, message: string) {
 }
 
 function createChannel(creator: string, chatName: string, data: {}) {
+    console.log(data)
     DataChatManager.createChannel({
         userId: creator,
         chatName,
