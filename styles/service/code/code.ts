@@ -114,12 +114,19 @@ export const terminalStyle = makeStyles((theme: IThemeStyle) =>
 export const tabStyle = makeStyles((theme: IThemeStyle) =>
   createStyles({
     tab: {
+      width: "92px",
       height: "100%",
       display: "flex",
       alignItems: "center",
       padding: "2px 12px",
       cursor: "pointer",
       fontSize: "0px",
+      backgroundColor: "#404040",
+      "&:hover": {
+        "&>div>svg": {
+          display: "inline-block",
+        },
+      },
     },
     active: {
       backgroundColor: "#1E1E1E",
@@ -127,6 +134,7 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
         opacity: 0.9,
       },
       "&>div>svg": {
+        display: "block",
         opacity: 0.9,
       },
     },
@@ -143,6 +151,7 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
       zIndex: 999,
       position: "relative",
       "&>svg": {
+        display: "none",
         color: "#ffffff",
         opacity: 0.5,
         width: "15px",
@@ -150,6 +159,15 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
       },
     },
     isChanged: {},
+    drag: {
+      backgroundColor: "red !important",
+      "&>div": {
+        PointerEvent: "none",
+      },
+      "& path": {
+        PointerEvent: "none",
+      },
+    },
   })
 );
 

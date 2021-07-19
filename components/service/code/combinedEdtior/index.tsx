@@ -4,6 +4,7 @@ import { editorStyle } from "../../../../styles/service/code/code";
 import { Tabbar } from "./tabbar";
 import { Path } from "./path";
 import { TTab } from "../types";
+import { useDrag } from "../../../../hooks/drag";
 
 export function CombinedEditor({
   tabList,
@@ -18,13 +19,44 @@ export function CombinedEditor({
 }): JSX.Element {
   const classes = editorStyle();
   const [tab, setTab] = useState<TTab | undefined>(tabList[tabOrderStack[0]]);
+  const {} = useDrag();
 
   useEffect(() => {
     setTab(tabList[tabOrderStack[0]]);
   }, [tabOrderStack]);
 
+  function handleDragOver(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+  }
+
+  function handleDrop(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    const targetCode = (() => {
+      let eventTarget = (event.target as HTMLElement).parentElement;
+      while (true) {
+        if (eventTarget) {
+          for (let i = 0; i < eventTarget.classList.length; i++) {
+            if (eventTarget.classList[i] === classes.editor) {
+              return true;
+            }
+          }
+          eventTarget = eventTarget.parentElement;
+        } else {
+          return false;
+        }
+      }
+    })();
+  }
+
+  function handleBlur() {}
+
   return (
-    <div className={classes.editor}>
+    <div
+      id={`${codeId}`}
+      className={classes.editor}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
       <div className={classes.topbar}>
         <Tabbar
           tabList={tabList}

@@ -1,6 +1,8 @@
 import { AddCircleRounded, ArrowForwardIos } from "@material-ui/icons";
+import { path } from "d3";
 import React from "react";
 import { useCode } from "../../../../hooks/code";
+import { useDrag } from "../../../../hooks/drag";
 import { sidebarStyle } from "../../../../styles/service/code/code";
 import {
   addCode,
@@ -58,6 +60,20 @@ const dummy: TFile = {
                   path: "string5",
                   open: false,
                 },
+                {
+                  name: "string",
+                  isDirectory: false,
+                  children: [],
+                  path: "string6",
+                  open: false,
+                },
+                {
+                  name: "string",
+                  isDirectory: false,
+                  children: [],
+                  path: "string7",
+                  open: false,
+                },
               ],
             },
           ],
@@ -70,6 +86,7 @@ const dummy: TFile = {
 function makeFileStructure(file: TFile, depth: number) {
   const classes = sidebarStyle();
   const { code, setCode } = useCode();
+  const { setDragInfo } = useDrag();
 
   function handleDirectoryToggle(event: React.MouseEvent<HTMLElement>) {
     (event.currentTarget.parentNode! as HTMLElement).classList.toggle(
@@ -130,27 +147,16 @@ function makeFileStructure(file: TFile, depth: number) {
     });
   }
 
-  // ===========================================================
+  function handleDragFile(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
 
-  function handleDropFile() {}
+    setDragInfo({
+      path: file.path,
+      tabId: -1,
+    });
+  }
 
-  function handleDragOverFile() {}
-
-  function handleDragStartFile() {}
-
-  function handleDragEndFile() {}
-
-  // ===========================================================
-
-  function handleDoubleClickFile() {}
-
-  function handleMouseDownFile() {}
-
-  function handleMouseMoveFile() {}
-
-  function handleMouseUpFile() {}
-
-  // ===========================================================
+  function handleDragStartFile(event: React.DragEvent<HTMLDivElement>) {}
 
   if (file.isDirectory) {
     return (
@@ -176,6 +182,9 @@ function makeFileStructure(file: TFile, depth: number) {
       className={classes.file}
       style={{ paddingLeft: `${depth * 6 + 6}px` }}
       onClick={handleClickFile}
+      draggable={true}
+      onDrag={handleDragFile}
+      onDragStart={handleDragStartFile}
     >
       <span>
         <AddCircleRounded />

@@ -16,12 +16,25 @@ export function getLanguage(extension: string): string {
       return "javascript";
     case extension === "py":
       return "python";
-    case extension === "cpp":
+    case extension === "cpp" ||
+      extension === "cc" ||
+      extension === "cxx" ||
+      extension === "c++" ||
+      extension === "hh" ||
+      extension === "hpp" ||
+      extension === "h++" ||
+      extension === "C":
       return "c++";
-    case extension === "c":
+    case extension === "c" || extension === "h" || extension === "H":
       return "c";
+    case extension === "cs" || extension === "csx":
+      return "C#";
     case extension === "json":
-      return "json ";
+      return "json";
+    case extension === "html":
+      return "html";
+    case extension === "css":
+      return "css";
     default:
       return "default";
   }
@@ -44,7 +57,7 @@ export function reorderStack(
 }
 
 export function findCurrentFocus(root: TEditorRoot): number {
-  return root.codeOrderStack[0];
+  return root.codeOrderStack.length !== 0 ? root.codeOrderStack[0] : -1;
 }
 
 export function turnOnFocus(codeList: TCode[], targetCodeId: number): TCode[] {
@@ -127,9 +140,6 @@ export function updateTab(
   return updatedCodeList;
 }
 
-// add code to give focus again
-// if tabList.length === 0
-// delete code
 export function deleteTab(codeList: TCode[], targetTabId: number): TCode[] {
   const deletedCodeList = codeList.map((code) => {
     return {
@@ -311,5 +321,9 @@ export function findEmptyCode(codeList: TCode[]): number {
 // ===========================================================
 
 export function splitCode() {}
+
+export function checkFileEdited() {}
+
+// export function
 
 // ===========================================================

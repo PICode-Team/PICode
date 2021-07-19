@@ -10,6 +10,7 @@ import {
   reorderTab,
 } from "../../functions";
 import { useCode } from "../../../../../hooks/code";
+import { useDrag } from "../../../../../hooks/drag";
 
 export function Tab({
   path,
@@ -25,6 +26,7 @@ export function Tab({
   const classes = tabStyle();
   const [lastPath, setLastPath] = useState<string>("");
   const { code, setCode } = useCode();
+  const { drag, setDragInfo } = useDrag();
 
   useEffect(() => {
     (() => {
@@ -80,34 +82,58 @@ export function Tab({
     });
   }
 
-  // ===========================================================
+  function handleDragTab(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
 
-  function handleDropTab() {}
-
-  function handleDragOverTab() {}
+    setDragInfo({
+      path: path,
+      tabId: tabId,
+    });
+  }
 
   function handleDragStartTab() {}
 
-  function handleDragEndTab() {}
-
-  // ===========================================================
-
-  function handleDoubleClickTab() {}
-
-  function handleMouseDownTab() {}
-
-  function handleMouseMoveTab() {}
-
-  function handleMouseUpTab() {}
-
-  // ===========================================================
+  function handleDragOverTab(event: React.DragEvent<HTMLElement>) {}
 
   return (
     <div
+      id={`${tabId}`}
       className={`${classes.tab} ${
         tabId === tabOrderStack[0] ? classes.active : ""
       }`}
       onClick={handleTabActive}
+      draggable={true}
+      onDrag={handleDragTab}
+      onDragStart={handleDragStartTab}
+      onDragEnter={(event: React.DragEvent<HTMLDivElement>) => {
+        event.stopPropagation();
+
+        if (drag.tabId === tabId) return;
+
+        const hoverElement = document.getElementsByClassName(classes.drag);
+
+        if (hoverElement.length !== 0) {
+          if (hoverElement[0] === event.currentTarget) {
+            return;
+          }
+          hoverElement[0].classList.toggle(classes.drag);
+        }
+
+        event.currentTarget.classList.toggle(classes.drag);
+      }}
+      onMouseOver={() => {}}
+      onDragLeave={(event: React.DragEvent<HTMLDivElement>) => {
+        event.stopPropagation();
+        if (event.target !== event.currentTarget) return;
+        return;
+        const targetClassList = event.currentTarget.classList;
+        for (let i = 0; i < targetClassList.length; i++) {
+          if (targetClassList[i] === classes.active) {
+            event.currentTarget.classList.toggle(classes.drag);
+            return;
+          }
+        }
+      }}
     >
       {path}
       <div className={classes.icon}></div>

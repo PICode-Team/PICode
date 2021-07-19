@@ -142,19 +142,19 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
     },
     alpine: {
       backgroundColor: "#ffffff",
-      backgroundImage: `url('/images/alpine.png')`,
+      backgroundImage: `url('/images/serverImage/alpine.png')`,
     },
     redhat: {
       backgroundColor: "#ffffff",
-      backgroundImage: `url('/images/redhat.png')`,
+      backgroundImage: `url('/images/serverImage/redhat.png')`,
     },
     ubuntu: {
       backgroundColor: "#ffffff",
-      backgroundImage: `url('/images/ubuntu.png')`,
+      backgroundImage: `url('/images/serverImage/ubuntu.png')`,
     },
     centos: {
       backgroundColor: "#ffffff",
-      backgroundImage: `url('/images/centos.png')`,
+      backgroundImage: `url('/images/serverImage/centos.png')`,
     },
   })
 );
