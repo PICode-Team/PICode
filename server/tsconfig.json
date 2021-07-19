@@ -6,7 +6,9 @@
         "moduleResolution": "node",
         "outDir": "./dist",
         "typeRoots": [
-            "../node_modules/@types",
+            "../node_modules/@types/react-dom",
+            "../node_modules/@types/express",
+            "../node_modules/@types/express-session",
             "./src/define"
         ],
         "strict": true,

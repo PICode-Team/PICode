@@ -14,10 +14,10 @@ export const sidebarData = {
         icon: "",
         title: "Message",
     },
-    document: {
-        url: "/document",
+    note: {
+        url: "/note",
         icon: "",
-        title: "Document",
+        title: "Note",
     },
     stat: {
         url: "/stat",

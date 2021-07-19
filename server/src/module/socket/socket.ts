@@ -1,23 +1,44 @@
-import WebSocket from "ws";
-import { Server } from 'http'
+import expressWs from 'express-ws'
+import { TSocketPacket } from '../../types/module/socket.types'
+import log from '../log'
+import chat from './chat'
+import { SocketInfo } from './manager'
 
-export default function webSocketInit(server: Server) {
-    const webSocketServer = new WebSocket.Server({ server, path: '/' });
 
-    webSocketServer.on('connection', (socket, _) => {
-        socket.on('message', data => {
-            console.log('message', data)
-            socket.send(data)
-        })
-
-        webSocketServer.on('error', err => {
-            console.log(err)
-        })
-
-        webSocketServer.on('close', () => {
-            console.log('close')
-        })
-
-    })
+const SocketFuncs = {
+    chat: chat
 }
 
+export function webSocketInit(server: expressWs.Application) {
+
+    server.ws('/', (ws, req) => {
+        if (req?.session?.userId === undefined) {
+            return ws.close()
+        }
+
+        const userId = req?.session?.userId
+
+        ws.on('message', msg => {
+            if (req.session.userId === undefined) {
+                return
+            }
+
+            try {
+                const data = JSON.parse(msg.toString()) as TSocketPacket
+
+                if (data.category === 'connect') {
+                    SocketInfo[userId] = ws as any
+                    return
+                }
+
+                SocketFuncs[data.category](userId, data)
+            } catch (e) {
+                log.error(e.stack)
+            }
+        })
+
+        ws.on('close', () => {
+            delete SocketInfo[userId]
+        })
+    })
+}
