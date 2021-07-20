@@ -19,7 +19,7 @@ export default function RecentWork() {
     const classes = recentWorkStyle();
     const [projectData, setProjectData] = useState<IProjectData[]>([]);
     const [state, setState] = useState<boolean>(true);
-    const [sliderNum, setSliderNum] = useState<number | number[]>(7);
+    const [sliderNum, setSliderNum] = useState<number | number[]>(3);
     const [content, setContent] = useState<any>();
     const [itemNum, setItemNum] = useState<number>(0);
 
@@ -198,21 +198,6 @@ export default function RecentWork() {
                     </Grid>
                     <Grid item>Slider</Grid>
                 </Grid>
-
-                {!state && <><Typography id="discrete-slider" gutterBottom>
-                    Seletct Row Column
-                </Typography>
-                    <Slider defaultValue={7}
-                        aria-labelledby="discrete-slider"
-                        valueLabelDisplay="auto"
-                        value={sliderNum}
-                        onChange={(e: any, v: number | number[]) => {
-                            setSliderNum(v)
-                        }}
-                        step={1}
-                        marks
-                        min={3}
-                        max={15} /></>}
             </div>
 
             <div className={classes.view} id="view">

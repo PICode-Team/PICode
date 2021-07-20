@@ -20,7 +20,7 @@ function Row(props: {
       className={`${classes.row} ${props.toggle && classes.toggle}`}
       href={props.data.url}
     >
-      <RadioButtonUnchecked />
+      {props.data.icon}
       <span className={`${classes.text} ${props.toggle && classes.hidden}`}>
         {props.data.title}
       </span>

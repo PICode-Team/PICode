@@ -17,6 +17,7 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
             height: "100%",
             display: "inline-block",
             background: theme.backgroundColor.step3,
+            color: theme.font.high.color,
         },
         content: {
             width: "calc(100% - 300px)",
@@ -26,6 +27,7 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
         },
         leftTool: {
             width: "60px",
+            color: theme.font.high.color,
             display: "inline-block",
             height: "16px",
             visibility: "hidden",
@@ -36,7 +38,13 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
                 visibility: "visible",
             },
         },
+        iconButtonColor: {
+            width: "20px",
+            height: "20px",
+            color: theme.font.high.color,
+        },
         write: {
+            color: theme.font.high.color,
             paddingLeft: "60px",
             display: "inline-block",
             width: "100%",
@@ -48,6 +56,7 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
             textAlign: "center",
         },
         titleContent: {
+            color: theme.font.high.color,
             height: "200px",
             width: "50%",
             display: "inline-block",
@@ -59,6 +68,7 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
             textAlign: "center",
         },
         writeContent: {
+            borderTop: `1px solid ${theme.font.high.color}`,
             width: "calc(50% + 60px)",
             display: "inline-block",
             height: "100%",
@@ -66,6 +76,7 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
             cursor: "text",
         },
         defaultTitle: {
+            color: theme.font.high.color,
             background: "inherit",
             border: "none",
             "&:focus": {
@@ -147,7 +158,17 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
             cursor: "pointer",
         },
         clicked: {
-            backdropFilter: " sepia(90%)",
+            background: theme.backgroundColor.step4,
+        },
+        fileRow: {
+            display: "flex",
+            lineHeight: "30px",
+            height: "30px",
+            cursor: "pointer",
+            "&:hover": {
+                color: theme.font.low.color,
+                background: theme.backgroundColor.step4,
+            },
         },
     })
 );

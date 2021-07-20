@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useRef } from "react";
 import { noteStyle } from "../../../styles/service/note/note";
 import clsx from "clsx"
@@ -12,7 +13,7 @@ import DetailsIcon from '@material-ui/icons/Details';
 
 interface INoteContent {
     text: string;
-    contet?: any;//table 이나 이미지 같은 거 넣을 때 사용할 듯
+    content?: any;//table 이나 이미지 같은 거 넣을 때 사용할 듯
     type?: string;
     clicked?: boolean
 }
@@ -69,6 +70,15 @@ export default function TestNote() {
     }, [dragEnd])
 
     useEffect(() => {
+        for (let i in test) {
+            let node = document.getElementById(`${i}`)
+            if (node) {
+                node.innerText = test[i].text
+            }
+        }
+    }, [selectFile])
+
+    useEffect(() => {
         const data: IFileView[] = [
             {
                 title: "folder1",
@@ -94,6 +104,11 @@ export default function TestNote() {
                                 author: ["은표찡", "재상갓"],
                                 type: ["백엔드", "회의"],
                                 isFolder: false,
+                                content: [
+                                    { text: "test입니다.", type: "h1Input" },
+                                    { text: "test1입니다." },
+
+                                ]
                             }
                         ]
                     },
@@ -143,49 +158,53 @@ export default function TestNote() {
         setFileView(data)
     }, [])
 
-    return <div className={classes.root}>
-        <div className={classes.fileView}>
-            {fileView && fileView.map((v: IFileView, idx: number) => {
-                return <><div key={idx} style={{ display: "flex", lineHeight: "30px", height: "30px", paddingLeft: "16px", cursor: "pointer" }} onClick={(e) => {
+    const findNode = (data: IFileView[] | undefined, title: string) => {
+        if (data === undefined) return;
+        for (let i in data) {
+            if (data[i].title === title) {
+                if (data[i].open) {
+                    data[i].open = false;
+                } else {
+                    data[i].open = true;
+                }
+                break;
+            } else {
+                if (data[i].children !== undefined) {
+                    findNode(data[i].children, title)
+                }
+            }
+        }
+    }
+
+    const makeFileView: any = (data: IFileView[], num: number) => {
+        return (data.map((v: IFileView, idx: number) => {
+            return <>
+                <div className={classes.fileRow} key={idx} style={{ paddingLeft: `${16 * (num)}px` }} onClick={(e) => {
                     e.stopPropagation()
                     if (v.isFolder) {
                         let tmpFolderView = cloneDeep(fileView);
-                        if (v.open) {
-                            tmpFolderView[idx].open = false;
-                        } else {
-                            tmpFolderView[idx].open = true;
-                        }
+                        findNode(tmpFolderView, v.title)
                         setFileView(tmpFolderView)
                     } else {
                         setSelectFile(v)
+                        if (v.content) {
+                            setTest(v.content)
+                        } else {
+                            setTest([])
+                        }
                     }
                 }}>
                     {v.isFolder ? <ExpandMoreRoundedIcon style={{ height: "30px", transition: "all 0.3s", transform: `${(v.open === undefined || !v.open) ? "rotate(-90deg)" : "rotate(0deg)"}` }} /> : <DescriptionIcon style={{ height: "30px" }} />}
-                    <div style={{ display: "inline-block", lineHeight: "30px" }}>{v.title}</div>
+                    <div style={{ display: "flex", lineHeight: "30px" }}>{v.title}</div>
                 </div>
-                    {v.open && v.children?.map((children: IFileView, number: number) => {
-                        return <div key={idx} style={{ display: "flex", width: "100%", lineHeight: "30px", height: "30px", paddingLeft: "16px", cursor: "pointer" }} onClick={(e) => {
-                            e.stopPropagation()
-                            if (children.isFolder) {
-                                let tmpFolderView = cloneDeep(fileView);
-                                if (tmpFolderView[idx].children !== undefined) {
-                                    if (children.open) {
-                                        tmpFolderView[idx].children[number].open = false;
-                                    } else {
-                                        tmpFolderView[idx].children[number].open = true;
-                                    }
-                                }
-                                setFileView(tmpFolderView)
-                            } else {
-                                setSelectFile(children)
-                            }
-                        }}>
-                            {children.isFolder ? <ExpandMoreRoundedIcon style={{ height: "30px", transition: "all 0.3s", transform: `${(children.open === undefined || !children.open) ? "rotate(-90deg)" : "rotate(0deg)"}` }} /> : <DescriptionIcon style={{ height: "30px" }} />}
-                            <div style={{ display: "inline-block", lineHeight: "30px" }}>{children.title}</div>
-                        </div>
-                    })}
-                </>
-            })}
+                {(v.open && v.children !== undefined) && makeFileView(v.children, num + 1)}
+            </>
+        }))
+    }
+
+    return <div className={classes.root}>
+        <div className={classes.fileView}>
+            {fileView && makeFileView(fileView, 1)}
         </div>
         {
             selectFile !== undefined && <div id="writeSomeThing" className={classes.content}>
@@ -339,7 +358,7 @@ export default function TestNote() {
                                             console.log(e)
                                         }}
                                     >
-                                        <DragIndicatorIcon style={{ width: "20px", height: "20px" }} />
+                                        <DragIndicatorIcon className={classes.iconButtonColor} />
                                     </IconButton>
                                     <IconButton style={{ float: "left", width: "20px", height: "20px" }}
                                         onClick={(e) => {
@@ -350,7 +369,7 @@ export default function TestNote() {
                                             }
 
                                         }}>
-                                        <AddIcon style={{ width: "20px", height: "20px" }} />
+                                        <AddIcon className={classes.iconButtonColor} />
                                     </IconButton>
                                 </div>
                                 <div className={classes.write}>
