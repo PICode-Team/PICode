@@ -1,13 +1,21 @@
 import express from "express";
 import { ResponseCode } from "../../constants/response";
-import log from "../../module/log";
+import upload from "../../lib/router/upload";
 
 const router = express.Router();
 
-router.post("/", (req, res) => {
-    const userId = req.session.userId as string;
-    log.info(`${userId} reached route /data`);
-    return res.json({ code: ResponseCode.ok });
+router.post("/", upload.single("uploadFile"), (req, res) => {
+    const uploadFile = req.file;
+    if (uploadFile === undefined) {
+        return res.json({ code: ResponseCode.invaildRequest });
+    }
+
+    return req.fileId === undefined
+        ? res.json({ code: ResponseCode.internalError })
+        : res.json({
+              code: ResponseCode.ok,
+              uploadFileId: req.fileId,
+          });
 });
 
 export default router;

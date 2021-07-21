@@ -17,13 +17,16 @@ router.get("/", sessionRouter, (req, res) => {
 
 router.post("/", (req, res) => {
     const userId = req.session.userId as string;
-    const dataSource = req.body?.sourceCode;
+    const projectInfo = req.body?.projectInfo;
+    const source = req.body?.source ?? {};
 
-    if (dataSource.type === undefined || dataSource.value === undefined) {
-        return res.json({ code: ResponseCode.invaildRequest });
+    DataProjectManager.create(userId, projectInfo, source);
+    if (!true) {
+        return res.json({ code: ResponseCode.internalError });
     }
 
-    log.info(`userId : ${userId}, dataSource : ${dataSource}`);
+    log.info(`Create project (projectName: "${projectInfo.projectName}")`);
+
     return res.json({ code: ResponseCode.ok });
 });
 
@@ -33,6 +36,7 @@ router.put("/", (req, res) => {
     const newProjectName = (req.body?.newProjectName as string) || projectName;
     const projectDescription = req.body?.projectDescription as string;
     const projectThumbnail = req.body?.projectThumbnail as string;
+    const projectParticipants = req.body?.projectParticipants as string[];
 
     if (projectName === undefined) {
         return res.json({ code: ResponseCode.missingParameter });
@@ -42,13 +46,16 @@ router.put("/", (req, res) => {
         projectName: newProjectName,
         projectDescription,
         projectThumbnail,
+        projectParticipants,
     });
 
     if (result === false) {
         return res.json({ code: ResponseCode.invaildRequest });
     }
 
-    log.info(`ProjectInfo changed (Projectname: "${newProjectName}", projectDescription : "${projectDescription}", projectThumbnail : "${projectThumbnail}")`);
+    log.info(
+        `ProjectInfo changed (Projectname: "${newProjectName}", projectDescription : "${projectDescription}", projectThumbnail : "${projectThumbnail}")`
+    );
 
     return res.json({ code: ResponseCode.ok });
 });

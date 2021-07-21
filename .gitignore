@@ -105,4 +105,5 @@ dist
 
 # data & work
 work
-data
+data/**
+test/**

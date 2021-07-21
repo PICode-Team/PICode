@@ -6,7 +6,9 @@ import route from './route'
 import graphQLServer from './lib/graphql'
 import next from 'next'
 import envConfig from './config/env'
-import webSocketInit from './module/socket/socket'
+import expressWs from 'express-ws'
+import { webSocketInit } from './module/socket/socket'
+
 
 async function main() {
     const dev = envConfig.NODE_ENV !== 'production';
@@ -21,6 +23,8 @@ async function main() {
     server.use('/api', route)
     graphQLServer.applyMiddleware({ app: server, path: '/graphql', cors: false })
 
+    webSocketInit(expressWs(server).app)
+
     if (!onlyServer) {
         const app = next({ dev })
         const handle = app.getRequestHandler();
@@ -32,17 +36,16 @@ async function main() {
         });
     }
 
-    webSocketInit(
-        server.listen(PORT, () => {
-            console.log(`██████╗░██╗  ░█████╗░░█████╗░██████╗░███████╗  ░██████╗███████╗██████╗░██╗░░░██╗███████╗██████╗░`)
-            console.log(`██╔══██╗██║  ██╔══██╗██╔══██╗██╔══██╗██╔════╝  ██╔════╝██╔════╝██╔══██╗██║░░░██║██╔════╝██╔══██╗`)
-            console.log(`██████╔╝██║  ██║░░╚═╝██║░░██║██║░░██║█████╗░░  ╚█████╗░█████╗░░██████╔╝╚██╗░██╔╝█████╗░░██████╔╝`)
-            console.log(`██╔═══╝░██║  ██║░░██╗██║░░██║██║░░██║██╔══╝░░  ░╚═══██╗██╔══╝░░██╔══██╗░╚████╔╝░██╔══╝░░██╔══██╗`)
-            console.log(`██║░░░░░██║  ╚█████╔╝╚█████╔╝██████╔╝███████╗  ██████╔╝███████╗██║░░██║░░╚██╔╝░░███████╗██║░░██║`)
-            console.log(`╚═╝░░░░░╚═╝  ░╚════╝░░╚════╝░╚═════╝░╚══════╝  ╚═════╝░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░╚══════╝╚═╝░░╚═╝`)
-            log.info(`Start PICode server - 0.0.0.0:${PORT}`)
-        })
-    )
+    server.listen(PORT, () => {
+        console.log(`██████╗░██╗  ░█████╗░░█████╗░██████╗░███████╗  ░██████╗███████╗██████╗░██╗░░░██╗███████╗██████╗░`)
+        console.log(`██╔══██╗██║  ██╔══██╗██╔══██╗██╔══██╗██╔════╝  ██╔════╝██╔════╝██╔══██╗██║░░░██║██╔════╝██╔══██╗`)
+        console.log(`██████╔╝██║  ██║░░╚═╝██║░░██║██║░░██║█████╗░░  ╚█████╗░█████╗░░██████╔╝╚██╗░██╔╝█████╗░░██████╔╝`)
+        console.log(`██╔═══╝░██║  ██║░░██╗██║░░██║██║░░██║██╔══╝░░  ░╚═══██╗██╔══╝░░██╔══██╗░╚████╔╝░██╔══╝░░██╔══██╗`)
+        console.log(`██║░░░░░██║  ╚█████╔╝╚█████╔╝██████╔╝███████╗  ██████╔╝███████╗██║░░██║░░╚██╔╝░░███████╗██║░░██║`)
+        console.log(`╚═╝░░░░░╚═╝  ░╚════╝░░╚════╝░╚═════╝░╚══════╝  ╚═════╝░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░╚══════╝╚═╝░░╚═╝`)
+        log.info(`Start PICode server - 0.0.0.0:${PORT}`)
+    })
+
 }
 
 main()

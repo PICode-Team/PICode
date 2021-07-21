@@ -7,17 +7,21 @@
     "build": "next build",
     "lint": "next lint",
     "client:start": "next start",
-    "client:dev": "export NODE_ENV=development;ts-node  --project ./server/tsconfig.json --files ./server/src",
-    "server:dev": "export MODE=server;npx nodemon --config ./server/nodemon.json",
+    "client:dev": "export NODE_ENV=development && ts-node  --project ./server/tsconfig.json --files ./server/src",
+    "server:dev": "set MODE=server && npx tsc-watch -p ./server/tsconfig.json --onSuccess \"node ./server/dist\"",
     "server:build": "npx tsc -p ./server/tsconfig.json",
     "preserver:start": "npm run-script server:build",
     "server:start": "node ./server/dist",
-    "start": "export NODE_ENV=production; node ./server/dist"
+    "start": "export NODE_ENV=production && node ./server/dist"
   },
   "dependencies": {
     "@material-ui/core": "^4.12.0",
     "@material-ui/icons": "^4.11.2",
     "@monaco-editor/react": "^4.2.1",
+    "@types/adm-zip": "^0.4.34",
+    "@types/multer": "^1.4.7",
+    "@types/uuid": "^8.3.1",
+    "adm-zip": "^0.5.5",
     "apollo-server-express": "^2.25.2",
     "class-validator": "^0.13.1",
     "clsx": "^1.1.1",
@@ -26,9 +30,11 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "express-session": "^1.17.2",
+    "express-ws": "^5.0.2",
     "graphql": "^15.5.1",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
+    "multer": "^1.4.2",
     "next": "11.0.1",
     "next-redux-wrapper": "^7.0.2",
     "next-remove-imports": "^1.0.5",
@@ -43,8 +49,9 @@
     "styled-components": "^5.3.0",
     "styled-jsx": "^3.4.4",
     "type-graphql": "^1.1.1",
+    "uuid": "^8.3.2",
     "winston": "^3.3.3",
-    "ws": "^7.5.3"
+    "zip-a-folder": "^1.1.0"
   },
   "devDependencies": {
     "@types/compression": "^1.7.0",
@@ -53,14 +60,15 @@
     "@types/draft-js": "^0.11.4",
     "@types/express": "^4.17.12",
     "@types/express-session": "^1.17.3",
+    "@types/express-ws": "^3.0.1",
     "@types/lodash": "^4.14.171",
     "@types/react": "17.0.11",
     "@types/react-dom": "^17.0.9",
-    "@types/ws": "^7.4.6",
     "d3": "^6.7.0",
     "eslint": "7.29.0",
     "eslint-config-next": "11.0.1",
     "redux-devtools-extension": "^2.13.9",
+    "tsc-watch": "^4.4.0",
     "typescript": "4.3.4"
   }
 }
