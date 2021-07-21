@@ -355,7 +355,7 @@ export default function TestNote() {
                                             setTest(tmpContent)
                                         }}
                                         onMouseDown={(e) => {
-                                            console.log(e)
+                                            //
                                         }}
                                     >
                                         <DragIndicatorIcon className={classes.iconButtonColor} />

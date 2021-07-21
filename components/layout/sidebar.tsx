@@ -10,7 +10,7 @@ function checkTogglePath(path: string): boolean {
 }
 
 function Row(props: {
-  data: { url: string; icon: string; title: string };
+  data: { url: string; icon: JSX.Element; title: string };
   toggle: boolean;
 }): JSX.Element {
   const classes = rowStyle();

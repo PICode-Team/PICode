@@ -156,7 +156,7 @@ export default function RecentWork() {
         let tmpContent = [<div key={"addProject"} style={{ padding: "0px 20px", height: "100%" }}>
             <div style={{ background: "black", height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }}>
                 <div style={{ textAlign: "center" }}>
-                    <IconButton style={{ color: "#fff" }}>
+                    <IconButton style={{ color: "#fff" }} onClick={() => { window.location.href = "/createproject" }}>
                         <AddIcon />
                     </IconButton>
                     <span style={{ display: "block", textAlign: "center", color: "#fff" }}>

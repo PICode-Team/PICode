@@ -20,8 +20,6 @@ export function Topbar(ctx: any) {
         userName: string;
     }>({ userId: "", userName: "" });
 
-    console.log(ctx)
-
     const getUserData = async () => {
         let data = await fetch(`http://localhost:8000/api/user`, {
             method: "GET",
