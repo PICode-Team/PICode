@@ -36,6 +36,7 @@ router.put("/", (req, res) => {
     const newProjectName = (req.body?.newProjectName as string) || projectName;
     const projectDescription = req.body?.projectDescription as string;
     const projectThumbnail = req.body?.projectThumbnail as string;
+    const projectParticipants = req.body?.projectParticipants as string[];
 
     if (projectName === undefined) {
         return res.json({ code: ResponseCode.missingParameter });
@@ -45,13 +46,16 @@ router.put("/", (req, res) => {
         projectName: newProjectName,
         projectDescription,
         projectThumbnail,
+        projectParticipants,
     });
 
     if (result === false) {
         return res.json({ code: ResponseCode.invaildRequest });
     }
 
-    log.info(`ProjectInfo changed (Projectname: "${newProjectName}", projectDescription : "${projectDescription}", projectThumbnail : "${projectThumbnail}")`);
+    log.info(
+        `ProjectInfo changed (Projectname: "${newProjectName}", projectDescription : "${projectDescription}", projectThumbnail : "${projectThumbnail}")`
+    );
 
     return res.json({ code: ResponseCode.ok });
 });

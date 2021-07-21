@@ -3,7 +3,9 @@ import { TUploadFileLanguageToSize } from "./file.types";
 export interface TprojectCreateData {
     projectName: string;
     projectDescription?: string;
-    projectThumbnail?: string; //./image/uuid로 위치이동하기, proejectInfo.json
+    projectThumbnail?: string; // move to ./image/uuid, proejectInfo.json
+    projectCreator?: string;
+    projectParticipants?: string[];
 }
 
 export type TProjectUpdateData = TprojectCreateData & {

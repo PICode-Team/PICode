@@ -16,12 +16,16 @@ import {
     removeData,
     handle,
     UploadFileManager,
-    findProjectLanguage,
+    searchProjectFiles,
+    readCodesFromFile,
 } from "./fileManager";
 import fs from "fs";
 import * as child from "child_process";
 import { zip } from "zip-a-folder";
-import { TUploadFileLanguageToSize } from "../../types/module/data/file.types";
+import {
+    TFileData,
+    TUploadFileLanguageToSize,
+} from "../../types/module/data/file.types";
 
 export default class DataProjectManager {
     static isExists(
@@ -84,12 +88,68 @@ export default class DataProjectManager {
         );
     }
 
+    static getUserIdFromProjectName(projectName?: string) {
+        return fs
+            .readdirSync(this.getProjectDefaultPath())
+            .filter((projectDirName) => {
+                const projectInfo = this.splitProjectDirName(projectDirName);
+                return (
+                    projectInfo.projectName === projectName ||
+                    projectName === undefined
+                );
+            })
+            .map((project) => this.splitProjectDirName(project).userId);
+    }
+
+    static getProjectNameFromUserId(userId: string) {
+        return fs
+            .readdirSync(this.getProjectDefaultPath())
+            .filter((projectDirName) => {
+                const projectInfo = this.splitProjectDirName(projectDirName);
+                return projectInfo.userId === userId;
+            });
+    }
+
     static splitProjectDirName(projectDirName: string) {
         const splitData = projectDirName.split("+");
         return {
             userId: splitData[0],
             projectName: splitData[1],
         };
+    }
+
+    static isProjectCreator(
+        creatorUserId: string,
+        userId: string,
+        projectName: string
+    ) {
+        return (
+            (
+                getJsonData(
+                    this.getProjectDataPath(
+                        creatorUserId,
+                        projectName,
+                        "projectInfo.json"
+                    )
+                ) as TProjectData
+            ).projectCreator === userId
+        );
+    }
+
+    static isProjectParticipants(
+        creatorUserId: string,
+        userId: string,
+        projectName: string
+    ) {
+        return (
+            getJsonData(
+                this.getProjectDataPath(
+                    creatorUserId,
+                    projectName,
+                    "projectInfo.json"
+                )
+            ) as TProjectData
+        ).projectParticipants?.includes(userId);
     }
 
     static gitCloneFromURL(
@@ -142,7 +202,7 @@ export default class DataProjectManager {
                     } else {
                         fs.unlinkSync(`${newPath}/${fileName}`);
                         const fileToSize: TUploadFileLanguageToSize = {};
-                        findProjectLanguage(newPath, fileToSize);
+                        searchProjectFiles(newPath, { fileToSize: fileToSize });
                         this.setProjectInfo(userId, projectName, {
                             ...this.getProjectInfo(userId, projectName),
                             projectLanguage: fileToSize,
@@ -155,24 +215,34 @@ export default class DataProjectManager {
             : false;
     }
 
-    static get(userId: string, projectName?: string): TProjectData[] {
+    static get(userId: string, projectName?: string) /*: TProjectData[]*/ {
         return fs
             .readdirSync(this.getProjectDefaultPath())
-            .filter((projectDirName) => {
-                const projectInfo = this.splitProjectDirName(projectDirName);
+            .filter((dirName) => {
+                const projectDirName = this.splitProjectDirName(dirName);
                 return (
-                    projectInfo.userId === userId &&
-                    (projectInfo.projectName === projectName ||
+                    (this.isProjectCreator(
+                        projectDirName.userId,
+                        userId,
+                        projectDirName.projectName
+                    ) ||
+                        this.isProjectParticipants(
+                            projectDirName.userId,
+                            userId,
+                            projectDirName.projectName
+                        )) &&
+                    (projectDirName.projectName === projectName ||
                         projectName === undefined ||
                         projectName === "")
                 );
             })
-            .map((project) =>
-                this.getProjectInfo(
-                    userId,
-                    this.splitProjectDirName(project).projectName
-                )
-            ) as TProjectData[];
+            .map((project) => {
+                const projectDirName = this.splitProjectDirName(project);
+                return this.getProjectInfo(
+                    projectDirName.userId,
+                    projectDirName.projectName
+                );
+            });
     }
 
     static create(
@@ -181,8 +251,9 @@ export default class DataProjectManager {
             projectName,
             projectDescription,
             projectThumbnail,
+            projectParticipants,
         }: TprojectCreateData,
-        source: {
+        source?: {
             gitUrl?: string;
             upload?: {
                 uploadFileId: string;
@@ -190,34 +261,69 @@ export default class DataProjectManager {
             };
         }
     ) {
-        if (source.gitUrl !== undefined) {
-            this.gitCloneFromURL(userId, source.gitUrl, projectName);
+        if (
+            this.getUserIdFromProjectName(projectName).filter((getUserId) => {
+                this.isProjectCreator(getUserId, userId, projectName) ||
+                    this.isProjectParticipants(getUserId, userId, projectName);
+            }).length > 0
+        ) {
+            return false;
         }
-        if (source.upload?.uploadFileId !== undefined) {
-            this.createProjectFromFile(userId, projectName, source.upload);
-            delete UploadFileManager[source.upload?.uploadFileId];
-        }
-        if (projectThumbnail !== undefined) {
-            handle(
-                `${UploadDirectoryPath}/${projectThumbnail}`,
-                `${this.getProjectWorkPath(
-                    userId,
-                    projectName
-                )}/${projectThumbnail}`,
-                {}
-            );
-            delete UploadFileManager[projectThumbnail];
-        }
-        if (!fs.existsSync(this.getProjectDataPath(userId, projectName))) {
-            fs.mkdirSync(this.getProjectDataPath(userId, projectName), {
-                recursive: true,
+        try {
+            if (source !== undefined) {
+                if (source.gitUrl !== undefined) {
+                    this.gitCloneFromURL(userId, source.gitUrl, projectName);
+                }
+                if (source.upload?.uploadFileId !== undefined) {
+                    if (
+                        !this.createProjectFromFile(
+                            userId,
+                            projectName,
+                            source.upload
+                        )
+                    ) {
+                        return false;
+                    }
+                    delete UploadFileManager[source.upload?.uploadFileId];
+                }
+            } else if (source === undefined) {
+                fs.mkdirSync(this.getProjectWorkPath(userId, projectName), {
+                    recursive: true,
+                });
+            }
+            if (projectThumbnail !== undefined) {
+                if (
+                    !handle(
+                        `${UploadDirectoryPath}/${projectThumbnail}`,
+                        `${this.getProjectWorkPath(
+                            userId,
+                            projectName
+                        )}/${projectThumbnail}`,
+                        {}
+                    )
+                ) {
+                    return false;
+                }
+                delete UploadFileManager[projectThumbnail];
+            }
+
+            if (!fs.existsSync(this.getProjectDataPath(userId, projectName))) {
+                fs.mkdirSync(this.getProjectDataPath(userId, projectName), {
+                    recursive: true,
+                });
+            }
+            this.setProjectInfo(userId, projectName, {
+                projectName: projectName,
+                projectDescription: projectDescription,
+                projectThumbnail: projectThumbnail,
+                projectCreator: userId,
+                projectParticipants: projectParticipants,
             });
+        } catch (err) {
+            log.error(err.stack);
+            return false;
         }
-        this.setProjectInfo(userId, projectName, {
-            projectName: projectName,
-            projectDescription: projectDescription,
-            projectThumbnail: projectThumbnail,
-        });
+        return true;
     }
 
     static update(
@@ -226,7 +332,21 @@ export default class DataProjectManager {
         projectInfo: TProjectUpdateData
     ): boolean {
         try {
-            const projectData = this.getProjectInfo(userId, projectName);
+            if (
+                this.getUserIdFromProjectName(projectName).filter(
+                    (getUserId) => {
+                        return this.isProjectCreator(
+                            getUserId,
+                            userId,
+                            projectName
+                        );
+                    }
+                ).length === 0
+            ) {
+                return false;
+            }
+            const getUserId = this.getUserIdFromProjectName(projectName);
+            const projectData = this.getProjectInfo(getUserId[0], projectName);
             if (projectData === undefined) {
                 return false;
             }
@@ -242,6 +362,9 @@ export default class DataProjectManager {
                         projectInfo.projectThumbnail ??
                         projectData.projectThumbnail,
                     projectLanguage: projectData.projectLanguage,
+                    projectParticipants:
+                        projectInfo.projectParticipants ??
+                        projectData.projectParticipants,
                 })
             ) {
                 return false;
@@ -254,16 +377,28 @@ export default class DataProjectManager {
     }
 
     static delete(userId: string, projectName: string): boolean {
-        if (!this.isExists(userId, projectName, this.getProjectWorkPath)) {
+        const getUserId = this.getUserIdFromProjectName(projectName).filter(
+            (getUserId) => {
+                this.isProjectCreator(getUserId, userId, projectName);
+            }
+        );
+        if (getUserId.length === 0) {
             return false;
         }
-        if (!removeData(this.getProjectWorkPath(userId, projectName))) {
+        if (
+            !this.isExists(getUserId[0], projectName, this.getProjectWorkPath)
+        ) {
             return false;
         }
-        if (!this.isExists(userId, projectName, this.getProjectDataPath)) {
+        if (!removeData(this.getProjectWorkPath(getUserId[0], projectName))) {
             return false;
         }
-        if (!removeData(this.getProjectDataPath(userId, projectName))) {
+        if (
+            !this.isExists(getUserId[0], projectName, this.getProjectDataPath)
+        ) {
+            return false;
+        }
+        if (!removeData(this.getProjectDataPath(getUserId[0], projectName))) {
             return false;
         }
         return true;
@@ -284,5 +419,30 @@ export default class DataProjectManager {
             this.getProjectDataPath(userId, projectName, "projectInfo.json"),
             projectInfo
         );
+    }
+
+    static getCodesFromProject(
+        userId: string,
+        { projectName, filePath }: { projectName: string; filePath: string }
+    ) {
+        const getUserId = DataProjectManager.getUserIdFromProjectName(
+            projectName
+        ).filter((getUserId) => {
+            this.isProjectCreator(getUserId, userId, projectName) ||
+                this.isProjectParticipants(getUserId, userId, projectName);
+        });
+        if (getUserId.length === 0 || getUserId.length > 1) {
+            return {};
+        }
+        const fileData: TFileData = {};
+        const codeData = readCodesFromFile(
+            this.getProjectWorkPath(getUserId[0], projectName),
+            filePath
+        );
+        if (codeData !== undefined) {
+            fileData["filePath"] = filePath;
+            fileData["fileContent"] = codeData;
+        }
+        return fileData;
     }
 }

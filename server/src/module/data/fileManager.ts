@@ -98,17 +98,20 @@ export function unzipFileAsync(
     new admZip(zipPath).extractAllToAsync(extractPath, true, callback);
 }
 
-export function findProjectLanguage(
+export function searchProjectFiles(
     dir: string,
-    fileToSize: TUploadFileLanguageToSize
+    func: {
+        fileToSize?: TUploadFileLanguageToSize;
+    }
 ) {
     fs.readdirSync(dir, { withFileTypes: true }).forEach((entry) => {
         let fullPath = path.join(dir, entry.name);
         if (entry.isDirectory()) {
-            findProjectLanguage(fullPath, fileToSize);
+            searchProjectFiles(fullPath, func);
         } else if (entry.isFile()) {
-            calculateFileSize(fullPath, fileToSize);
-        } else {
+            if (func.fileToSize !== undefined) {
+                calculateFileSize(fullPath, func.fileToSize);
+            }
         }
     });
 }
@@ -139,6 +142,9 @@ export function handle(
         extractCallback?: (err: Error) => void;
     } = {}
 ) {
+    if (isExists(newPath)) {
+        return false;
+    }
     const fileData = getFileInfo(oldPath);
     try {
         switch (fileData.mimetype.toLowerCase() as TUploadMimeType) {
@@ -167,4 +173,10 @@ export function handle(
         return false;
     }
     return true;
+}
+
+export function readCodesFromFile(serverPath: string, clientPath: string) {
+    const fullPath = path.join(serverPath, clientPath);
+    if (!isExists(fullPath)) return undefined;
+    return fs.readFileSync(fullPath).toString();
 }

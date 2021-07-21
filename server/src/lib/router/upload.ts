@@ -10,13 +10,13 @@ const upload = multer({
             if (!fs.existsSync(UploadDirectoryPath)) {
                 fs.mkdirSync(UploadDirectoryPath, { recursive: true });
             }
-            cb(null, `${UploadDirectoryPath}`); // cb 콜백함수를 통해 전송된 파일 저장 디렉토리 설정
+            cb(null, `${UploadDirectoryPath}`);
         },
         filename: function (req, file, cb) {
             const fileId = uuidv4();
             req.fileId = fileId;
             UploadFileManager[fileId] = file;
-            cb(null, fileId); // cb 콜백함수를 통해 전송된 파일 이름 설정
+            cb(null, fileId);
         },
     }),
 });

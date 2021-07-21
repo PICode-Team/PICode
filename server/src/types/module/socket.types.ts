@@ -1,11 +1,9 @@
-
 export type TSocketInfo = {
-    [key in string]: WebSocket
-}
-
+    [key in string]: WebSocket;
+};
 
 export interface TSocketPacket {
-    category: 'chat' | 'connect',
-    type: string,
-    data: any
+    category: "chat" | "connect" | "code";
+    type: string;
+    data: any;
 }

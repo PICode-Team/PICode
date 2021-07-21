@@ -18,4 +18,8 @@ export type TUploadFileLanguageToSize = {
     [key in string]: number;
 };
 
+export type TFileData = {
+    [key in string]: string;
+};
+
 export const TLanguageList: string[] = ["c", "cpp", "cc", "m", "mm", "pl", "java", "jsp", "php", "as", "js", "ts", "asp", "cs", "py", "html", "css"];
