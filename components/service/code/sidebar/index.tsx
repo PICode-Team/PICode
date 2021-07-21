@@ -7,70 +7,65 @@ import { sidebarStyle } from "../../../../styles/service/code/code";
 import {
   addCode,
   addTab,
-  findTabByPath,
+  checkTabDuplicating,
+  findCurrentFocus,
+  findTabByPathInCode,
   getExtension,
   getLanguage,
   reorderTab,
-  tabDuplicateCheck,
 } from "../functions";
 
 interface TFile {
   name: string;
-  isDirectory: boolean;
   path: string;
   open: boolean;
-  children?: TFile[];
+  children?: TFile[] | undefined;
 }
 
 const dummy: TFile = {
   name: "string",
-  isDirectory: true,
   path: "string",
   open: true,
   children: [
     {
       name: "string",
-      isDirectory: true,
+
       path: "string1",
       open: true,
       children: [
         {
           name: "string",
-          isDirectory: true,
+
           path: "string2",
           open: true,
           children: [
             {
               name: "string",
-              isDirectory: true,
+
               path: "string3",
               open: true,
               children: [
                 {
                   name: "string",
-                  isDirectory: false,
-                  children: [],
+
                   path: "string4",
                   open: false,
                 },
                 {
                   name: "string",
-                  isDirectory: false,
-                  children: [],
+
                   path: "string5",
                   open: false,
                 },
                 {
                   name: "string",
-                  isDirectory: false,
-                  children: [],
+
                   path: "string6",
                   open: false,
                 },
                 {
                   name: "string",
-                  isDirectory: false,
-                  children: [],
+
                   path: "string7",
                   open: false,
                 },
@@ -83,10 +78,13 @@ const dummy: TFile = {
   ],
 };
 
-function makeFileStructure(file: TFile, depth: number) {
+function makeFileStructure(
+  { name, path, open, children }: TFile,
+  depth: number
+) {
   const classes = sidebarStyle();
   const { code, setCode } = useCode();
-  const { setDragInfo } = useDrag();
+  const { setDragInfo, deleteDragInfo } = useDrag();
 
   function handleDirectoryToggle(event: React.MouseEvent<HTMLElement>) {
     (event.currentTarget.parentNode! as HTMLElement).classList.toggle(
@@ -106,9 +104,9 @@ function makeFileStructure(file: TFile, depth: number) {
           {
             tabList: [
               {
-                path: file.path,
-                extension: getExtension(file.path),
-                langauge: getLanguage(getExtension(file.path)),
+                path: path,
+                extension: getExtension(path),
+                langauge: getLanguage(getExtension(path)),
                 tabId: code.tabCount,
               },
             ],
@@ -118,19 +116,30 @@ function makeFileStructure(file: TFile, depth: number) {
             vertical: false,
             focus: true,
           },
+          true,
           false
         );
       }
 
-      if (tabDuplicateCheck(code.root, file.path)) {
+      if (
+        checkTabDuplicating(
+          code.root,
+          findCurrentFocus(code.codeOrderStack),
+          path
+        )
+      ) {
         addTabCheck = false;
-        const tabId = findTabByPath(code.root, file.path);
+        const tabId = findTabByPathInCode(
+          code.root,
+          findCurrentFocus(code.codeOrderStack),
+          path
+        );
         return reorderTab(code.root, tabId);
       } else {
         return addTab(code.root, code.codeOrderStack[0], {
-          path: file.path,
-          extension: getExtension(file.path),
-          langauge: getLanguage(getExtension(file.path)),
+          path: path,
+          extension: getExtension(path),
+          langauge: getLanguage(getExtension(path)),
           tabId: code.tabCount,
         });
       }
@@ -148,29 +157,44 @@ function makeFileStructure(file: TFile, depth: number) {
   }
 
   function handleDragFile(event: React.DragEvent<HTMLDivElement>) {
-    event.preventDefault();
-
-    setDragInfo({
-      path: file.path,
-      tabId: -1,
-    });
+    //
   }
 
-  function handleDragStartFile(event: React.DragEvent<HTMLDivElement>) {}
+  function handleDragStartFile(event: React.DragEvent<HTMLDivElement>) {
+    // store drag info
+    setDragInfo({ path: path, tabId: -1 });
+  }
 
-  if (file.isDirectory) {
+  function handleDragEndFile(event: React.DragEvent<HTMLDivElement>) {
+    // delete drag info
+    deleteDragInfo();
+  }
+
+  function handleDragEnterFile(event: React.DragEvent<HTMLDivElement>) {
+    // To be filling in later
+  }
+
+  function handleDragLeaveFile(event: React.DragEvent<HTMLDivElement>) {
+    // To be filling in later
+  }
+
+  function handleDropFile(event: React.DragEvent<HTMLDivElement>) {
+    // To be filling in later
+  }
+
+  if (children !== undefined) {
     return (
-      <div className={classes.depth} key={file.path}>
+      <div className={classes.depth} key={path}>
         <div
           className={`${classes.file}`}
           style={{ paddingLeft: `${depth * 6 + 6}px` }}
           onClick={handleDirectoryToggle}
         >
           <ArrowForwardIos />
-          {file.name}
+          {name}
         </div>
         <div className={classes.group}>
-          {file.children?.map((v, i) => makeFileStructure(v, depth + 1))}
+          {children?.map((v, i) => makeFileStructure(v, depth + 1))}
         </div>
       </div>
     );
@@ -178,18 +202,20 @@ function makeFileStructure(file: TFile, depth: number) {
 
   return (
     <div
-      key={file.path}
+      key={path}
       className={classes.file}
       style={{ paddingLeft: `${depth * 6 + 6}px` }}
       onClick={handleClickFile}
       draggable={true}
       onDrag={handleDragFile}
       onDragStart={handleDragStartFile}
+      onDragEnd={handleDragEndFile}
+      onDragEnter={handleDragEnterFile}
+      onDragLeave={handleDragLeaveFile}
+      onDrop={handleDropFile}
     >
-      <span>
-        <AddCircleRounded />
-      </span>
-      {file.name}
+      <span></span>
+      {name}
     </div>
   );
 }

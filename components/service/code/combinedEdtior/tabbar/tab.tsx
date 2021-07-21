@@ -2,10 +2,17 @@ import React, { useEffect, useState } from "react";
 import { tabStyle } from "../../../../../styles/service/code/code";
 import { Clear } from "@material-ui/icons";
 import {
+  addTab,
+  addToDropTab,
+  checkTabDuplicating,
   deleteCode,
   deleteTab,
-  findCodeByPath,
+  findCurrentFocus,
   findEmptyCode,
+  findTabByPathInCode,
+  getExtension,
+  getLanguage,
+  moveTab,
   reorderStack,
   reorderTab,
 } from "../../functions";
@@ -17,16 +24,18 @@ export function Tab({
   tabId,
   tabOrderStack,
   focus,
+  codeId,
 }: {
   path: string;
   tabId: number;
   tabOrderStack: number[];
   focus: boolean;
+  codeId: number;
 }): JSX.Element {
   const classes = tabStyle();
   const [lastPath, setLastPath] = useState<string>("");
   const { code, setCode } = useCode();
-  const { drag, setDragInfo } = useDrag();
+  const { drag, setDragInfo, deleteDragInfo } = useDrag();
 
   useEffect(() => {
     (() => {
@@ -55,15 +64,14 @@ export function Tab({
     event.currentTarget.classList.toggle(classes.active);
 
     const newRoot = reorderTab(code.root, tabId);
-    const targetCodeId = findCodeByPath(code.root, path);
 
     setCode({
       ...code,
       root: newRoot,
       codeOrderStack:
-        targetCodeId === code.codeOrderStack[0]
+        codeId === code.codeOrderStack[0]
           ? code.codeOrderStack
-          : reorderStack(code.codeOrderStack, targetCodeId),
+          : reorderStack(code.codeOrderStack, codeId),
     });
   }
 
@@ -82,60 +90,121 @@ export function Tab({
     });
   }
 
-  function handleDragTab(event: React.DragEvent<HTMLDivElement>) {
+  function handleDragStartTab(event: React.DragEvent<HTMLElement>) {
+    setCode({ ...code, root: reorderTab(code.root, tabId) });
+    setDragInfo({ path: path, tabId: tabId });
+  }
+  function handleDragEndTab(event: React.DragEvent<HTMLElement>) {
+    deleteDragInfo();
+  }
+
+  function handleDragEnterTab(event: React.DragEvent<HTMLElement>) {
+    if (drag.tabId !== tabId) event.currentTarget.classList.add(classes.drag);
+  }
+
+  function handleDragLeaveTab(event: React.DragEvent<HTMLElement>) {
+    event.currentTarget.classList.remove(classes.drag);
+  }
+
+  function handleDragOverTab(event: React.DragEvent<HTMLElement>) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
+  function handleDropTab(event: React.DragEvent<HTMLElement>) {
     event.preventDefault();
 
-    setDragInfo({
-      path: path,
-      tabId: tabId,
+    if (
+      findTabByPathInCode(code.root, codeId, drag.path) ===
+      Number(event.currentTarget.id.split("-")[1])
+    )
+      return;
+
+    const targetList = document.getElementsByClassName(classes.drag);
+
+    for (let i = 0; i < targetList.length; i++) {
+      targetList[i].classList.remove(classes.drag);
+    }
+
+    const newRoot = (() => {
+      const existingTabId = findTabByPathInCode(code.root, codeId, drag.path);
+
+      if (drag.tabId === -1) {
+        if (checkTabDuplicating(code.root, codeId, drag.path)) {
+          return moveTab(
+            code.root,
+            codeId,
+            existingTabId,
+            Number(event.currentTarget.id.split("-")[1])
+          );
+        } else {
+          return addToDropTab(
+            code.root,
+            codeId,
+            Number(event.currentTarget.id.split("-")[1]),
+            {
+              path: drag.path,
+              extension: getExtension(drag.path),
+              langauge: getLanguage(getExtension(drag.path)),
+              tabId: code.tabCount,
+            }
+          );
+        }
+      }
+
+      const tempRoot = deleteTab(code.root, drag.tabId);
+
+      if (tabOrderStack.includes(existingTabId)) {
+        return moveTab(
+          code.root,
+          codeId,
+          existingTabId,
+          Number(event.currentTarget.id.split("-")[1])
+        );
+      }
+
+      return addToDropTab(
+        tempRoot,
+        codeId,
+        Number(event.currentTarget.id.split("-")[1]),
+        {
+          path: drag.path,
+          extension: getExtension(drag.path),
+          langauge: getLanguage(getExtension(drag.path)),
+          tabId: code.tabCount,
+        }
+      );
+    })();
+
+    const existingTabId = findTabByPathInCode(code.root, codeId, drag.path);
+
+    setCode({
+      ...code,
+      root: newRoot,
+      tabCount:
+        (drag.tabId === -1 &&
+          checkTabDuplicating(code.root, codeId, drag.path)) ||
+        (drag.tabId !== -1 && tabOrderStack.includes(existingTabId))
+          ? code.tabCount
+          : code.tabCount + 1,
     });
   }
 
-  function handleDragStartTab() {}
-
-  function handleDragOverTab(event: React.DragEvent<HTMLElement>) {}
-
   return (
     <div
-      id={`${tabId}`}
+      id={`tab-${tabId}`}
       className={`${classes.tab} ${
         tabId === tabOrderStack[0] ? classes.active : ""
       }`}
       onClick={handleTabActive}
       draggable={true}
-      onDrag={handleDragTab}
       onDragStart={handleDragStartTab}
-      onDragEnter={(event: React.DragEvent<HTMLDivElement>) => {
-        event.stopPropagation();
-
-        if (drag.tabId === tabId) return;
-
-        const hoverElement = document.getElementsByClassName(classes.drag);
-
-        if (hoverElement.length !== 0) {
-          if (hoverElement[0] === event.currentTarget) {
-            return;
-          }
-          hoverElement[0].classList.toggle(classes.drag);
-        }
-
-        event.currentTarget.classList.toggle(classes.drag);
-      }}
-      onMouseOver={() => {}}
-      onDragLeave={(event: React.DragEvent<HTMLDivElement>) => {
-        event.stopPropagation();
-        if (event.target !== event.currentTarget) return;
-        return;
-        const targetClassList = event.currentTarget.classList;
-        for (let i = 0; i < targetClassList.length; i++) {
-          if (targetClassList[i] === classes.active) {
-            event.currentTarget.classList.toggle(classes.drag);
-            return;
-          }
-        }
-      }}
+      onDragEnd={handleDragEndTab}
+      onDragEnter={handleDragEnterTab}
+      onDragLeave={handleDragLeaveTab}
+      onDrop={handleDropTab}
+      onDragOver={handleDragOverTab}
     >
-      {path}
       <div className={classes.icon}></div>
       <div className={classes.text}>{lastPath}</div>
       <div className={classes.closeButton} onClick={handleTabClose}>

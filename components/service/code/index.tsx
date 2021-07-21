@@ -8,9 +8,15 @@ import { useCode } from "../../../hooks/code";
 function buildCodeLayout(codeList: TCode[]): JSX.Element {
   const classes = codeStyle();
 
+  if (codeList.length === 0) return <React.Fragment></React.Fragment>;
+
+  console.log(codeList);
+
   return (
     <React.Fragment>
       {codeList.map((v: TCode, i: number) => {
+        console.log(i);
+
         return (
           <div
             className={v.vertical ? classes.column : classes.row}
@@ -22,7 +28,7 @@ function buildCodeLayout(codeList: TCode[]): JSX.Element {
               codeId={v.codeId}
               focus={v.focus}
             />
-            {buildCodeLayout(v.children)}
+            {buildCodeLayout(v.children ?? [])}
           </div>
         );
       })}
@@ -40,11 +46,11 @@ function EditorWrapper({ root }: { root: TCode[] }) {
 
 export default function Code(): JSX.Element {
   const classes = codeStyle();
-  const [codeRoot, setcodeRoot] = useState<TEditorRoot | undefined>(undefined);
-  const { code, setCode } = useCode();
+  const [codeRoot, setCodeRoot] = useState<TEditorRoot | undefined>(undefined);
+  const { code } = useCode();
 
   useEffect(() => {
-    setcodeRoot(code);
+    setCodeRoot(code);
   }, [code]);
 
   return (

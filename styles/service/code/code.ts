@@ -76,19 +76,24 @@ export const sidebarStyle = makeStyles((theme: IThemeStyle) =>
       display: "flex",
       alignItems: "center",
       color: "#ffffff",
-      opacity: 0.2,
+      opacity: 1,
       "&>svg": {
         width: "12px",
         height: "12px",
         marginRight: "3px",
       },
-      "&>span>svg": {
+      "&>span": {
         width: "12px",
         height: "12px",
-        marginRight: "3px",
+        marginRight: "4px",
+        backgroundImage: `url('/images/language/typescript.svg')`,
+        backgroundSize: "contain",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        opacity: 1,
       },
       "&:hover": {
-        opacity: 0.5,
+        opacity: 1,
       },
     },
     group: {},
@@ -114,8 +119,10 @@ export const terminalStyle = makeStyles((theme: IThemeStyle) =>
 export const tabStyle = makeStyles((theme: IThemeStyle) =>
   createStyles({
     tab: {
-      width: "92px",
+      flex: "0 0 auto",
+      width: "112px",
       height: "100%",
+      zIndex: 999,
       display: "flex",
       alignItems: "center",
       padding: "2px 12px",
@@ -138,7 +145,15 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
         opacity: 0.9,
       },
     },
-    icon: {},
+    icon: {
+      width: "16px",
+      height: "16px",
+      marginRight: "4px",
+      backgroundImage: `url('/images/language/typescript.svg')`,
+      backgroundSize: "contain",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+    },
     text: {
       color: "#ffffff",
       opacity: 0.5,
@@ -156,16 +171,17 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
         opacity: 0.5,
         width: "15px",
         height: "15px",
+        "&:hover": {
+          backgroundColor: "rgba(255, 255, 255, 0.2)",
+          borderRadius: "7.5px",
+        },
       },
     },
     isChanged: {},
     drag: {
       backgroundColor: "red !important",
       "&>div": {
-        PointerEvent: "none",
-      },
-      "& path": {
-        PointerEvent: "none",
+        pointerEvents: "none",
       },
     },
   })
@@ -176,12 +192,20 @@ export const tabbarStyle = makeStyles((theme: IThemeStyle) =>
     tabbar: {
       width: "100%",
       height: "35px",
-      backgroundColor: "#3a4145",
     },
     section: {
       width: "100%",
       height: "100%",
       display: "flex",
+      overflowX: "auto",
+      whiteSpace: "nowrap",
+    },
+    drag: {
+      backgroundColor: "red !important",
+    },
+    emptySpace: {
+      flex: 1,
+      backgroundColor: "#3a4145",
     },
   })
 );
@@ -222,6 +246,50 @@ export const editorStyle = makeStyles((theme: IThemeStyle) =>
     editorWrapper: {
       width: "100%",
       height: "100%",
+      position: "relative",
+      zIndex: 1,
+    },
+    drag: {
+      width: "100%",
+      height: "100%",
+      backgroundColor: "none",
+      position: "absolute",
+      top: 0,
+      left: 0,
+      zIndex: 999,
+      opacity: 0.2,
+    },
+    center: {
+      backgroundColor: "#ffffff",
+      width: "100%",
+      height: "100%",
+    },
+    left: {
+      backgroundColor: "#ffffff",
+      width: "50%",
+      height: "100%",
+    },
+    right: {
+      float: "right",
+      backgroundColor: "#ffffff",
+      width: "50%",
+      height: "100%",
+    },
+    top: {
+      backgroundColor: "#ffffff",
+      width: "100%",
+      height: "50%",
+    },
+    bottom: {
+      marginTop: "50%",
+      backgroundColor: "#ffffff",
+      width: "100%",
+      height: "50%",
+    },
+    wrapperDrag: {
+      "& *": {
+        pointerEvents: "none",
+      },
     },
   })
 );
