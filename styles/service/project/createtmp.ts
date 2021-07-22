@@ -110,7 +110,7 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
             },
         },
         imageUpload: {
-            height: "175px",
+            height: "150px",
             width: "100%",
             marginTop: "4px",
             marginBottom: "14px",
