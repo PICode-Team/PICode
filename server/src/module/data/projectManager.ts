@@ -169,10 +169,8 @@ export default class DataProjectManager {
                 cwd: clonePath,
                 env: process.env,
             },
-            (error, stdout, stderr) => {
-                error
-                    ? log.error(error)
-                    : (log.info(stdout), log.error(stderr));
+            (error, _stdout, stderr) => {
+                error ? log.error(error) : log.info(stderr);
             }
         );
     }
@@ -216,6 +214,10 @@ export default class DataProjectManager {
     }
 
     static get(userId: string, projectName?: string) /*: TProjectData[]*/ {
+        if (!fs.existsSync(this.getProjectDefaultPath())) {
+            fs.mkdirSync(this.getProjectDefaultPath(), { recursive: true });
+        }
+
         return fs
             .readdirSync(this.getProjectDefaultPath())
             .filter((dirName) => {
@@ -270,6 +272,7 @@ export default class DataProjectManager {
             return false;
         }
         try {
+            log.debug(source);
             if (source !== undefined) {
                 if (source.gitUrl !== undefined) {
                     this.gitCloneFromURL(userId, source.gitUrl, projectName);
@@ -286,11 +289,18 @@ export default class DataProjectManager {
                     }
                     delete UploadFileManager[source.upload?.uploadFileId];
                 }
-            } else if (source === undefined) {
+            }
+            if (!fs.existsSync(this.getProjectWorkPath(userId, projectName))) {
                 fs.mkdirSync(this.getProjectWorkPath(userId, projectName), {
                     recursive: true,
                 });
             }
+            if (!fs.existsSync(this.getProjectDataPath(userId, projectName))) {
+                fs.mkdirSync(this.getProjectDataPath(userId, projectName), {
+                    recursive: true,
+                });
+            }
+
             if (projectThumbnail !== undefined) {
                 if (
                     !handle(
@@ -298,7 +308,7 @@ export default class DataProjectManager {
                         `${this.getProjectWorkPath(
                             userId,
                             projectName
-                        )}/${projectThumbnail}`,
+                        )}${projectThumbnail}`,
                         {}
                     )
                 ) {
@@ -307,11 +317,6 @@ export default class DataProjectManager {
                 delete UploadFileManager[projectThumbnail];
             }
 
-            if (!fs.existsSync(this.getProjectDataPath(userId, projectName))) {
-                fs.mkdirSync(this.getProjectDataPath(userId, projectName), {
-                    recursive: true,
-                });
-            }
             this.setProjectInfo(userId, projectName, {
                 projectName: projectName,
                 projectDescription: projectDescription,

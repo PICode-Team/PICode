@@ -2,12 +2,12 @@ import expressWs from "express-ws";
 import { TSocketPacket } from "../../types/module/socket.types";
 import log from "../log";
 import chat from "./chat";
-import code from "./code";
+// import code from "./code";
 import { SocketInfo } from "./manager";
 
 const SocketFuncs = {
     chat: chat,
-    code: code,
+    // code: code,
 };
 
 export function webSocketInit(server: expressWs.Application) {

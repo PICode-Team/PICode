@@ -10,9 +10,11 @@ import "react-responsive-carousel/lib/styles/carousel.min.css";
 
 import * as d3 from "d3"
 interface IProjectData {
-    projectId: string;
-    description: string;
+    projectName: string;
+    projectDescription: string;
     language: string;
+    projectCreator: string;
+    projectParticipants: string[]
 }
 
 export default function RecentWork() {
@@ -22,93 +24,6 @@ export default function RecentWork() {
     const [sliderNum, setSliderNum] = useState<number | number[]>(3);
     const [content, setContent] = useState<any>();
     const [itemNum, setItemNum] = useState<number>(0);
-
-    const getProjectData = () => {
-        let data: IProjectData[] = [
-            {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            },
-            {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            },
-            {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            },
-            {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            },
-            {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            },
-            {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            }, {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            }, {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            }, {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            }, {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            }, {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            },
-            {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            },
-            {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            },
-            {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            },
-            {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            },
-            {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            },
-            {
-                projectId: "WebService",
-                description: "~~~ 프로젝트",
-                language: "React"
-            },
-        ]
-
-        return data;
-    }
 
     const handleChange = () => {
         setState(!state)
@@ -125,7 +40,7 @@ export default function RecentWork() {
         let tmpContent = [<div key={"addProject"} style={{ padding: "20px", width: col + "px", height: "200px", display: "inline-block" }}>
             <div style={{ background: "black", height: "100%", borderRadius: "12px" }}>
                 <div style={{ textAlign: "center" }}>
-                    <IconButton style={{ color: "#fff" }}>
+                    <IconButton style={{ color: "#fff" }} onClick={() => { window.location.href = "/createproject" }}>
                         <AddIcon />
                     </IconButton>
                     <span style={{ display: "block", textAlign: "center", color: "#fff" }}>
@@ -138,9 +53,9 @@ export default function RecentWork() {
             tmpContent.push(<div key={"addProject"} style={{ padding: "20px", width: col + "px", height: "200px", display: "inline-block" }}>
                 <div style={{ background: "black", height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }}>
                     <div style={{ textAlign: "center" }}>
-                        <span style={{ display: "block", color: "white" }}>{i.language} 주로 사용</span>
-                        <span style={{ display: "block", color: "white" }}>{i.description}</span>
-                        <span style={{ display: "block", color: "white" }} className="">{i.projectId}</span>
+                        <span style={{ display: "block", color: "white" }}>{i.projectDescription}</span>
+                        <span style={{ display: "block", color: "white" }} className="">{i.projectName}</span>
+                        <span style={{ display: "block", color: "white" }} className="">{i.projectCreator}</span>
                     </div>
                 </div>
             </div>)
@@ -148,8 +63,20 @@ export default function RecentWork() {
         return tmpContent;
     }
 
+    let getData = async () => {
+        let data = await fetch(`http://localhost:8000/api/project`, {
+            method: "GET",
+            mode: "cors",
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        }).then((res) => res.json())
+        setProjectData(data.projectList ?? [])
+    }
+
     useEffect(() => {
-        setProjectData(getProjectData());
+        getData();
     }, [])
 
     useEffect(() => {
@@ -170,9 +97,9 @@ export default function RecentWork() {
                 <div style={{ padding: "0px 20px", height: "100%" }}>
                     <div style={{ background: "black", height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }}>
                         <div>
-                            <span style={{ display: "block", color: "white" }}>{i.language} 주로 사용</span>
-                            <span style={{ display: "block", color: "white" }}>{i.description}</span>
-                            <span style={{ display: "block", color: "white" }} className="">{i.projectId}</span>
+                            <span style={{ display: "block", color: "white" }}>{i.projectDescription}</span>
+                            <span style={{ display: "block", color: "white" }} className="">{i.projectName}</span>
+                            <span style={{ display: "block", color: "white" }} className="">{i.projectCreator}</span>
                         </div>
                     </div>
                 </div>
@@ -205,7 +132,7 @@ export default function RecentWork() {
                     <div style={{ position: "absolute", width: "400px", height: "250px", background: "#fff", zIndex: 3, overflow: "hidden", overflowY: "scroll" }}>
                         <div key={0} onClick={() => setItemNum(0)} style={{ width: "100%", border: "1px solid black", color: "black" }}>Create Project</div>
                         {projectData.map((v: any, idx: number) => {
-                            return <div key={idx + 1} onClick={() => setItemNum(idx + 1)} style={{ width: "100%", border: "1px solid black", color: "black" }}>{v.projectId}</div>
+                            return <div key={idx + 1} onClick={() => setItemNum(idx + 1)} style={{ width: "100%", border: "1px solid black", color: "black" }}>{v.projectName}</div>
                         })}
                     </div>
                     <button style={{ position: "absolute", top: "50%", zIndex: 2, left: "10px" }} onClick={() => {
