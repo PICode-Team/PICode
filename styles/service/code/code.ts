@@ -76,19 +76,24 @@ export const sidebarStyle = makeStyles((theme: IThemeStyle) =>
       display: "flex",
       alignItems: "center",
       color: "#ffffff",
-      opacity: 0.2,
+      opacity: 1,
       "&>svg": {
         width: "12px",
         height: "12px",
         marginRight: "3px",
       },
-      "&>span>svg": {
+      "&>span": {
         width: "12px",
         height: "12px",
-        marginRight: "3px",
+        marginRight: "4px",
+        backgroundImage: `url('/images/language/typescript.svg')`,
+        backgroundSize: "contain",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        opacity: 1,
       },
       "&:hover": {
-        opacity: 0.5,
+        opacity: 1,
       },
     },
     group: {},
@@ -114,12 +119,21 @@ export const terminalStyle = makeStyles((theme: IThemeStyle) =>
 export const tabStyle = makeStyles((theme: IThemeStyle) =>
   createStyles({
     tab: {
+      flex: "0 0 auto",
+      width: "112px",
       height: "100%",
+      zIndex: 999,
       display: "flex",
       alignItems: "center",
       padding: "2px 12px",
       cursor: "pointer",
       fontSize: "0px",
+      backgroundColor: "#404040",
+      "&:hover": {
+        "&>div>svg": {
+          display: "inline-block",
+        },
+      },
     },
     active: {
       backgroundColor: "#1E1E1E",
@@ -127,10 +141,19 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
         opacity: 0.9,
       },
       "&>div>svg": {
+        display: "block",
         opacity: 0.9,
       },
     },
-    icon: {},
+    icon: {
+      width: "16px",
+      height: "16px",
+      marginRight: "4px",
+      backgroundImage: `url('/images/language/typescript.svg')`,
+      backgroundSize: "contain",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+    },
     text: {
       color: "#ffffff",
       opacity: 0.5,
@@ -143,13 +166,24 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
       zIndex: 999,
       position: "relative",
       "&>svg": {
+        display: "none",
         color: "#ffffff",
         opacity: 0.5,
         width: "15px",
         height: "15px",
+        "&:hover": {
+          backgroundColor: "rgba(255, 255, 255, 0.2)",
+          borderRadius: "7.5px",
+        },
       },
     },
     isChanged: {},
+    drag: {
+      backgroundColor: "rgba(30,30,30, 0.65) !important",
+      "&>div": {
+        pointerEvents: "none",
+      },
+    },
   })
 );
 
@@ -158,12 +192,20 @@ export const tabbarStyle = makeStyles((theme: IThemeStyle) =>
     tabbar: {
       width: "100%",
       height: "35px",
-      backgroundColor: "#3a4145",
     },
     section: {
       width: "100%",
       height: "100%",
       display: "flex",
+      overflowX: "auto",
+      whiteSpace: "nowrap",
+    },
+    drag: {
+      backgroundColor: "rgba(58,65,69, 0.65) !important",
+    },
+    emptySpace: {
+      flex: 1,
+      backgroundColor: "#3a4145",
     },
   })
 );
@@ -196,6 +238,9 @@ export const editorStyle = makeStyles((theme: IThemeStyle) =>
       width: "100%",
       height: "100%",
       backgroundColor: theme.backgroundColor.step3,
+      "& *": {
+        transition: "none !important",
+      },
     },
     topbar: {
       width: "100%",
@@ -204,6 +249,60 @@ export const editorStyle = makeStyles((theme: IThemeStyle) =>
     editorWrapper: {
       width: "100%",
       height: "100%",
+      position: "relative",
+      zIndex: 1,
+    },
+    drag: {
+      width: "100%",
+      height: "100%",
+      position: "absolute",
+      top: 0,
+      left: 0,
+      zIndex: 999,
+      opacity: 0.2,
+      display: "flex",
+    },
+    center: {
+      backgroundColor: "#ffffff",
+      width: "100%",
+      height: "100%",
+    },
+    left: {
+      backgroundColor: "#ffffff",
+      width: "50%",
+      height: "100%",
+    },
+    right: {
+      backgroundColor: "#ffffff",
+      width: "50%",
+      height: "100%",
+    },
+    top: {
+      backgroundColor: "#ffffff",
+      width: "100%",
+      height: "50%",
+    },
+    bottom: {
+      backgroundColor: "#ffffff",
+      width: "100%",
+      height: "50%",
+    },
+    leftWrapper: {
+      justifyContent: "flex-start",
+    },
+    rightWrapper: {
+      justifyContent: "flex-end",
+    },
+    topWrapper: {
+      alignItems: "flex-start",
+    },
+    bottomWrapper: {
+      alignItems: "flex-end",
+    },
+    wrapperDrag: {
+      "& *": {
+        pointerEvents: "none",
+      },
     },
   })
 );

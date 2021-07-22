@@ -4,9 +4,13 @@ import { Sidebar } from "./sidebar";
 import { CombinedEditor } from "./combinedEdtior";
 import { TCode, TEditorRoot } from "./types";
 import { useCode } from "../../../hooks/code";
+import { ClassNameMap } from "@material-ui/core/styles/withStyles";
 
-function buildCodeLayout(codeList: TCode[]): JSX.Element {
-  const classes = codeStyle();
+function buildCodeLayout(
+  codeList: TCode[],
+  classes: ClassNameMap<"content" | "row" | "column" | "root">
+): JSX.Element {
+  if (codeList.length === 0) return <React.Fragment></React.Fragment>;
 
   return (
     <React.Fragment>
@@ -16,13 +20,16 @@ function buildCodeLayout(codeList: TCode[]): JSX.Element {
             className={v.vertical ? classes.column : classes.row}
             key={`Code-Wrapper-${v.codeId}`}
           >
-            <CombinedEditor
-              tabList={v.tabList}
-              tabOrderStack={v.tabOrderStack}
-              codeId={v.codeId}
-              focus={v.focus}
-            />
-            {buildCodeLayout(v.children)}
+            <div className={!v.vertical ? classes.column : classes.row}>
+              <CombinedEditor
+                tabList={v.tabList}
+                tabOrderStack={v.tabOrderStack}
+                codeId={v.codeId}
+                focus={v.focus}
+              />
+            </div>
+            {v.children.length !== 0 &&
+              buildCodeLayout(v.children ?? [], classes)}
           </div>
         );
       })}
@@ -31,26 +38,30 @@ function buildCodeLayout(codeList: TCode[]): JSX.Element {
 }
 
 function EditorWrapper({ root }: { root: TCode[] }) {
+  const classes = codeStyle();
+
   if (root.length === 0) {
     return <div>undefined</div>;
   }
 
-  return <React.Fragment>{buildCodeLayout(root)}</React.Fragment>;
+  return <React.Fragment>{buildCodeLayout(root, classes)}</React.Fragment>;
 }
 
 export default function Code(): JSX.Element {
   const classes = codeStyle();
-  const [codeRoot, setcodeRoot] = useState<TEditorRoot | undefined>(undefined);
-  const { code, setCode } = useCode();
+  const [codeRoot, setCodeRoot] = useState<TEditorRoot | undefined>(undefined);
+  const { code } = useCode();
 
   useEffect(() => {
-    setcodeRoot(code);
+    setCodeRoot(undefined);
+    setCodeRoot(code);
+    console.log(code);
   }, [code]);
 
   return (
     <div className={classes.root}>
       <Sidebar />
-      <div className={classes.content}>
+      <div className={classes.content} id="content">
         <div className={codeRoot?.vertical ? classes.column : classes.row}>
           <EditorWrapper root={codeRoot?.root ?? []} />
         </div>
