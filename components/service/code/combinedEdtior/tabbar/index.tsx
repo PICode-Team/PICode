@@ -5,7 +5,9 @@ import { tabbarStyle, tabStyle } from "../../../../../styles/service/code/code";
 import {
   addTab,
   checkTabDuplicating,
+  deleteCode,
   deleteTab,
+  findEmptyCode,
   findTabByPathInCode,
   getExtension,
   getLanguage,
@@ -31,11 +33,19 @@ export function Tabbar({
   const { drag } = useDrag();
 
   function handleDragEnterTabbar(event: React.DragEvent<HTMLElement>) {
+    if (tabList.length === 1 && tabOrderStack[0] === drag.tabId) {
+      return;
+    }
+
     if ((event.target as HTMLElement).classList.contains(classes.emptySpace))
       event.currentTarget.classList.add(classes.drag);
   }
 
   function handleDragLeaveTabbar(event: React.DragEvent<HTMLElement>) {
+    if (tabList.length === 1 && tabOrderStack[0] === drag.tabId) {
+      return;
+    }
+
     if ((event.target as HTMLElement).classList.contains(classes.emptySpace))
       event.currentTarget.classList.remove(classes.drag);
   }
@@ -49,6 +59,10 @@ export function Tabbar({
     event.preventDefault();
     event.stopPropagation();
 
+    if (tabList.length === 1 && tabOrderStack[0] === drag.tabId) {
+      return;
+    }
+
     const targetList = document.getElementsByClassName(classes.drag);
 
     for (let i = 0; i < targetList.length; i++) {
@@ -57,6 +71,9 @@ export function Tabbar({
 
     const newRoot = (() => {
       const existingTabId = findTabByPathInCode(code.root, codeId, drag.path);
+
+      console.log(existingTabId);
+
       if (drag.tabId === -1) {
         if (checkTabDuplicating(code.root, codeId, drag.path)) {
           return addTab(deleteTab(code.root, existingTabId), codeId, {
@@ -92,10 +109,15 @@ export function Tabbar({
       });
     })();
 
+    const emptyCodeId = findEmptyCode(newRoot) ?? -1;
+
     setCode({
       ...code,
-      root: newRoot,
+      root: emptyCodeId !== -1 ? deleteCode(newRoot, emptyCodeId) : newRoot,
       tabCount: code.tabCount + 1,
+      codeOrderStack: code.codeOrderStack.filter(
+        (codeId) => emptyCodeId !== codeId
+      ),
     });
   }
 

@@ -80,9 +80,9 @@ const dummy: TFile = {
 
 function makeFileStructure(
   { name, path, open, children }: TFile,
-  depth: number
+  depth: number,
+  classes: any
 ) {
-  const classes = sidebarStyle();
   const { code, setCode } = useCode();
   const { setDragInfo, deleteDragInfo } = useDrag();
 
@@ -102,6 +102,9 @@ function makeFileStructure(
           code.root,
           -1,
           {
+            children: [],
+            codeId: code.codeCount,
+            focus: true,
             tabList: [
               {
                 path: path,
@@ -110,14 +113,11 @@ function makeFileStructure(
                 tabId: code.tabCount,
               },
             ],
-            children: [],
             tabOrderStack: [code.tabCount],
-            codeId: code.codeCount,
-            vertical: false,
-            focus: true,
+            vertical: true,
           },
-          true,
-          false
+          false,
+          true
         );
       }
 
@@ -194,7 +194,7 @@ function makeFileStructure(
           {name}
         </div>
         <div className={classes.group}>
-          {children?.map((v, i) => makeFileStructure(v, depth + 1))}
+          {children?.map((v, i) => makeFileStructure(v, depth + 1, classes))}
         </div>
       </div>
     );
@@ -230,7 +230,9 @@ export function Sidebar(): JSX.Element {
         <ArrowForwardIos />
         {projectName}
       </div>
-      <div className={classes.fileWrapper}>{makeFileStructure(dummy, 1)}</div>
+      <div className={classes.fileWrapper}>
+        {makeFileStructure(dummy, 1, classes)}
+      </div>
     </div>
   );
 }

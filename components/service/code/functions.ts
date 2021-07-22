@@ -270,8 +270,7 @@ export function checkTabDuplicating(
       });
       if (check) return true;
     }
-
-    checkTabDuplicating(code.children, targetCodeId, targetPath);
+    return checkTabDuplicating(code.children, targetCodeId, targetPath);
   });
 
   return isDuplicate;
@@ -295,7 +294,7 @@ export function addCode(
   const addedCodeList = turnOffFocus(codeList).reduce(
     (a: TCode[], code: TCode): TCode[] => {
       if (targetCodeId === code.codeId) {
-        if (vertical === code.vertical) {
+        if (vertical !== code.vertical) {
           if (left) {
             return [...a, addValue, code];
           } else {
@@ -308,7 +307,6 @@ export function addCode(
               {
                 ...code,
                 children: [addValue, ...code.children],
-                vertical: !code.vertical,
               },
             ];
           } else {
@@ -317,7 +315,6 @@ export function addCode(
               {
                 ...code,
                 children: [...code.children, addValue],
-                vertical: !code.vertical,
               },
             ];
           }
@@ -343,9 +340,29 @@ export function addCode(
   return addedCodeList;
 }
 
+/// ... T_T
 export function deleteCode(codeList: TCode[], targetCodeId: number): TCode[] {
   const deletedCodeList = codeList.reduce((a: TCode[], code: TCode) => {
-    if (targetCodeId === code.codeId) return a;
+    if (targetCodeId === code.codeId) {
+      if (code.children.length === 0) {
+        return a;
+      } else {
+        return [
+          ...a,
+          {
+            children: code.children.filter(
+              (child) => code.children[0].codeId !== child.codeId
+            ),
+            codeId: code.children[0].codeId,
+            focus: true,
+            tabList: code.children[0].tabList,
+            tabOrderStack: code.children[0].tabOrderStack,
+            vertical: !code.children[0].vertical,
+          },
+        ];
+      }
+    }
+
     return [
       ...a,
       {
@@ -358,20 +375,22 @@ export function deleteCode(codeList: TCode[], targetCodeId: number): TCode[] {
   return deletedCodeList;
 }
 
-export function findEmptyCode(codeList: TCode[]): number {
+export function findEmptyCode(codeList: TCode[]): any {
   for (let i = 0; i < codeList.length; i++) {
-    if (codeList[i].tabList.length === 0) return codeList[i].codeId;
-    findEmptyCode(codeList[i].children);
+    if (codeList[i].tabList.length === 0) {
+      return codeList[i].codeId;
+    } else {
+      const value = findEmptyCode(codeList[i].children);
+      if (typeof value === "number") return value;
+    }
   }
-
-  return -1;
 }
 
 export function findTabByPathInCode(
   codeList: TCode[],
   targetCodeId: number,
   targetPath: string
-): number {
+): any {
   for (let i = 0; i < codeList.length; i++) {
     if (targetCodeId === codeList[i].codeId) {
       for (let i2 = 0; i2 < codeList[i].tabList.length; i2++) {
@@ -379,7 +398,12 @@ export function findTabByPathInCode(
           return codeList[i].tabList[i2].tabId;
       }
     }
-    findTabByPathInCode(codeList[i].children, targetCodeId, targetPath);
+    const value = findTabByPathInCode(
+      codeList[i].children,
+      targetCodeId,
+      targetPath
+    );
+    if (value !== -1) return value;
   }
 
   return -1;

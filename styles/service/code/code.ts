@@ -179,7 +179,7 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
     },
     isChanged: {},
     drag: {
-      backgroundColor: "red !important",
+      backgroundColor: "rgba(30,30,30, 0.65) !important",
       "&>div": {
         pointerEvents: "none",
       },
@@ -201,7 +201,7 @@ export const tabbarStyle = makeStyles((theme: IThemeStyle) =>
       whiteSpace: "nowrap",
     },
     drag: {
-      backgroundColor: "red !important",
+      backgroundColor: "rgba(58,65,69, 0.65) !important",
     },
     emptySpace: {
       flex: 1,
@@ -238,6 +238,9 @@ export const editorStyle = makeStyles((theme: IThemeStyle) =>
       width: "100%",
       height: "100%",
       backgroundColor: theme.backgroundColor.step3,
+      "& *": {
+        transition: "none !important",
+      },
     },
     topbar: {
       width: "100%",
@@ -252,12 +255,12 @@ export const editorStyle = makeStyles((theme: IThemeStyle) =>
     drag: {
       width: "100%",
       height: "100%",
-      backgroundColor: "none",
       position: "absolute",
       top: 0,
       left: 0,
       zIndex: 999,
       opacity: 0.2,
+      display: "flex",
     },
     center: {
       backgroundColor: "#ffffff",
@@ -270,7 +273,6 @@ export const editorStyle = makeStyles((theme: IThemeStyle) =>
       height: "100%",
     },
     right: {
-      float: "right",
       backgroundColor: "#ffffff",
       width: "50%",
       height: "100%",
@@ -281,10 +283,21 @@ export const editorStyle = makeStyles((theme: IThemeStyle) =>
       height: "50%",
     },
     bottom: {
-      marginTop: "50%",
       backgroundColor: "#ffffff",
       width: "100%",
       height: "50%",
+    },
+    leftWrapper: {
+      justifyContent: "flex-start",
+    },
+    rightWrapper: {
+      justifyContent: "flex-end",
+    },
+    topWrapper: {
+      alignItems: "flex-start",
+    },
+    bottomWrapper: {
+      alignItems: "flex-end",
     },
     wrapperDrag: {
       "& *": {

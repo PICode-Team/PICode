@@ -53,16 +53,6 @@ export function Tab({
     )
       return;
 
-    const targetActiveTab = (() => {
-      const active = document.getElementsByClassName(classes.active);
-      if (active.length > 0) return active[0];
-      else return "";
-    })();
-
-    if (typeof targetActiveTab === "object")
-      targetActiveTab.classList.toggle(classes.active);
-    event.currentTarget.classList.toggle(classes.active);
-
     const newRoot = reorderTab(code.root, tabId);
 
     setCode({
@@ -78,15 +68,14 @@ export function Tab({
   function handleTabClose(event: React.MouseEvent<HTMLElement>) {
     event.preventDefault();
     const newRoot = deleteTab(code.root, tabId);
-    const emptyCodeId = findEmptyCode(newRoot);
+    const emptyCodeId = findEmptyCode(newRoot) ?? -1;
 
     setCode({
       ...code,
       root: emptyCodeId !== -1 ? deleteCode(newRoot, emptyCodeId) : newRoot,
-      codeOrderStack:
-        emptyCodeId !== -1
-          ? reorderStack(code.codeOrderStack, emptyCodeId, true)
-          : code.codeOrderStack,
+      codeOrderStack: code.codeOrderStack.filter(
+        (codeId) => emptyCodeId !== codeId
+      ),
     });
   }
 

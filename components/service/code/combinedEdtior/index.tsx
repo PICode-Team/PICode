@@ -9,7 +9,9 @@ import {
   addCode,
   addTab,
   checkTabDuplicating,
+  deleteCode,
   deleteTab,
+  findEmptyCode,
   findTabByPathInCode,
   getExtension,
   getLanguage,
@@ -31,12 +33,32 @@ export function CombinedEditor({
   const classes = editorStyle();
   const editorWrapperRef = useRef<HTMLDivElement>(null);
   const [tab, setTab] = useState<TTab | undefined>(undefined);
+  const [editorWidth, setEditorWidth] = useState<number>(0);
   const { drag } = useDrag();
   const { code, setCode } = useCode();
 
   useEffect(() => {
     setTab(tabList.find((tab) => tab.tabId === tabOrderStack[0]));
   }, [tabOrderStack]);
+
+  useEffect(() => {
+    setEditorWidth(
+      Number(document.getElementById("content")?.clientWidth) / code.root.length
+    );
+  }, [code.root.length]);
+
+  function handleResize() {
+    setEditorWidth(
+      Number(document.getElementById("content")?.clientWidth) / code.root.length
+    );
+  }
+
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   function handleDragEnterEditor(event: React.DragEvent<HTMLDivElement>) {
     event.stopPropagation();
@@ -50,24 +72,29 @@ export function CombinedEditor({
 
     const dragOverlayDiv = document.createElement("div");
     dragOverlayDiv.className = classes.drag;
-    dragOverlayDiv.id = "drag-overlay";
+    dragOverlayDiv.id = `drag-overlay-${codeId}`;
 
     editorWrapper!.appendChild(dragOverlayDiv);
 
     const childDiv = document.createElement("div");
     childDiv.id = "drag-overlay-child";
 
-    document.getElementById("drag-overlay")?.appendChild(childDiv);
+    document.getElementById(`drag-overlay-${codeId}`)?.appendChild(childDiv);
   }
 
   function handleDragLeaveEditor(event: React.DragEvent<HTMLDivElement>) {
-    const dragOverlayDiv = document.getElementById("drag-overlay");
+    const dragOverlayDiv = document.getElementById(`drag-overlay-${codeId}`);
     dragOverlayDiv?.parentNode?.removeChild(dragOverlayDiv);
   }
 
   function handleDragOverEditor(event: React.DragEvent<HTMLElement>) {
     event.stopPropagation();
     event.preventDefault();
+
+    if (tabList.length === 1 && tabOrderStack[0] === drag.tabId) {
+      return;
+    }
+
     const editorWrapper = editorWrapperRef.current;
 
     if (editorWrapper === undefined) {
@@ -85,6 +112,12 @@ export function CombinedEditor({
       event.pageX - editorWrapper!.offsetLeft <
       editorWrapper!.offsetWidth * 0.15
     ) {
+      document
+        .getElementById(`drag-overlay-${codeId}`)
+        ?.classList.remove(classes.rightWrapper);
+      document
+        .getElementById(`drag-overlay-${codeId}`)
+        ?.classList.add(classes.leftWrapper);
       childDiv?.classList.add(classes.left);
       return;
     }
@@ -93,6 +126,12 @@ export function CombinedEditor({
       event.pageX - editorWrapper!.offsetLeft >
       editorWrapper!.offsetWidth * 0.85
     ) {
+      document
+        .getElementById(`drag-overlay-${codeId}`)
+        ?.classList.remove(classes.leftWrapper);
+      document
+        .getElementById(`drag-overlay-${codeId}`)
+        ?.classList.add(classes.rightWrapper);
       childDiv?.classList.add(classes.right);
       return;
     }
@@ -101,6 +140,12 @@ export function CombinedEditor({
       event.pageY - editorWrapper!.offsetTop <
       editorWrapper!.offsetHeight * 0.15
     ) {
+      document
+        .getElementById(`drag-overlay-${codeId}`)
+        ?.classList.remove(classes.bottomWrapper);
+      document
+        .getElementById(`drag-overlay-${codeId}`)
+        ?.classList.add(classes.topWrapper);
       childDiv?.classList.add(classes.top);
       return;
     }
@@ -109,6 +154,12 @@ export function CombinedEditor({
       event.pageY - editorWrapper!.offsetTop >
       editorWrapper!.offsetHeight * 0.85
     ) {
+      document
+        .getElementById(`drag-overlay-${codeId}`)
+        ?.classList.remove(classes.topWrapper);
+      document
+        .getElementById(`drag-overlay-${codeId}`)
+        ?.classList.add(classes.bottomWrapper);
       childDiv?.classList.add(classes.bottom);
       return;
     }
@@ -118,11 +169,13 @@ export function CombinedEditor({
   }
 
   function handleDropToEditor(event: React.DragEvent<HTMLDivElement>) {
-    console.log(1);
-
     event.preventDefault();
-    const dragOverlayDiv = document.getElementById("drag-overlay");
+    const dragOverlayDiv = document.getElementById(`drag-overlay-${codeId}`);
     dragOverlayDiv?.parentNode?.removeChild(dragOverlayDiv);
+
+    if (tabList.length === 1 && tabOrderStack[0] === drag.tabId) {
+      return;
+    }
 
     const editorWrapper = editorWrapperRef.current;
 
@@ -136,7 +189,7 @@ export function CombinedEditor({
         editorWrapper!.offsetWidth * 0.15
       ) {
         return addCode(
-          code.root,
+          drag.tabId !== -1 ? deleteTab(code.root, drag.tabId) : code.root,
           Number(editorWrapper?.parentElement?.id.split("-")[1]),
           {
             children: [],
@@ -163,7 +216,7 @@ export function CombinedEditor({
         editorWrapper!.offsetWidth * 0.85
       ) {
         return addCode(
-          code.root,
+          drag.tabId !== -1 ? deleteTab(code.root, drag.tabId) : code.root,
           Number(editorWrapper?.parentElement?.id.split("-")[1]),
           {
             children: [],
@@ -190,7 +243,7 @@ export function CombinedEditor({
         editorWrapper!.offsetHeight * 0.15
       ) {
         return addCode(
-          code.root,
+          drag.tabId !== -1 ? deleteTab(code.root, drag.tabId) : code.root,
           Number(editorWrapper?.parentElement?.id.split("-")[1]),
           {
             children: [],
@@ -217,7 +270,7 @@ export function CombinedEditor({
         editorWrapper!.offsetHeight * 0.85
       ) {
         return addCode(
-          code.root,
+          drag.tabId !== -1 ? deleteTab(code.root, drag.tabId) : code.root,
           Number(editorWrapper?.parentElement?.id.split("-")[1]),
           {
             children: [],
@@ -261,12 +314,12 @@ export function CombinedEditor({
 
       if (tabOrderStack.includes(existingTabId)) {
         return reorderTab(
-          code.root,
+          tempRoot,
           Number(event.currentTarget.id.split("-")[1])
         );
       }
 
-      return addTab(code.root, codeId, {
+      return addTab(tempRoot, codeId, {
         path: drag.path,
         extension: getExtension(drag.path),
         langauge: getLanguage(getExtension(drag.path)),
@@ -274,18 +327,39 @@ export function CombinedEditor({
       });
     })();
 
+    const centerCheck = !(
+      event.pageX - editorWrapper!.offsetLeft <
+        editorWrapper!.offsetWidth * 0.15 ||
+      event.pageX - editorWrapper!.offsetLeft >
+        editorWrapper!.offsetWidth * 0.85 ||
+      event.pageY - editorWrapper!.offsetTop <
+        editorWrapper!.offsetHeight * 0.15 ||
+      event.pageY - editorWrapper!.offsetTop >
+        editorWrapper!.offsetHeight * 0.85
+    );
+    const emptyCodeId = findEmptyCode(newRoot) ?? -1;
+
     setCode({
       ...code,
-      codeCount: code.codeCount + 1,
-      codeOrderStack: [code.codeCount, ...code.codeOrderStack],
+      codeCount: code.codeCount + (centerCheck ? 0 : 1),
+      codeOrderStack: (centerCheck
+        ? code.codeOrderStack
+        : [code.codeCount, ...code.codeOrderStack]
+      ).filter((codeId) => emptyCodeId !== codeId),
       tabCount: true ? code.tabCount + 1 : code.tabCount,
-      root: newRoot,
+      root: emptyCodeId !== -1 ? deleteCode(newRoot, emptyCodeId) : newRoot,
       vertical: newRoot.length === 1 && code.codeCount === 1,
     });
   }
 
   return (
-    <div id={`code-${codeId}`} className={classes.editor}>
+    <div
+      id={`code-${codeId}`}
+      className={classes.editor}
+      style={{
+        width: `${editorWidth}px`,
+      }}
+    >
       <div className={classes.topbar}>
         <Tabbar
           tabList={tabList}
@@ -309,8 +383,8 @@ export function CombinedEditor({
           width="calc(100% - 1px)"
           height="calc(100% - 55px)"
           theme="vs-dark"
-          path={tab?.path ?? ""}
-          defaultLanguage={tab?.langauge ?? ""}
+          path={""}
+          defaultLanguage={""}
           defaultValue={""}
         />
       </div>
