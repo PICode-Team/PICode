@@ -5,12 +5,16 @@ import { IThemeStyle } from "../../theme";
 export const codeStyle = makeStyles((theme: IThemeStyle) =>
   createStyles({
     root: {
-      backgroundColor: "#1E1E1E",
+      backgroundColor: theme.backgroundColor.step0,
       width: "calc(100% - 64px)",
       height: "100%",
       display: "flex",
     },
-    content: { width: "calc(100% - 300px)", height: "100%" },
+    content: {
+      width: "calc(100% - 300px)",
+      height: "100%",
+      color: theme.font.high.color,
+    },
     row: {
       width: "100%",
       height: "100%",
@@ -23,6 +27,24 @@ export const codeStyle = makeStyles((theme: IThemeStyle) =>
       backgroundColor: theme.backgroundColor.step3,
       display: "flex",
       flexDirection: "column",
+    },
+    emptyCode: {
+      width: "100%",
+      height: "100%",
+      color: theme.font.high.color,
+      fontSize: theme.font.high.size,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: theme.backgroundColor.step0,
+    },
+    drag: {
+      backgroundColor: "#3A4447",
+    },
+    wrapperDrag: {
+      "& *": {
+        pointerEvents: "none",
+      },
     },
   })
 );
@@ -47,15 +69,34 @@ export const sidebarStyle = makeStyles((theme: IThemeStyle) =>
       backgroundColor: theme.backgroundColor.step3,
     },
     rootDirectory: {
-      fontSize: "16px",
+      fontSize: "14px",
       fontWeight: "bold",
+      color: theme.font.low.color,
+      borderBottom: "1px solid",
+      borderBottomColor: theme.editor.divider,
+      textTransform: "uppercase",
+      cursor: "pointer",
       "& svg": {
         width: "13px",
         height: "13px",
         marginRight: "3px",
+        transform: "rotate(0.25turn)",
       },
     },
-    fileWrapper: {},
+    fileWrapper: {
+      overflowY: "hidden",
+      display: "block",
+      transition: "height ease-in 1s",
+      height: "fit-content",
+    },
+    rootClose: {
+      height: "0px !important",
+    },
+    rootRotate: {
+      "&>svg": {
+        transform: "rotate(1turn)",
+      },
+    },
     depth: {
       width: "100%",
       height: "fit-content",
@@ -75,7 +116,7 @@ export const sidebarStyle = makeStyles((theme: IThemeStyle) =>
       cursor: "pointer",
       display: "flex",
       alignItems: "center",
-      color: "#ffffff",
+      color: theme.font.high.color,
       opacity: 1,
       "&>svg": {
         width: "12px",
@@ -128,7 +169,7 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
       padding: "2px 12px",
       cursor: "pointer",
       fontSize: "0px",
-      backgroundColor: "#404040",
+      backgroundColor: theme.editor.tab,
       "&:hover": {
         "&>div>svg": {
           display: "inline-block",
@@ -136,7 +177,8 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
       },
     },
     active: {
-      backgroundColor: "#1E1E1E",
+      backgroundColor: theme.editor.active,
+      color: theme.font.high.color,
       "&>div": {
         opacity: 0.9,
       },
@@ -155,7 +197,7 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
       backgroundRepeat: "no-repeat",
     },
     text: {
-      color: "#ffffff",
+      color: theme.font.low.color,
       opacity: 0.5,
       marginRight: "8px",
       fontSize: "14px",
@@ -167,7 +209,7 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
       position: "relative",
       "&>svg": {
         display: "none",
-        color: "#ffffff",
+        color: theme.font.high.color,
         opacity: 0.5,
         width: "15px",
         height: "15px",
@@ -179,7 +221,7 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
     },
     isChanged: {},
     drag: {
-      backgroundColor: "rgba(30,30,30, 0.65) !important",
+      backgroundColor: theme.editor.drag.tab,
       "&>div": {
         pointerEvents: "none",
       },
@@ -201,11 +243,11 @@ export const tabbarStyle = makeStyles((theme: IThemeStyle) =>
       whiteSpace: "nowrap",
     },
     drag: {
-      backgroundColor: "rgba(58,65,69, 0.65) !important",
+      backgroundColor: theme.editor.drag.tabbar,
     },
     emptySpace: {
       flex: 1,
-      backgroundColor: "#3a4145",
+      backgroundColor: theme.editor.tabbar,
     },
   })
 );
@@ -215,13 +257,13 @@ export const pathStyle = makeStyles((theme: IThemeStyle) =>
     pathWrapper: {
       width: "100%",
       height: "20px",
-      backgroundColor: "#1E1E1E",
+      backgroundColor: theme.editor.path,
       boxShadow: "rgba(0, 0, 0, 0.6) 0px 5px 5px -5px",
       position: "fixed",
       paddingLeft: "15px",
     },
     path: {
-      color: "#ffffff",
+      color: theme.font.low.color,
       opacity: 0.5,
       "&:hover": {
         opacity: 0.8,
@@ -263,27 +305,27 @@ export const editorStyle = makeStyles((theme: IThemeStyle) =>
       display: "flex",
     },
     center: {
-      backgroundColor: "#ffffff",
+      backgroundColor: theme.editor.drag.code,
       width: "100%",
       height: "100%",
     },
     left: {
-      backgroundColor: "#ffffff",
+      backgroundColor: theme.editor.drag.code,
       width: "50%",
       height: "100%",
     },
     right: {
-      backgroundColor: "#ffffff",
+      backgroundColor: theme.editor.drag.code,
       width: "50%",
       height: "100%",
     },
     top: {
-      backgroundColor: "#ffffff",
+      backgroundColor: theme.editor.drag.code,
       width: "100%",
       height: "50%",
     },
     bottom: {
-      backgroundColor: "#ffffff",
+      backgroundColor: theme.editor.drag.code,
       width: "100%",
       height: "50%",
     },

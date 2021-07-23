@@ -226,7 +226,16 @@ export function Sidebar(): JSX.Element {
 
   return (
     <div className={classes.sidebar}>
-      <div className={classes.rootDirectory}>
+      <div
+        className={classes.rootDirectory}
+        onClick={(event: React.MouseEvent<HTMLElement>) => {
+          document
+            .getElementsByClassName(classes.fileWrapper)[0]
+            .classList.toggle(classes.rootClose);
+
+          event.currentTarget.classList.toggle(classes.rootRotate);
+        }}
+      >
         <ArrowForwardIos />
         {projectName}
       </div>

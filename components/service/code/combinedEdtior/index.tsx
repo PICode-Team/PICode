@@ -18,6 +18,7 @@ import {
   reorderTab,
 } from "../functions";
 import { useCode } from "../../../../hooks/code";
+import { useThemeData } from "../../../../hooks/theme";
 
 export function CombinedEditor({
   tabList,
@@ -36,6 +37,12 @@ export function CombinedEditor({
   const [editorWidth, setEditorWidth] = useState<number>(0);
   const { drag } = useDrag();
   const { code, setCode } = useCode();
+  const { data } = useThemeData();
+  const [theme, setTheme] = useState<string>("dark");
+
+  useEffect(() => {
+    setTheme(data.theme);
+  }, [data]);
 
   useEffect(() => {
     setTab(tabList.find((tab) => tab.tabId === tabOrderStack[0]));
@@ -296,10 +303,7 @@ export function CombinedEditor({
 
       if (drag.tabId === -1) {
         if (checkTabDuplicating(code.root, codeId, drag.path)) {
-          return reorderTab(
-            code.root,
-            Number(event.currentTarget.id.split("-")[1])
-          );
+          return reorderTab(code.root, existingTabId);
         } else {
           return addTab(code.root, codeId, {
             path: drag.path,
@@ -310,13 +314,14 @@ export function CombinedEditor({
         }
       }
 
+      if (existingTabId === drag.tabId) {
+        return code.root;
+      }
+
       const tempRoot = deleteTab(code.root, drag.tabId);
 
-      if (tabOrderStack.includes(existingTabId)) {
-        return reorderTab(
-          tempRoot,
-          Number(event.currentTarget.id.split("-")[1])
-        );
+      if (checkTabDuplicating(tempRoot, codeId, drag.path)) {
+        return reorderTab(tempRoot, existingTabId);
       }
 
       return addTab(tempRoot, codeId, {
@@ -382,7 +387,7 @@ export function CombinedEditor({
         <Editor
           width="calc(100% - 1px)"
           height="calc(100% - 55px)"
-          theme="vs-dark"
+          theme={theme === "dark" ? "vs-dark" : "light"}
           path={""}
           defaultLanguage={""}
           defaultValue={""}

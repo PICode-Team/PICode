@@ -72,8 +72,6 @@ export function Tabbar({
     const newRoot = (() => {
       const existingTabId = findTabByPathInCode(code.root, codeId, drag.path);
 
-      console.log(existingTabId);
-
       if (drag.tabId === -1) {
         if (checkTabDuplicating(code.root, codeId, drag.path)) {
           return addTab(deleteTab(code.root, existingTabId), codeId, {
