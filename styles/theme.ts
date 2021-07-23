@@ -28,6 +28,12 @@ export interface IThemeStyle {
       emptyCode: string;
     };
   };
+  hover: string;
+  scroll: {
+    bar: string;
+    thumb: string;
+    track: string;
+  };
 }
 
 export const darkTheme = createTheme({
@@ -70,6 +76,12 @@ export const darkTheme = createTheme({
       emptyCode: "#3A4447",
     },
   },
+  hover: "rgba(255, 255, 255, 0.1)",
+  scroll: {
+    bar: "#1e1e2f",
+    thumb: "#555",
+    track: "#1e1e2f",
+  },
 } as any);
 
 export const whiteTheme = createTheme({
@@ -111,5 +123,11 @@ export const whiteTheme = createTheme({
       tabbar: "rgba(58, 65, 69, 0.05) !important",
       emptyCode: "rgba(225, 225, 225, 0.9)",
     },
+  },
+  hover: "rgba(255, 255, 255, 0.2)",
+  scroll: {
+    bar: "rgba(230, 230, 230, 0.3)",
+    thumb: "rgba(0, 0, 0, 0.1)",
+    track: "rgba(230, 230, 230, 0.3)",
   },
 } as any);
