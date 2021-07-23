@@ -25,6 +25,7 @@ export interface IThemeStyle {
       code: string;
       tab: string;
       tabbar: string;
+      emptyCode: string;
     };
   };
 }
@@ -66,6 +67,7 @@ export const darkTheme = createTheme({
       code: "#ffffff",
       tab: "rgba(30,30,30, 0.65) !important",
       tabbar: "rgba(58,65,69, 0.65) !important",
+      emptyCode: "#3A4447",
     },
   },
 } as any);
@@ -107,6 +109,7 @@ export const whiteTheme = createTheme({
       code: "rgba(150, 150, 150, 1)",
       tab: "rgba(225, 225, 225, 0.9) !important",
       tabbar: "rgba(58, 65, 69, 0.05) !important",
+      emptyCode: "rgba(225, 225, 225, 0.9)",
     },
   },
 } as any);

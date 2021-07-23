@@ -39,7 +39,7 @@ export const codeStyle = makeStyles((theme: IThemeStyle) =>
       backgroundColor: theme.backgroundColor.step0,
     },
     drag: {
-      backgroundColor: "#3A4447",
+      backgroundColor: theme.editor.drag.emptyCode,
     },
     wrapperDrag: {
       "& *": {
