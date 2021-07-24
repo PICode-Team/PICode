@@ -35,28 +35,24 @@ function DayBoundary({ text }: TDayBoundary) {
   );
 }
 
-function MessageBox() {
+function MessageBox({ user, message, time }: TChat) {
   const classes = chatStyle();
 
   return (
     <div className={classes.messageBox}>
       <div className={classes.user}></div>
       <div>
-        <div className={classes.name}>kim</div>
+        <div className={classes.name}>{user}</div>
         <div className={classes.textWrapper}>
-          <span className={classes.messageText}>
-            gna. Sed consequat, leo eget bibendum sodales, augue velit cursus
-            nunc, gna. Sed consequat, leo eget bibendum sodales, augue velit
-            cursus nunc,
-          </span>
-          <span className={classes.time}>AM 11:51</span>
+          <span className={classes.messageText}>{message}</span>
+          <span className={classes.time}>{time}</span>
         </div>
       </div>
     </div>
   );
 }
 
-function MessageReverseBox() {
+function MessageReverseBox({ message, time }: TChat) {
   const classes = chatStyle();
 
   return (
@@ -68,11 +64,8 @@ function MessageReverseBox() {
         className={classes.textWrapper}
         style={{ display: "flex", flexDirection: "row-reverse" }}
       >
-        <div className={classes.messageText}>
-          gna. Sed consequat, leo eget bibendum sodales, augue velit cursus
-          nunc,
-        </div>
-        <span className={classes.time}>AM 11:51</span>
+        <div className={classes.messageText}>{message}</div>
+        <span className={classes.time}>{time}</span>
       </div>
     </div>
   );
@@ -124,6 +117,77 @@ export default function Chat() {
   const classes = chatStyle();
   const [chatList, setChatList] = useState<TChat[]>([]);
   const [modal, setModal] = useState<boolean>(false);
+
+  useEffect(() => {
+    setChatList([
+      {
+        user: "me",
+        message:
+          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
+        time: "AM 11:51",
+      },
+      {
+        user: "test",
+        message:
+          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
+        time: "AM 11:51",
+      },
+      {
+        user: "me",
+        message:
+          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
+        time: "AM 11:51",
+      },
+      {
+        user: "test",
+        message:
+          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
+        time: "AM 11:51",
+      },
+      {
+        user: "me",
+        message:
+          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
+        time: "AM 11:51",
+      },
+      {
+        user: "test",
+        message:
+          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
+        time: "AM 11:51",
+      },
+      {
+        user: "me",
+        message:
+          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
+        time: "AM 11:51",
+      },
+      {
+        user: "test",
+        message:
+          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
+        time: "AM 11:51",
+      },
+      {
+        user: "me",
+        message:
+          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
+        time: "AM 11:51",
+      },
+      {
+        user: "test",
+        message:
+          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
+        time: "AM 11:51",
+      },
+      {
+        user: "me",
+        message:
+          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
+        time: "AM 11:51",
+      },
+    ]);
+  }, []);
 
   return (
     <div className={classes.root}>
@@ -265,23 +329,17 @@ export default function Chat() {
         </div>
         <div className={classes.contentBox}>
           <div className={classes.content}>
-            <MessageBox />
-            <MessageReverseBox />
-            <MessageBox />
-            <MessageReverseBox />
-            <MessageBox /> <MessageReverseBox />
-            <MessageBox /> <MessageBox />
-            <MessageReverseBox />
-            <MessageBox />
             <DayBoundary text="yesterday" />
-            <MessageReverseBox />
-            <MessageBox /> <MessageReverseBox />
-            <MessageBox /> <MessageBox />
-            <MessageReverseBox />
-            <MessageBox />
-            <MessageReverseBox />
-            <MessageBox /> <MessageReverseBox />
-            <MessageBox />
+            {chatList.map((v, i) => {
+              if (v.time === "~~") {
+                return <DayBoundary text={v.time} />;
+              }
+              if (v.user === "me") {
+                return <MessageReverseBox {...v} />;
+              } else {
+                return <MessageBox {...v} />;
+              }
+            })}
           </div>
         </div>
         <div className={classes.input}>

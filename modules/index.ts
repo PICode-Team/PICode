@@ -5,6 +5,7 @@ import { persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import code from "./code";
 import drag, { TDragState } from "./drag";
+import messenger, { TMessengerState } from "./messenger";
 import { TEditorRoot } from "../components/service/code/types";
 
 const persistConfig = {
@@ -25,6 +26,7 @@ const rootReducer = (
         theme,
         code,
         drag,
+        messenger,
       });
       return combineReducer(state, action);
     }
@@ -38,4 +40,5 @@ interface IState {
   theme: IThemeState;
   code: TEditorRoot;
   drag: TDragState;
+  messenger: TMessengerState;
 }
