@@ -311,14 +311,15 @@ export default function Messenger() {
   const classes = messengerStyle();
   const [open, setOpen] = useState<boolean>(false);
   const [room, setRoom] = useState<string>("");
+  const [load, setLoad] = useState<boolean>(false);
 
-  if (window === undefined) return <React.Fragment></React.Fragment>;
+  useEffect(() => {
+    setLoad(true);
+  }, []);
 
-  if (window.location.href.indexOf("chat") === -1) {
-    console.log(123);
+  if (!load) return <React.Fragment />;
 
-    return <React.Fragment></React.Fragment>;
-  }
+  if (window.location.href.indexOf("chat") !== -1) return <React.Fragment />;
 
   if (open) {
     return (
