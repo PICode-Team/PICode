@@ -1,259 +1,174 @@
 import log from "../../module/log";
-import {
-    UploadDirectoryPath,
-    WorkDirectoryPath,
-    DataDirectoryPath,
-} from "../../types/module/data/data.types";
-import {
-    TprojectCreateData,
-    TProjectData,
-    TProjectUpdateData,
-} from "../../types/module/data/project.type";
-import {
-    setJsonData,
-    getJsonData,
-    isExists,
-    removeData,
-    handle,
-    UploadFileManager,
-    searchProjectFiles,
-    readCodesFromFile,
-} from "./fileManager";
+import { UploadDirectoryPath, WorkDirectoryPath, DataDirectoryPath } from "../../types/module/data/data.types";
+import { TprojectCreateData, TProjectData, TProjectUpdateData } from "../../types/module/data/project.type";
+import { setJsonData, getJsonData, isExists, removeData, handle, UploadFileManager, searchProjectFiles, readCodesFromFile, writeCodeToFile } from "./fileManager";
 import fs from "fs";
 import * as child from "child_process";
 import { zip } from "zip-a-folder";
-import {
-    TFileData,
-    TUploadFileLanguageToSize,
-} from "../../types/module/data/file.types";
+import { TFileData, TUploadFileLanguageToSize } from "../../types/module/data/file.types";
+import path from "path";
+import { v4 as uuidv4 } from "uuid";
 
 export default class DataProjectManager {
-    static isExists(
-        userId: string,
-        projectName: string,
-        projectPath: Function
-    ) {
-        return isExists(projectPath(userId, projectName));
+    static isExists(projectId: string, projectPath: Function) {
+        return isExists(projectPath(projectId));
     }
 
     static getProjectDefaultPath() {
         return `${DataDirectoryPath}/project`;
     }
 
-    static getProjectWorkPath(userId: string, projectName: string) {
-        return `${WorkDirectoryPath}/project/${userId}+${projectName}/`;
+    static getProjectWorkPath(projectId: string) {
+        return `${WorkDirectoryPath}/project/${projectId}/`;
     }
 
-    static getProjectDataPath(
-        userId: string,
-        projectName: string,
-        type: "" | "projectInfo.json" = ""
-    ) {
-        return `${DataDirectoryPath}/project/${userId}+${projectName}/${type}`;
+    static getProjectDataPath(projectId: string, type: "" | "projectInfo.json" = "") {
+        return `${DataDirectoryPath}/project/${projectId}/${type}`;
     }
 
-    static getProjectInfo(userId: string, projectName: string) {
-        if (!this.isExists(userId, projectName, this.getProjectDataPath)) {
+    static getProjectInfo(projectId: string) {
+        if (!this.isExists(projectId, this.getProjectDataPath)) {
             return undefined;
         }
 
-        return getJsonData(
-            this.getProjectDataPath(userId, projectName, "projectInfo.json")
-        ) as TProjectData;
+        return getJsonData(this.getProjectDataPath(projectId, "projectInfo.json")) as TProjectData;
     }
 
-    static setProjectInfo(
-        userId: string,
-        projectName: string,
-        data: TProjectData | TprojectCreateData | TProjectUpdateData
-    ) {
-        if (!this.isExists(userId, projectName, this.getProjectDataPath)) {
+    static setProjectInfo(projectId: string, data: TProjectData | TprojectCreateData | TProjectUpdateData) {
+        if (!this.isExists(projectId, this.getProjectDataPath)) {
             return undefined;
         }
 
-        if (data.projectName !== undefined) {
-            fs.renameSync(
-                this.getProjectDataPath(userId, projectName),
-                this.getProjectDataPath(userId, data.projectName)
-            );
+        return setJsonData(this.getProjectDataPath(projectId, "projectInfo.json"), data);
+    }
+
+    static compareProjectName(projectId: string, projectName?: string) {
+        return (this.getProjectInfo(projectId) as TProjectData).projectName === projectName;
+    }
+
+    static isProjectCreator(userId: string, projectId: string) {
+        return (this.getProjectInfo(projectId) as TProjectData).projectCreator === userId;
+    }
+
+    static isProjectParticipants(userId: string, projectId: string) {
+        return (this.getProjectInfo(projectId) as TProjectData).projectParticipants?.includes(userId);
+    }
+
+    static canEditProject(userId: string, projectId: string, participantIncluded: boolean) {
+        return this.isProjectCreator(userId, projectId) || participantIncluded ? this.isProjectParticipants(userId, projectId) : false;
+    }
+
+    static getProjectId(userId: string, projectName: string) {
+        const projectId = fs.readdirSync(this.getProjectDefaultPath()).filter((projectId) => {
+            const projectInfo = this.getProjectInfo(projectId) as TProjectData;
+            return (projectInfo.projectCreator === userId || projectInfo.projectParticipants?.includes(userId)) && projectInfo.projectName === projectName;
+        });
+        if (projectId.length > 1) {
+            return projectId;
+        } else if (projectId.length === 1) {
+            return projectId[0];
+        } else {
+            return undefined;
         }
-
-        return setJsonData(
-            this.getProjectDataPath(
-                userId,
-                data.projectName ?? projectName,
-                "projectInfo.json"
-            ),
-            data
-        );
     }
 
-    static getUserIdFromProjectName(projectName?: string) {
-        return fs
-            .readdirSync(this.getProjectDefaultPath())
-            .filter((projectDirName) => {
-                const projectInfo = this.splitProjectDirName(projectDirName);
-                return (
-                    projectInfo.projectName === projectName ||
-                    projectName === undefined
-                );
-            })
-            .map((project) => this.splitProjectDirName(project).userId);
-    }
-
-    static getProjectNameFromUserId(userId: string) {
-        return fs
-            .readdirSync(this.getProjectDefaultPath())
-            .filter((projectDirName) => {
-                const projectInfo = this.splitProjectDirName(projectDirName);
-                return projectInfo.userId === userId;
-            });
-    }
-
-    static splitProjectDirName(projectDirName: string) {
-        const splitData = projectDirName.split("+");
-        return {
-            userId: splitData[0],
-            projectName: splitData[1],
-        };
-    }
-
-    static isProjectCreator(
-        creatorUserId: string,
-        userId: string,
-        projectName: string
-    ) {
-        return (
-            (
-                getJsonData(
-                    this.getProjectDataPath(
-                        creatorUserId,
-                        projectName,
-                        "projectInfo.json"
-                    )
-                ) as TProjectData
-            ).projectCreator === userId
-        );
-    }
-
-    static isProjectParticipants(
-        creatorUserId: string,
-        userId: string,
-        projectName: string
-    ) {
-        return (
-            getJsonData(
-                this.getProjectDataPath(
-                    creatorUserId,
-                    projectName,
-                    "projectInfo.json"
-                )
-            ) as TProjectData
-        ).projectParticipants?.includes(userId);
-    }
-
-    static gitCloneFromURL(
-        userId: string,
-        gitUrl: string,
-        projectName: string
-    ) {
-        const clonePath = this.getProjectWorkPath(userId, projectName);
+    static gitCloneFromURL(projectId: string, gitUrl: any) {
+        const clonePath = this.getProjectWorkPath(projectId);
 
         if (!fs.existsSync(clonePath)) {
             fs.mkdirSync(clonePath, { recursive: true });
         }
-
-        child.exec(
-            `git clone ${gitUrl}`,
-            {
-                cwd: clonePath,
-                env: process.env,
-            },
-            (error, stdout, stderr) => {
-                error
-                    ? log.error(error)
-                    : (log.info(stdout), log.error(stderr));
-            }
-        );
+        try {
+            child.exec(
+                `git clone ${gitUrl}`,
+                {
+                    cwd: clonePath,
+                    env: process.env,
+                },
+                (error, _stdout, stderr) => {
+                    error ? log.error(error) : log.info(stderr);
+                }
+            );
+        } catch (e) {
+            log.error(e.stack);
+            return false;
+        }
+        return true;
     }
 
     static createProjectFromFile(
-        userId: string,
-        projectName: string,
-        upload: {
-            uploadFileId: string;
-            isExtract?: boolean;
+        projectId: string,
+        source: {
+            upload: {
+                uploadFileId: string;
+                isExtract?: boolean;
+            };
         }
     ) {
-        const fileName = UploadFileManager[upload.uploadFileId].originalname;
-        const newPath = this.getProjectWorkPath(userId, projectName);
+        const uploadFileId = source.upload.uploadFileId;
+        const isExtract = source.upload.isExtract;
+        const fileName = UploadFileManager[uploadFileId].originalname;
+        const newPath = DataProjectManager.getProjectWorkPath(projectId);
         if (!fs.existsSync(newPath)) {
             fs.mkdirSync(newPath, { recursive: true });
         }
-        return handle(
-            `${UploadDirectoryPath}/${upload.uploadFileId}`,
-            `${newPath}/${fileName}`,
-            {
-                isExtract: upload.isExtract,
-                extractPath: upload.isExtract ? newPath : undefined,
-                extractCallback: (err) => {
-                    if (err) {
-                        log.error(err.stack);
-                    } else {
-                        fs.unlinkSync(`${newPath}/${fileName}`);
-                        const fileToSize: TUploadFileLanguageToSize = {};
-                        searchProjectFiles(newPath, { fileToSize: fileToSize });
-                        this.setProjectInfo(userId, projectName, {
-                            ...this.getProjectInfo(userId, projectName),
-                            projectLanguage: fileToSize,
-                        } as TProjectUpdateData);
-                    }
-                },
-            }
-        )
+        return handle(`${UploadDirectoryPath}/${uploadFileId}`, `${newPath}/${fileName}`, {
+            isExtract: isExtract,
+            extractPath: isExtract ? newPath : undefined,
+            extractCallback: (err) => {
+                if (err) {
+                    log.error(err.stack);
+                } else {
+                    fs.unlinkSync(`${newPath}/${fileName}`);
+                    const fileToSize: TUploadFileLanguageToSize = {};
+                    searchProjectFiles(newPath, { fileToSize: fileToSize });
+                    DataProjectManager.setProjectInfo(projectId, {
+                        ...DataProjectManager.getProjectInfo(projectId),
+                        projectLanguage: fileToSize,
+                    } as TProjectUpdateData);
+                    delete UploadFileManager[uploadFileId];
+                }
+            },
+        })
             ? true
             : false;
     }
 
-    static get(userId: string, projectName?: string) /*: TProjectData[]*/ {
+    static createEmptyProject(projectId: string, source: any) {
+        if (source.type !== "nothing") {
+            return false;
+        }
+        if (!fs.existsSync(this.getProjectWorkPath(projectId))) {
+            fs.mkdirSync(this.getProjectWorkPath(projectId), {
+                recursive: true,
+            });
+        }
+        return true;
+    }
+
+    static get(userId: string, projectName?: string): TProjectData[] {
+        if (!fs.existsSync(this.getProjectDefaultPath())) {
+            fs.mkdirSync(this.getProjectDefaultPath(), { recursive: true });
+        }
+
         return fs
             .readdirSync(this.getProjectDefaultPath())
-            .filter((dirName) => {
-                const projectDirName = this.splitProjectDirName(dirName);
+            .filter((projectUUID) => {
                 return (
-                    (this.isProjectCreator(
-                        projectDirName.userId,
-                        userId,
-                        projectDirName.projectName
-                    ) ||
-                        this.isProjectParticipants(
-                            projectDirName.userId,
-                            userId,
-                            projectDirName.projectName
-                        )) &&
-                    (projectDirName.projectName === projectName ||
-                        projectName === undefined ||
-                        projectName === "")
+                    (this.isProjectCreator(userId, projectUUID) || this.isProjectParticipants(userId, projectUUID)) &&
+                    (this.compareProjectName(projectUUID, projectName) || projectName === undefined || projectName === "")
                 );
             })
-            .map((project) => {
-                const projectDirName = this.splitProjectDirName(project);
-                return this.getProjectInfo(
-                    projectDirName.userId,
-                    projectDirName.projectName
-                );
+            .map((projectId) => {
+                return this.getProjectInfo(projectId) as TProjectData;
             });
     }
 
     static create(
         userId: string,
-        {
-            projectName,
-            projectDescription,
-            projectThumbnail,
-            projectParticipants,
-        }: TprojectCreateData,
-        source?: {
+        { projectName, projectDescription, projectThumbnail, projectParticipants }: TprojectCreateData,
+        source: {
+            type: "gitUrl" | "upload" | "nothing";
             gitUrl?: string;
             upload?: {
                 uploadFileId: string;
@@ -261,63 +176,45 @@ export default class DataProjectManager {
             };
         }
     ) {
-        if (
-            this.getUserIdFromProjectName(projectName).filter((getUserId) => {
-                this.isProjectCreator(getUserId, userId, projectName) ||
-                    this.isProjectParticipants(getUserId, userId, projectName);
-            }).length > 0
-        ) {
+        if (!fs.existsSync(this.getProjectDefaultPath())) {
+            fs.mkdirSync(this.getProjectDefaultPath(), { recursive: true });
+        }
+
+        if (typeof this.getProjectId(userId, projectName) !== "undefined") {
             return false;
         }
+
         try {
-            if (source !== undefined) {
-                if (source.gitUrl !== undefined) {
-                    this.gitCloneFromURL(userId, source.gitUrl, projectName);
-                }
-                if (source.upload?.uploadFileId !== undefined) {
-                    if (
-                        !this.createProjectFromFile(
-                            userId,
-                            projectName,
-                            source.upload
-                        )
-                    ) {
-                        return false;
-                    }
-                    delete UploadFileManager[source.upload?.uploadFileId];
-                }
-            } else if (source === undefined) {
-                fs.mkdirSync(this.getProjectWorkPath(userId, projectName), {
+            const projectId = uuidv4();
+            const func: { [key in string]: (projectId: string, source: any) => boolean } = {
+                gitUrl: this.gitCloneFromURL,
+                upload: this.createProjectFromFile,
+                nothing: this.createEmptyProject,
+            };
+            if (!func[source.type](projectId, source)) {
+                return false;
+            }
+
+            if (!fs.existsSync(this.getProjectDataPath(projectId))) {
+                fs.mkdirSync(this.getProjectDataPath(projectId), {
                     recursive: true,
                 });
             }
+
             if (projectThumbnail !== undefined) {
-                if (
-                    !handle(
-                        `${UploadDirectoryPath}/${projectThumbnail}`,
-                        `${this.getProjectWorkPath(
-                            userId,
-                            projectName
-                        )}/${projectThumbnail}`,
-                        {}
-                    )
-                ) {
+                if (!handle(`${UploadDirectoryPath}/${projectThumbnail}`, `${this.getProjectWorkPath(projectId)}${projectThumbnail}`)) {
                     return false;
                 }
                 delete UploadFileManager[projectThumbnail];
             }
 
-            if (!fs.existsSync(this.getProjectDataPath(userId, projectName))) {
-                fs.mkdirSync(this.getProjectDataPath(userId, projectName), {
-                    recursive: true,
-                });
-            }
-            this.setProjectInfo(userId, projectName, {
+            this.setProjectInfo(projectId, {
+                projectId: projectId,
                 projectName: projectName,
                 projectDescription: projectDescription,
                 projectThumbnail: projectThumbnail,
                 projectCreator: userId,
-                projectParticipants: projectParticipants,
+                projectParticipants: projectParticipants ? [...projectParticipants, userId] : [userId],
             });
         } catch (err) {
             log.error(err.stack);
@@ -326,45 +223,29 @@ export default class DataProjectManager {
         return true;
     }
 
-    static update(
-        userId: string,
-        projectName: string,
-        projectInfo: TProjectUpdateData
-    ): boolean {
+    static update(userId: string, projectName: string, participantIncluded: boolean, projectInfo: TProjectUpdateData): boolean {
+        const projectId = this.getProjectId(userId, projectName);
+        log.debug(projectId);
+        if (typeof projectId !== "string") {
+            return false;
+        }
         try {
-            if (
-                this.getUserIdFromProjectName(projectName).filter(
-                    (getUserId) => {
-                        return this.isProjectCreator(
-                            getUserId,
-                            userId,
-                            projectName
-                        );
-                    }
-                ).length === 0
-            ) {
+            if (!this.canEditProject(userId, projectId, participantIncluded)) {
                 return false;
             }
-            const getUserId = this.getUserIdFromProjectName(projectName);
-            const projectData = this.getProjectInfo(getUserId[0], projectName);
+            const projectData = this.getProjectInfo(projectId);
             if (projectData === undefined) {
                 return false;
             }
+            //projectParticipants가 있는지,없는지, 있다면 creator인 userId가 포함돼있는지, 아닌지
             if (
-                !this.setProjectInfo(userId, projectName, {
+                !this.setProjectInfo(projectId, {
                     projectId: projectData.projectId,
-                    projectName:
-                        projectInfo.projectName ?? projectData.projectName,
-                    projectDescription:
-                        projectInfo.projectDescription ??
-                        projectData.projectDescription,
-                    projectThumbnail:
-                        projectInfo.projectThumbnail ??
-                        projectData.projectThumbnail,
+                    projectName: projectInfo.projectName ?? projectData.projectName,
+                    projectDescription: projectInfo.projectDescription ?? projectData.projectDescription,
+                    projectThumbnail: projectInfo.projectThumbnail ?? projectData.projectThumbnail,
                     projectLanguage: projectData.projectLanguage,
-                    projectParticipants:
-                        projectInfo.projectParticipants ??
-                        projectData.projectParticipants,
+                    projectParticipants: projectInfo.projectParticipants ?? projectData.projectParticipants,
                 })
             ) {
                 return false;
@@ -377,72 +258,151 @@ export default class DataProjectManager {
     }
 
     static delete(userId: string, projectName: string): boolean {
-        const getUserId = this.getUserIdFromProjectName(projectName).filter(
-            (getUserId) => {
-                this.isProjectCreator(getUserId, userId, projectName);
-            }
-        );
-        if (getUserId.length === 0) {
+        const projectId = this.getProjectId(userId, projectName);
+        log.debug(projectId);
+        if (typeof projectId !== "string") {
             return false;
         }
-        if (
-            !this.isExists(getUserId[0], projectName, this.getProjectWorkPath)
-        ) {
+
+        if (!this.canEditProject(userId, projectId, false)) {
             return false;
         }
-        if (!removeData(this.getProjectWorkPath(getUserId[0], projectName))) {
+        if (!this.isExists(projectId, this.getProjectWorkPath)) {
             return false;
         }
-        if (
-            !this.isExists(getUserId[0], projectName, this.getProjectDataPath)
-        ) {
+        if (!removeData(this.getProjectWorkPath(projectId))) {
             return false;
         }
-        if (!removeData(this.getProjectDataPath(getUserId[0], projectName))) {
+        if (!this.isExists(projectId, this.getProjectDataPath)) {
+            return false;
+        }
+        if (!removeData(this.getProjectDataPath(projectId))) {
             return false;
         }
         return true;
     }
 
     static export(userId: string, projectName: string) {
-        const projectInfo = getJsonData(
-            this.getProjectDataPath(userId, projectName)
-        );
-        fs.unlinkSync(
-            this.getProjectDataPath(userId, projectName, "projectInfo.json")
-        );
-        zip(
-            this.getProjectWorkPath(userId, projectName),
-            `${this.getProjectWorkPath(userId, projectName)}/${projectName}.zip`
-        );
-        setJsonData(
-            this.getProjectDataPath(userId, projectName, "projectInfo.json"),
-            projectInfo
-        );
+        const projectId = this.getProjectId(userId, projectName);
+        if (typeof projectId !== "string") {
+            return false;
+        }
+        try {
+            zip(this.getProjectWorkPath(projectId), `${this.getProjectWorkPath(projectId)}/${projectName}.zip`);
+        } catch (e) {
+            log.error(e.stack);
+            return false;
+        }
+        return true;
     }
 
-    static getCodesFromProject(
-        userId: string,
-        { projectName, filePath }: { projectName: string; filePath: string }
-    ) {
-        const getUserId = DataProjectManager.getUserIdFromProjectName(
-            projectName
-        ).filter((getUserId) => {
-            this.isProjectCreator(getUserId, userId, projectName) ||
-                this.isProjectParticipants(getUserId, userId, projectName);
-        });
-        if (getUserId.length === 0 || getUserId.length > 1) {
-            return {};
+    static getCodesFromProject(userId: string, { projectName, filePath }: { projectName: string; filePath: string }) {
+        const projectId = this.getProjectId(userId, projectName);
+        if (typeof projectId !== "string") {
+            return { message: "could not find project" };
+        }
+        if (!this.canEditProject(userId, projectId, true)) {
+            return { message: "could not edit project" };
         }
         const fileData: TFileData = {};
-        const codeData = readCodesFromFile(
-            this.getProjectWorkPath(getUserId[0], projectName),
-            filePath
-        );
+        const codeData = readCodesFromFile(this.getProjectWorkPath(projectId), filePath);
         if (codeData !== undefined) {
             fileData["filePath"] = filePath;
             fileData["fileContent"] = codeData;
         }
         return fileData;
+    }
+
+    static changeProjectCode(userId: string, { projectName, filePath, code }: { projectName: string; filePath: string; code: string }) {
+        const projectId = this.getProjectId(userId, projectName);
+        if (typeof projectId !== "string") {
+            return { message: "could not find project" };
+        }
+        if (!this.canEditProject(userId, projectId, true)) {
+            return { message: "could not edit project" };
+        }
+
+        if (!writeCodeToFile(this.getProjectWorkPath(projectId), filePath, code)) {
+            return { message: "file write error" };
+        }
+        return { message: "file write complete" };
+    }
+
+    static moveProjectFileOrDir(userId: string, { projectName, oldPath, newPath }: { projectName: string; oldPath: string; newPath: string }) {
+        const projectId = this.getProjectId(userId, projectName);
+        if (typeof projectId !== "string") {
+            return { message: "could not find project" };
+        }
+        if (!this.canEditProject(userId, projectId, true)) {
+            return { message: "could not change file or dir" };
+        }
+        const fullOldPath = path.join(this.getProjectWorkPath(projectId), oldPath);
+        const fullNewPath = path.join(this.getProjectWorkPath(projectId), newPath);
+        if (!isExists(fullOldPath)) {
+            return { message: "could not find path" };
+        }
+        try {
+            fs.renameSync(fullOldPath, fullNewPath);
+        } catch (e) {
+            log.error(e.stack);
+            return { message: "fail to move file or dir" };
+        }
+        return { message: "move complete" };
+    }
+
+    static deleteFileOrDir(userId: string, { projectName, deletePath, recursive }: { projectName: string; deletePath: string; recursive?: boolean }) {
+        const projectId = this.getProjectId(userId, projectName);
+        if (typeof projectId !== "string") {
+            return { message: "could not find project" };
+        }
+        if (!this.canEditProject(userId, projectId, true)) {
+            return { message: "could not change file or dir" };
+        }
+        try {
+            const fullPath = path.join(this.getProjectWorkPath(projectId), deletePath);
+            if (fs.statSync(fullPath).isDirectory()) {
+                fs.rmdirSync(fullPath, { recursive: recursive });
+            } else if (fs.statSync(fullPath).isFile()) {
+                fs.unlinkSync(fullPath);
+            }
+        } catch (e) {
+            log.error(e.stack);
+            return { message: "fail to delete file or dir" };
+        }
+        return { message: "delete complete" };
+    }
+    static createProjectFile(userId: string, { projectName, filePath }: { projectName: string; filePath: string }) {
+        const projectId = this.getProjectId(userId, projectName);
+        if (typeof projectId !== "string") {
+            return { message: "could not find project" };
+        }
+        if (!this.canEditProject(userId, projectId, true)) {
+            return { message: "could not create file" };
+        }
+        try {
+            const fullPath = path.join(this.getProjectWorkPath(projectId), filePath);
+            fs.openSync(fullPath, "w");
+        } catch (e) {
+            log.error(e.stack);
+            return { message: "fail to create file" };
+        }
+        return { message: "create file complete" };
+    }
+    static createProjectDir(userId: string, { projectName, dirPath }: { projectName: string; dirPath: string }) {
+        const projectId = this.getProjectId(userId, projectName);
+        if (typeof projectId !== "string") {
+            return { message: "could not find project" };
+        }
+        if (!this.canEditProject(userId, projectId, true)) {
+            return { message: "could not create dir" };
+        }
+        try {
+            const fullPath = path.join(this.getProjectWorkPath(projectId), dirPath);
+            fs.mkdirSync(fullPath, { recursive: true });
+        } catch (e) {
+            log.error(e.stack);
+            return { message: "fail to create dir" };
+        }
+        return { message: "create dir complete" };
     }
 }

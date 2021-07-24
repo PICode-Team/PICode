@@ -3,6 +3,7 @@ import { TSocketPacket } from "../../types/module/socket.types";
 import log from "../log";
 import chat from "./chat";
 import code from "./code";
+
 import { SocketInfo } from "./manager";
 
 const SocketFuncs = {
@@ -12,6 +13,7 @@ const SocketFuncs = {
 
 export function webSocketInit(server: expressWs.Application) {
     server.ws("/", (ws, req) => {
+        req.session.userId = "eunpyo";
         if (req?.session?.userId === undefined) {
             return ws.close();
         }

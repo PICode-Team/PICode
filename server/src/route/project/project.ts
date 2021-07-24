@@ -3,6 +3,7 @@ import { ResponseCode } from "../../constants/response";
 import sessionRouter from "../../lib/router/session";
 import DataProjectManager from "../../module/data/projectManager";
 import log from "../../module/log";
+import { TProjectUpdateData } from "../../types/module/data/project.type";
 
 const router = express.Router();
 
@@ -20,9 +21,8 @@ router.post("/", (req, res) => {
     const projectInfo = req.body?.projectInfo;
     const source = req.body?.source ?? {};
 
-    DataProjectManager.create(userId, projectInfo, source);
-    if (!true) {
-        return res.json({ code: ResponseCode.internalError });
+    if (!DataProjectManager.create(userId, projectInfo, source)) {
+        return res.json({ code: ResponseCode.confilct });
     }
 
     log.info(`Create project (projectName: "${projectInfo.projectName}")`);
@@ -33,29 +33,17 @@ router.post("/", (req, res) => {
 router.put("/", (req, res) => {
     const userId = req.session.userId as string;
     const projectName = req.body?.projectName as string;
-    const newProjectName = (req.body?.newProjectName as string) || projectName;
-    const projectDescription = req.body?.projectDescription as string;
-    const projectThumbnail = req.body?.projectThumbnail as string;
-    const projectParticipants = req.body?.projectParticipants as string[];
+    const projectInfo = req.body?.projectInfo as TProjectUpdateData;
 
     if (projectName === undefined) {
         return res.json({ code: ResponseCode.missingParameter });
     }
 
-    const result = DataProjectManager.update(userId, projectName, {
-        projectName: newProjectName,
-        projectDescription,
-        projectThumbnail,
-        projectParticipants,
-    });
-
-    if (result === false) {
+    if (!DataProjectManager.update(userId, projectName, false, projectInfo)) {
         return res.json({ code: ResponseCode.invaildRequest });
     }
 
-    log.info(
-        `ProjectInfo changed (Projectname: "${newProjectName}", projectDescription : "${projectDescription}", projectThumbnail : "${projectThumbnail}")`
-    );
+    log.info(`ProjectInfo changed (Projectname: "${projectInfo.projectName}", projectDescription : "${projectInfo.projectDescription}", projectThumbnail : "${projectInfo.projectThumbnail}")`);
 
     return res.json({ code: ResponseCode.ok });
 });
