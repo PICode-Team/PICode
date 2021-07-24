@@ -113,6 +113,17 @@ function Home({
   );
 }
 
+function DayBoundary({ time }: { time: string }) {
+  const classes = messengerStyle();
+
+  return (
+    <div className={classes.timeWrapper}>
+      <div className={classes.dayBoundary}></div>
+      <div className={classes.timeTicket}>어제</div>
+    </div>
+  );
+}
+
 interface TMessage {
   sender: string;
   text: string;
@@ -230,17 +241,12 @@ function Room({
           <div className={classes.content}>
             {messageList.map((v, i) => {
               if (v.time === "") {
-                return (
-                  <div className={classes.timeWrapper}>
-                    <div className={classes.dayBoundary}></div>
-                    <div className={classes.timeTicket}>어제</div>
-                  </div>
-                );
+                return <DayBoundary time={v.time} />;
               }
               if (v.sender === "me") {
-                return <KMessageReverseBox {...v} />;
+                return <KMessageReverseBox {...v} key={`messenger-${i}`} />;
               } else {
-                return <KMessageBox {...v} />;
+                return <KMessageBox {...v} key={`messenger-${i}`} />;
               }
             })}
           </div>
@@ -305,6 +311,14 @@ export default function Messenger() {
   const classes = messengerStyle();
   const [open, setOpen] = useState<boolean>(false);
   const [room, setRoom] = useState<string>("");
+
+  if (window === undefined) return <React.Fragment></React.Fragment>;
+
+  if (window.location.href.indexOf("chat") === -1) {
+    console.log(123);
+
+    return <React.Fragment></React.Fragment>;
+  }
 
   if (open) {
     return (

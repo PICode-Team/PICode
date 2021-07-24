@@ -212,7 +212,7 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
         height: "calc(100% - 24px)",
         width: "100%",
         backgroundColor: theme.backgroundColor.step1,
-
+        color: theme.font.medium.color,
         outline: "none",
         border: "1px solid rgba(255, 255, 255, 0.5)",
       },

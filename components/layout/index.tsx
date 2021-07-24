@@ -2,13 +2,14 @@ import React from "react";
 import { LayoutStyle } from "../../styles/layout/layout";
 import { Topbar } from "./topbar";
 import { Sidebar } from "./sidebar";
+import Messenger from "../service/chat/messenger";
 
 export function Layout(ctx: any) {
   const classes = LayoutStyle();
 
   if (typeof window !== "undefined") {
     if (ctx.session.userId === undefined) {
-      window.location.href = "/"
+      window.location.href = "/";
     }
   }
 
@@ -19,6 +20,7 @@ export function Layout(ctx: any) {
         <Sidebar {...ctx} />
         {ctx.children}
       </div>
+      <Messenger />
     </div>
   );
 }

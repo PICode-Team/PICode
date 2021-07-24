@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useState } from "react";
 import {
   chatStyle,
@@ -113,81 +113,69 @@ function CreateChannel({
   );
 }
 
-export default function Chat() {
+export interface TSocketPacket {
+  category: "chat" | "connect";
+  type: string;
+  data: any;
+}
+
+export default function Chat(ctx: any) {
   const classes = chatStyle();
-  const [chatList, setChatList] = useState<TChat[]>([]);
+  const [messages, setMessages] = useState<TChat[]>([]);
   const [modal, setModal] = useState<boolean>(false);
+  const [isPaused, setPause] = useState<boolean>(false);
+  const [typing, setTyping] = useState<string>("");
+  const ws = useRef<WebSocket | null>(null);
+  const messageRef = useRef<HTMLInputElement>(null);
+
+  function sendMessage() {
+    ws.current?.send(
+      JSON.stringify({
+        category: "chat",
+        type: "sendMessage",
+        data: {
+          target: ctx.session?.userId ?? "error",
+          msg: messageRef.current?.value ?? "error",
+        },
+      })
+    );
+
+    document.getElementsByTagName("input")[1].value = "";
+  }
+
+  function enterEvent(event: KeyboardEvent) {
+    if (event.keyCode === 13) {
+      sendMessage();
+    }
+  }
 
   useEffect(() => {
-    setChatList([
-      {
-        user: "me",
-        message:
-          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
-        time: "AM 11:51",
-      },
-      {
-        user: "test",
-        message:
-          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
-        time: "AM 11:51",
-      },
-      {
-        user: "me",
-        message:
-          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
-        time: "AM 11:51",
-      },
-      {
-        user: "test",
-        message:
-          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
-        time: "AM 11:51",
-      },
-      {
-        user: "me",
-        message:
-          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
-        time: "AM 11:51",
-      },
-      {
-        user: "test",
-        message:
-          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
-        time: "AM 11:51",
-      },
-      {
-        user: "me",
-        message:
-          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
-        time: "AM 11:51",
-      },
-      {
-        user: "test",
-        message:
-          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
-        time: "AM 11:51",
-      },
-      {
-        user: "me",
-        message:
-          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
-        time: "AM 11:51",
-      },
-      {
-        user: "test",
-        message:
-          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
-        time: "AM 11:51",
-      },
-      {
-        user: "me",
-        message:
-          "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc,",
-        time: "AM 11:51",
-      },
-    ]);
+    ws.current = new WebSocket("ws://192.168.0.23:4000/");
+    ws.current.onmessage = (msg) => {
+      if (msg.type === "chat") {
+        const message = JSON.parse(msg.data);
+        setMessages([
+          ...messages,
+          { user: message.target, message: message.msg, time: "" },
+        ]);
+      }
+    };
+
+    document.addEventListener("keypress", enterEvent);
+
+    return () => {
+      ws.current?.close();
+      document.removeEventListener("keypress", enterEvent);
+    };
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (ws.current) {
+        ws.current.close();
+      }
+    };
+  }, [ws]);
 
   return (
     <div className={classes.root}>
@@ -329,32 +317,32 @@ export default function Chat() {
         </div>
         <div className={classes.contentBox}>
           <div className={classes.content}>
-            <DayBoundary text="yesterday" />
-            {chatList.map((v, i) => {
+            {messages.map((v, i) => {
               if (v.time === "~~") {
-                return <DayBoundary text={v.time} />;
+                return <DayBoundary text={v.time} key={`dayboundary-${i}`} />;
               }
-              if (v.user === "me") {
-                return <MessageReverseBox {...v} />;
+              if (v.user === ctx.session.userId) {
+                return <MessageReverseBox {...v} key={`messagebox-${i}`} />;
               } else {
-                return <MessageBox {...v} />;
+                return <MessageBox {...v} key={`messagebox-${i}`} />;
               }
             })}
           </div>
         </div>
         <div className={classes.input}>
-          <input type="text" />
+          <input type="text" ref={messageRef} />
           <div className={classes.entering}>
             <span className={classes.enterIcon}>
               <FiberManualRecord />
               <FiberManualRecord />
               <FiberManualRecord />
             </span>
-            <span className={classes.enterText}>kim is typing...</span>
+            {typing !== "" && (
+              <span className={classes.enterText}>{typing} is typing...</span>
+            )}
           </div>
         </div>
       </div>
-      <Messenger />
       <CreateChannel modal={modal} setModal={setModal} />
     </div>
   );
