@@ -331,16 +331,18 @@ export default function Chat(ctx: any) {
         </div>
         <div className={classes.input}>
           <input type="text" ref={messageRef} />
-          <div className={classes.entering}>
-            <span className={classes.enterIcon}>
-              <FiberManualRecord />
-              <FiberManualRecord />
-              <FiberManualRecord />
-            </span>
-            {typing !== "" && (
-              <span className={classes.enterText}>{typing} is typing...</span>
-            )}
-          </div>
+          {typing === "" && (
+            <div className={classes.entering}>
+              <span className={classes.enterIcon}>
+                <FiberManualRecord />
+                <FiberManualRecord />
+                <FiberManualRecord />
+              </span>
+              <span className={classes.enterText}>
+                {`${typing} is typing...`}{" "}
+              </span>
+            </div>
+          )}
         </div>
       </div>
       <CreateChannel modal={modal} setModal={setModal} />
