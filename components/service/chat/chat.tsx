@@ -10,7 +10,6 @@ import {
   FiberManualRecord,
   Close,
 } from "@material-ui/icons";
-import Messenger from "./messenger";
 import CustomButton from "../../items/input/button";
 import CustomTextField from "../../items/input/textfield";
 
@@ -79,6 +78,8 @@ function CreateChannel({
   setModal: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const classes = createChannelStyle();
+  const nameRef = useRef<HTMLInputElement>(null);
+  const descriptionRef = useRef<HTMLInputElement>(null);
 
   return (
     <React.Fragment>
@@ -102,11 +103,30 @@ function CreateChannel({
           </div>
         </div>
         <div className={classes.modalBody}>
-          <CustomTextField label="Name" />
-          <CustomTextField label="Description" />
+          <CustomTextField label="Name" ref={nameRef} />
+          <CustomTextField label="Description" ref={descriptionRef} />
         </div>
         <div className={classes.modalFooter}>
-          <CustomButton text="CREATE" width="76px" />
+          <CustomButton
+            text="CREATE"
+            width="76px"
+            onClick={() => {
+              if (nameRef.current && descriptionRef.current) {
+                // if (ws.current && ws.current.CONNECTING) {
+                //   ws.current.send(
+                //     JSON.stringify({
+                //       category: "chat",
+                //       type: "createChannel",
+                //       data: {
+                //         target: target,
+                //         chatName: nameRef.current.value
+                //       },
+                //     })
+                //   );
+                // }
+              }
+            }}
+          />
         </div>
       </div>
     </React.Fragment>
@@ -123,29 +143,84 @@ export default function Chat(ctx: any) {
   const classes = chatStyle();
   const [messages, setMessages] = useState<TChat[]>([]);
   const [modal, setModal] = useState<boolean>(false);
-  const [isPaused, setPause] = useState<boolean>(false);
-  const [typing, setTyping] = useState<string>("");
+  const [typing, setTyping] = useState<string[]>([]);
+  const [target, setTarget] = useState<string>("");
+  const [channelList, setChannelList] = useState<string[]>([
+    "#frontend",
+    "#backend",
+    "#designer",
+    "#project",
+  ]);
+  const [directList, setDirectList] = useState<string[]>([
+    "@kim",
+    "@lee",
+    "@oh",
+    "@park",
+  ]);
   const ws = useRef<WebSocket | null>(null);
   const messageRef = useRef<HTMLInputElement>(null);
 
-  function sendMessage() {
-    ws.current?.send(
-      JSON.stringify({
-        category: "chat",
-        type: "sendMessage",
-        data: {
-          target: ctx.session?.userId ?? "error",
-          msg: messageRef.current?.value ?? "error",
-        },
-      })
-    );
-
-    document.getElementsByTagName("input")[1].value = "";
+  function sendMessage(target: string, msg: string) {
+    if (ws.current && ws.current.CONNECTING) {
+      ws.current.send(
+        JSON.stringify({
+          category: "chat",
+          type: "sendMessage",
+          data: {
+            target: target,
+            msg: msg,
+          },
+        })
+      );
+    }
   }
 
   function enterEvent(event: KeyboardEvent) {
     if (event.keyCode === 13) {
-      sendMessage();
+      if (messageRef.current && target !== "") {
+        sendMessage(target, messageRef.current.value);
+        messageRef.current.value = "";
+      }
+    }
+  }
+
+  async function getChat() {
+    if (ws.current && ws.current.CONNECTING) {
+      await ws.current.send(
+        JSON.stringify({
+          category: "chat",
+          type: "getChat",
+        })
+      );
+    }
+  }
+
+  async function getChatLog(target: string, page: string) {
+    if (ws.current && ws.current.CONNECTING) {
+      await ws.current.send(
+        JSON.stringify({
+          category: "chat",
+          type: "getChatLog",
+          data: {
+            target: target,
+            page: page,
+          },
+        })
+      );
+    }
+  }
+
+  async function getChatLogList(target: string) {
+    if (ws.current && ws.current.CONNECTING) {
+      await ws.current.send(
+        JSON.stringify({
+          category: "chat",
+          type: "getChatLogList",
+          data: {
+            target: target,
+          },
+        })
+      );
     }
   }
 
@@ -161,10 +236,17 @@ export default function Chat(ctx: any) {
       }
     };
 
+    if (ws.current.CONNECTING) {
+      getChat();
+      // setChannelList()
+      // setDirectList()
+      // getChatLogList()
+      // setMessages()
+    }
+
     document.addEventListener("keypress", enterEvent);
 
     return () => {
-      ws.current?.close();
       document.removeEventListener("keypress", enterEvent);
     };
   }, []);
@@ -215,28 +297,24 @@ export default function Chat(ctx: any) {
             <ArrowDropDown />
             <span>Channel</span>
           </div>
-          <div className={`${classes.channel} ${classes.join}`}>
-            <span className={classes.box}>#</span>
-            <span>backend</span>
-          </div>
-          <div className={`${classes.channel} ${classes.join}`}>
-            <span className={classes.box}>#</span>
-            <span>frontend</span>
-          </div>
-          <div className={`${classes.channel} ${classes.unjoin}`}>
-            <span>
-              <span className={classes.box}>+</span>
-              <span>designer</span>
-            </span>
-            <span className={classes.deleteChannel}>X</span>
-          </div>
-          <div className={`${classes.channel} ${classes.unjoin}`}>
-            <span>
-              <span className={classes.box}>+</span>
-              <span>project</span>
-            </span>
-            <span className={classes.deleteChannel}>X</span>
-          </div>
+          {channelList.map((v, i) => {
+            return (
+              <div
+                className={`${classes.channel} ${classes.join}`}
+                key={`channel-${i}`}
+                onClick={() => {
+                  setTarget(v);
+                }}
+              >
+                <span>
+                  <span className={classes.box}>+</span>
+                  <span>{v.replace("#", "")}</span>
+                </span>
+                <span className={classes.deleteChannel}>X</span>
+              </div>
+            );
+          })}
+
           <div
             className={classes.channel}
             onClick={() => {
@@ -259,48 +337,24 @@ export default function Chat(ctx: any) {
             <ArrowDropDown />
             <span>Direct Message</span>
           </div>
-          <div className={classes.direct}>
-            <div className={classes.directUserWrapper}>
-              <div className={classes.directUser}></div>
-              <div className={classes.directName}>Slackbot</div>
-            </div>
-            <span className={classes.deleteChannel}>X</span>
-          </div>
-          <div className={classes.direct}>
-            <div className={classes.directUserWrapper}>
-              <div className={classes.directUser}></div>
-              <div className={classes.directName}>Slackbot</div>
-            </div>
-            <span className={classes.deleteChannel}>X</span>
-          </div>
-          <div className={classes.direct}>
-            <div className={classes.directUserWrapper}>
-              <div className={classes.directUser}></div>
-              <div className={classes.directName}>Slackbot</div>
-            </div>
-            <span className={classes.deleteChannel}>X</span>
-          </div>
-          <div className={classes.direct}>
-            <div className={classes.directUserWrapper}>
-              <div className={classes.directUser}></div>
-              <div className={classes.directName}>Slackbot</div>
-            </div>
-            <span className={classes.deleteChannel}>X</span>
-          </div>
-          <div className={classes.direct}>
-            <div className={classes.directUserWrapper}>
-              <div className={classes.directUser}></div>
-              <div className={classes.directName}>Slackbot</div>
-            </div>
-            <span className={classes.deleteChannel}>X</span>
-          </div>
-          <div className={classes.direct}>
-            <div className={classes.directUserWrapper}>
-              <div className={classes.directUser}></div>
-              <div className={classes.directName}>Slackbot</div>
-            </div>
-            <span className={classes.deleteChannel}>X</span>
-          </div>
+          {directList.map((v, i) => {
+            return (
+              <div
+                className={classes.direct}
+                key={`direct-${i}`}
+                onClick={() => {
+                  setTarget(v);
+                }}
+              >
+                <div className={classes.directUserWrapper}>
+                  <div className={classes.directUser}></div>
+                  <div className={classes.directName}>{v.replace("@", "")}</div>
+                </div>
+                <span className={classes.deleteChannel}>X</span>
+              </div>
+            );
+          })}
+
           <div className={classes.channel}>
             <span className={classes.addChannel}>+</span>
             Add Colleague
@@ -331,7 +385,7 @@ export default function Chat(ctx: any) {
         </div>
         <div className={classes.input}>
           <input type="text" ref={messageRef} />
-          {typing === "" && (
+          {typing.length > 0 && (
             <div className={classes.entering}>
               <span className={classes.enterIcon}>
                 <FiberManualRecord />
@@ -339,7 +393,7 @@ export default function Chat(ctx: any) {
                 <FiberManualRecord />
               </span>
               <span className={classes.enterText}>
-                {`${typing} is typing...`}{" "}
+                {`${typing.map((v) => `${v} `)} is typing...`}
               </span>
             </div>
           )}
