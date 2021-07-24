@@ -25,3 +25,26 @@ a {
 * {
   box-sizing: border-box;
 }
+
+.carousel-root {
+  height: 100% !important;
+}
+.carousel-slider {
+  height: 100% !important;
+}
+
+.axis-horizontal {
+  height: 100% !important;
+}
+
+.slider {
+  height: 100% !important;
+}
+
+.w-md-editor-show-live {
+  height: 100% !important;
+}
+
+.w-md-editor-content {
+  height: calc(100% - 29px) !important;
+}

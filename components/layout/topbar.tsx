@@ -8,17 +8,32 @@ import { TopbarStyle } from "../../styles/layout/topbar";
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 import { useState } from "react";
 import UserInfo from "./item/tooltip";
+import { useEffect } from "react";
 
-export function Topbar() {
+export function Topbar(ctx: any) {
     const theme = useSelector((state: any) => state.theme).theme
     const dispatch = useDispatch();
     const classes = TopbarStyle();
     const [open, setOpen] = React.useState<boolean>(false);
-    let user = {
-        id: "test@test.com",
-        pw: "1234",
-        name: "test"
+    const [data, setData] = React.useState<{
+        userId: string;
+        userName: string;
+    }>({ userId: "", userName: "" });
+
+    const getUserData = async () => {
+        let data = await fetch(`http://localhost:8000/api/user`, {
+            method: "GET",
+            mode: "cors",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        }).then((res) => res.json())
+        setData(data.user)
     }
+
+    useEffect(() => {
+        getUserData();
+    }, [])
 
     return (
         <React.Fragment>
@@ -35,7 +50,7 @@ export function Topbar() {
 
                 </div>
             </div>
-            {open === true && <UserInfo open={open} setOpen={setOpen} data={user} theme={theme} />}
+            {open === true && <UserInfo open={open} setOpen={setOpen} data={data} theme={theme} />}
         </React.Fragment >
     )
 }

@@ -9,13 +9,32 @@ import { loginStyle } from "../../../styles/service/user/login";
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 import CustomButton from "../../items/input/button";
 import CustomTextField from "../../items/input/textfield";
+import { resultType } from "../../constant/fetch/result";
 
 export default function Login() {
     const classes = loginStyle();
     const theme = useSelector((state: any) => state.theme).theme
-    const [id, setId] = React.useState<string>("");
-    const [pw, setPw] = React.useState<string>("");
+    const [userId, setUserId] = React.useState<string>("");
+    const [passwd, setPasswd] = React.useState<string>("");
     const dispatch = useDispatch();
+
+    const submitLogin = async () => {
+        let payload = {
+            userId: userId,
+            passwd: passwd
+        }
+
+        let data: { code: number; } = await fetch(`http://localhost:8000/api/user/sign`, {
+            method: "POST",
+            mode: "cors",
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        }).then((res) => res.json())
+        window.location.reload()
+    }
 
     return (
         <div className={classes.root}>
@@ -38,21 +57,19 @@ export default function Login() {
                         </span>
                     </div>
                     <div className={classes.inputBox}>
-                        <CustomTextField label="Email" type="email" onChange={(e: any) => setId(e.target.value)} />
-                        <CustomTextField label="Password" type="password" onChange={(e: any) => setPw(e.target.value)} onKeyPress={(e: any) => {
+                        <CustomTextField label="Email" type="email" onChange={(e: any) => setUserId(e.target.value)} />
+                        <CustomTextField label="Password" type="password" onChange={(e: any) => setPasswd(e.target.value)} onKeyPress={(e: any) => {
                             if (e.key === "Enter") {
-                                window.location.href = "/"
+                                submitLogin();
+
                             }
                         }} />
                     </div>
                     <div className={classes.buttonBox}>
                         <CustomButton text="login" onClick={() => {
-                            if (id === "") return;
-                            if (pw === "") return;
-                            let serverData: any = JSON.parse(localStorage.getItem("user") as any)
-                            if (id === serverData.id && pw === serverData.pw) {
-                                window.location.href = "/"
-                            }
+                            if (userId === "") return;
+                            if (passwd === "") return;
+                            submitLogin();
                         }} />
                         <a href="#">Forgot Username / Password?</a>
                     </div>

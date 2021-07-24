@@ -4,5 +4,5 @@
     ],
     "delay": 2,
     "ext": "ts, json",
-    "exec": "ts-node --files ./server/src"
+    "exec": "ts-node --project ./server/tsconfig.json --files ./server/src"
 }

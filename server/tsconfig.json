@@ -5,10 +5,12 @@
         "resolveJsonModule": true,
         "moduleResolution": "node",
         "outDir": "./dist",
-        "typeRoots": ["./node_modules/@types"],
-        "allowJs": true, 
-        "checkJs": true,
-  
+        "typeRoots": [
+            "../node_modules/@types/react-dom",
+            "../node_modules/@types/express",
+            "../node_modules/@types/express-session",
+            "./src/define"
+        ],
         "strict": true,
         "strictNullChecks": true,
         "strictFunctionTypes": true,
@@ -18,7 +20,8 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "noImplicitReturns": true,
-  
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
         "esModuleInterop": true,
         "sourceMap": true
     },
@@ -26,6 +29,6 @@
         "./src/**/*"
     ],
     "exclude": [
-        "./node_modules"
+        "./dist/**/*"
     ]
-  }
+}
