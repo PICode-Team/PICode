@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { createProjectStyle } from "../../../styles/service/project/createtmp"
 import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
@@ -7,6 +7,7 @@ import GitHubIcon from '@material-ui/icons/GitHub';
 import InsertPhotoIcon from '@material-ui/icons/InsertPhoto';
 
 interface TSource {
+    type: string;
     gitUrl?: string;
     upload?: {
         uploadFileId?: string;
@@ -19,7 +20,6 @@ interface TProjectInfo {
     projectDescription: string,
     projectThumbnail?: string,
     projectParticipants?: any
-
 }
 
 interface TCreate {
@@ -29,6 +29,40 @@ interface TCreate {
 
 const DefualtInput = ({ classes, setDefualtInput, defaultInput }: any) => {
     const [upload, setUpload] = React.useState<boolean>(false);
+    const [imageName, setImageName] = React.useState<string>("");
+
+    const dragRef = useRef<any>(null);
+
+    const dragOver = (e: any) => {
+        e.preventDefault();
+    }
+
+    const dragEnter = (e: any) => {
+        e.preventDefault();
+        setUpload(true)
+    }
+
+    const dragLeave = (e: any) => {
+        e.preventDefault();
+        setUpload(false)
+    }
+
+    const fileDrop = async (e: any) => {
+        e.preventDefault();
+        const files = e.dataTransfer.files;
+        if (files !== undefined) {
+            setImageName(files[0].name);
+            let formData = new FormData();
+            formData.append("uploadFile", files[0])
+            let result = await fetch(`http://localhost:8000/api/data`, {
+                method: "POST",
+                body: formData
+            }).then((res) => res.json())
+            if (result.code === 200) {
+                setDefualtInput({ ...defaultInput, projectThumbnail: result.uploadFileId })
+            }
+        }
+    }
 
     return <div className={classes.content}>
         <div className={classes.title}>
@@ -44,40 +78,24 @@ const DefualtInput = ({ classes, setDefualtInput, defaultInput }: any) => {
                 setDefualtInput({ ...defaultInput, projectDescription: e.target.value })
             }} value={defaultInput.projectDescription} />
             <span>Project Thumbnail</span>
-            <div className={classes.imageUpload} onDragOver={() => {
-                setUpload(true);
-            }}
-                onDragLeave={() => {
-                    setUpload(false)
-                }}
+            <div className={classes.imageUpload}
+                onDragOver={dragOver}
+                onDragEnter={dragEnter}
+                onDragLeave={dragLeave}
+                onDrop={fileDrop}
             >
                 {upload ?
-                    <div style={{ textAlign: "center" }} >
+                    <div style={{ textAlign: "center", pointerEvents: 'none' }} >
                         <InsertPhotoIcon style={{ width: "40px", height: "40px" }} />
                         <br />
-                        <span >Drop Image</span>
+                        <span >{imageName !== "" ? imageName : "Drop Image"}</span>
                     </div> :
                     <>
-                        <div style={{ textAlign: "center", display: "none" }} >
+                        <div style={{ textAlign: "center" }}>
                             <CloudUploadIcon style={{ width: "40px", height: "40px" }} />
                             <br />
                             <span >Drag and Drop Image or Click to upload Image</span>
-                            <input type="file" style={{ display: "none" }} />
                         </div>
-                        <input accept={"image/*"} type="file" id="getFile" onChange={async (e) => {
-                            let tmpImage = e.target.files
-                            if (tmpImage !== null) {
-                                let formData = new FormData();
-                                formData.append("uploadFile", tmpImage[0])
-                                let result = await fetch(`http://localhost:8000/api/data`, {
-                                    method: "POST",
-                                    body: formData
-                                }).then((res) => res.json())
-                                if (result.code === 200) {
-                                    setDefualtInput({ ...defaultInput, projectThumbnail: result.uploadFileId })
-                                }
-                            }
-                        }} />
                     </>}
             </div>
             <span>Project Participant</span>
@@ -85,7 +103,7 @@ const DefualtInput = ({ classes, setDefualtInput, defaultInput }: any) => {
                 setDefualtInput({ ...defaultInput, projectParticipants: e.target.value })
             }} />
         </div>
-    </div>
+    </div >
 }
 
 const OptionalInput = ({ type, classes, setSource, source }: any) => {
@@ -154,14 +172,20 @@ export default function CreateTmp() {
     useEffect(() => {
         if (type === "git") {
             setSource({
+                type: "gitUrl",
                 gitUrl: undefined
             })
         } else if (type === "upload") {
             setSource({
+                type: "upload",
                 upload: {
                     uploadFileId: undefined,
                     isExtract: undefined
                 }
+            })
+        } else {
+            setSource({
+                type: "nothing"
             })
         }
     }, [type])

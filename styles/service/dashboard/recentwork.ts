@@ -81,5 +81,29 @@ export const recentWorkStyle = makeStyles((theme: IThemeStyle) =>
             color: `${theme.font.high.color} !important`,
             zIndex: 3,
         },
+        carouselDiv: {
+            padding: "0px 20px",
+            height: "100%",
+        },
+        carouselContent: {
+            background: theme.backgroundColor.step3,
+            height: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: "12px",
+        },
+        carouselButton: {
+            color: theme.font.high.color,
+        },
+        tableDiv: {
+            background: theme.backgroundColor.step3,
+            height: "100%",
+            borderRadius: "12px",
+        },
+        tableContent: {
+            display: "block",
+            color: "white",
+        },
     })
 );

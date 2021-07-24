@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 import { Grid, IconButton, Slider, Switch, Typography } from "@material-ui/core";
 import React, { useState } from "react"
@@ -40,9 +41,9 @@ export default function RecentWork() {
         let width = (d3.select("#view")?.node() as any)?.getBoundingClientRect().width;
         let col = width / Number(sliderNum) - 20;
         let tmpContent = [<div key={"addProject"} style={{ padding: "20px", width: col + "px", height: "200px", display: "inline-block" }}>
-            <div style={{ background: "black", height: "100%", borderRadius: "12px" }}>
+            <div className={classes.tableDiv}>
                 <div style={{ textAlign: "center" }}>
-                    <IconButton style={{ color: "#fff" }} onClick={() => { window.location.href = "/createproject" }}>
+                    <IconButton className={classes.carouselButton} onClick={() => { window.location.href = "/createproject" }}>
                         <AddIcon />
                     </IconButton>
                     <span style={{ display: "block", textAlign: "center", color: "#fff" }}>
@@ -53,11 +54,11 @@ export default function RecentWork() {
         </div>];
         for (let i of projectData) {
             tmpContent.push(<div key={"addProject"} style={{ padding: "20px", width: col + "px", height: "200px", display: "inline-block" }}>
-                <div style={{ background: "black", height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }}>
+                <div className={classes.carouselContent}>
                     <div style={{ textAlign: "center" }}>
-                        <span style={{ display: "block", color: "white" }}>{i.projectDescription}</span>
-                        <span style={{ display: "block", color: "white" }} className="">{i.projectName}</span>
-                        <span style={{ display: "block", color: "white" }} className="">{i.projectCreator}</span>
+                        <span className={classes.tableContent}>{i.projectDescription}</span>
+                        <span className={classes.tableContent} >{i.projectName}</span>
+                        <span className={classes.tableContent} >{i.projectCreator}</span>
                     </div>
                 </div>
             </div>)
@@ -83,25 +84,49 @@ export default function RecentWork() {
 
     useEffect(() => {
         let tmpContent = [<div key={"addProject"} style={{ padding: "0px 20px", height: "100%" }}>
-            <div style={{ background: "black", height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }}>
+            <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }} className={classes.carouselContent}>
                 <div style={{ textAlign: "center" }}>
-                    <IconButton style={{ color: "#fff" }} onClick={() => { window.location.href = "/createproject" }}>
+                    <IconButton className={classes.carouselButton} onClick={() => { window.location.href = "/createproject" }}>
                         <AddIcon />
                     </IconButton>
-                    <span style={{ display: "block", textAlign: "center", color: "#fff" }}>
+                    <span style={{ display: "block", textAlign: "center" }} className={classes.carouselButton}>
                         Create Project
                     </span>
                 </div>
             </div>
         </div>];
         for (let i of projectData) {
+            let participantsInfo: any = i.projectParticipants
+            if (participantsInfo !== undefined) {
+                participantsInfo = participantsInfo.join(", ")
+                if (participantsInfo.length > 15) {
+                    participantsInfo = participantsInfo.substring(0, 15) + "..."
+                }
+            }
+
             tmpContent.push(
                 <div style={{ padding: "0px 20px", height: "100%" }}>
-                    <div style={{ background: "black", height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }}>
+                    <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }} className={classes.carouselContent}>
                         <div>
-                            <span style={{ display: "block", color: "white" }}>{i.projectDescription}</span>
-                            <span style={{ display: "block", color: "white" }} className="">{i.projectName}</span>
-                            <span style={{ display: "block", color: "white" }} className="">{i.projectCreator}</span>
+                            <div style={{ paddingBottom: "20px" }}>
+                                <img src="" width={"50%"} height={"50%"} />
+                            </div>
+                            <div style={{ display: "flex" }}>
+                                <span className={classes.tableContent}>Project Name : </span>
+                                <span className={classes.tableContent}>{i.projectName}</span>
+                            </div>
+                            <div style={{ display: "flex" }}>
+                                <span className={classes.tableContent}>Project Description : </span>
+                                <span className={classes.tableContent}>{i.projectDescription}</span>
+                            </div>
+                            <div style={{ display: "flex" }}>
+                                <span className={classes.tableContent}>Project Creator : </span>
+                                <span className={classes.tableContent}>{i.projectCreator}</span>
+                            </div>
+                            <div style={{ display: "flex" }}>
+                                <span className={classes.tableContent}>Project Creator : </span>
+                                <span className={classes.tableContent}>{participantsInfo ?? "No one"}</span>
+                            </div>
                         </div>
                     </div>
                 </div>

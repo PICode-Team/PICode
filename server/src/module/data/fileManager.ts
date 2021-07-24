@@ -1,6 +1,11 @@
 import fs from "fs";
 import path from "path";
-import { TUploadFileLanguageToSize, TUploadManager, TUploadMimeType, TLanguageList } from "../../types/module/data/file.types";
+import {
+    TUploadFileLanguageToSize,
+    TUploadManager,
+    TUploadMimeType,
+    TLanguageList,
+} from "../../types/module/data/file.types";
 import log from "../log";
 import admZip from "adm-zip";
 
@@ -52,7 +57,12 @@ export function setJsonData(dataPath: string, data: any) {
         if (!isNormalPath(dataPath)) {
             throw new Error("Error: Invalid path");
         }
-        const onlyDirPath = path.resolve(dataPath).replace(/\\/g, "/").split("/").slice(0, -1).join("/");
+        const onlyDirPath = path
+            .resolve(dataPath)
+            .replace(/\\/g, "/")
+            .split("/")
+            .slice(0, -1)
+            .join("/");
 
         if (!fs.existsSync(onlyDirPath)) {
             fs.mkdirSync(onlyDirPath, { recursive: true });
@@ -106,11 +116,16 @@ export function searchProjectFiles(
     });
 }
 
-export function calculateFileSize(filePath: string, fileToSize: TUploadFileLanguageToSize) {
+export function calculateFileSize(
+    filePath: string,
+    fileToSize: TUploadFileLanguageToSize
+) {
     const fileSizeInBytes = fs.statSync(filePath).size;
     const fileLanguage = path.extname(filePath).replace(".", "").trim();
     if (TLanguageList.includes(fileLanguage)) {
-        fileLanguage in fileToSize ? (fileToSize[fileLanguage] += fileSizeInBytes) : (fileToSize[fileLanguage] = fileSizeInBytes);
+        fileLanguage in fileToSize
+            ? (fileToSize[fileLanguage] += fileSizeInBytes)
+            : (fileToSize[fileLanguage] = fileSizeInBytes);
     }
 }
 
@@ -137,6 +152,11 @@ export function handle(
             case "image/bmp":
             case "image/jpeg": {
                 fs.renameSync(oldPath, newPath);
+                fs.renameSync(
+                    newPath,
+                    newPath.replace(getUUID(oldPath), "") +
+                        fileData.originalname
+                );
                 break;
             }
             case "application/zip":
@@ -166,7 +186,11 @@ export function readCodesFromFile(serverPath: string, clientPath: string) {
     return fs.readFileSync(fullPath).toString();
 }
 
-export function writeCodeToFile(serverPath: string, clientPath: string, code: string) {
+export function writeCodeToFile(
+    serverPath: string,
+    clientPath: string,
+    code: string
+) {
     const fullPath = path.join(serverPath, clientPath);
     if (!isExists(fullPath)) return false;
     try {

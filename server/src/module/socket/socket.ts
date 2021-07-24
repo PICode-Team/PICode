@@ -8,12 +8,11 @@ import { SocketInfo } from "./manager";
 
 const SocketFuncs = {
     chat: chat,
-    // code: code,
+    code: code,
 };
 
 export function webSocketInit(server: expressWs.Application) {
     server.ws("/", (ws, req) => {
-        req.session.userId = "eunpyo";
         if (req?.session?.userId === undefined) {
             return ws.close();
         }
