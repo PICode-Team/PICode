@@ -13,5 +13,5 @@ export type TProjectUpdateData = TprojectCreateData & {
 };
 
 export type TProjectData = TProjectUpdateData & {
-    projectId: number;
+    projectId: string;
 };
