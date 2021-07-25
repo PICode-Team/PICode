@@ -37,7 +37,6 @@ export default function RecentWork() {
     }, [sliderNum])
 
     const drawTableView = () => {
-        d3.select("#view").style("overflow-y", "scroll")
         let width = (d3.select("#view")?.node() as any)?.getBoundingClientRect().width;
         let col = width / Number(sliderNum) - 20;
         let tmpContent = [<div key={"addProject"} style={{ padding: "20px", width: col + "px", height: "200px", display: "inline-block" }}>
@@ -82,7 +81,7 @@ export default function RecentWork() {
         getData();
     }, [])
 
-    useEffect(() => {
+    let drawCarouselView = () => {
         let tmpContent = [<div key={"addProject"} style={{ padding: "0px 20px", height: "100%" }}>
             <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }} className={classes.carouselContent}>
                 <div style={{ textAlign: "center" }}>
@@ -108,22 +107,19 @@ export default function RecentWork() {
                 <div style={{ padding: "0px 20px", height: "100%" }}>
                     <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }} className={classes.carouselContent}>
                         <div>
-                            <div style={{ paddingBottom: "20px" }}>
-                                <img src="" width={"50%"} height={"50%"} />
-                            </div>
-                            <div style={{ display: "flex" }}>
+                            <div style={{ display: "block" }}>
                                 <span className={classes.tableContent}>Project Name : </span>
                                 <span className={classes.tableContent}>{i.projectName}</span>
                             </div>
-                            <div style={{ display: "flex" }}>
+                            <div style={{ display: "block" }}>
                                 <span className={classes.tableContent}>Project Description : </span>
                                 <span className={classes.tableContent}>{i.projectDescription}</span>
                             </div>
-                            <div style={{ display: "flex" }}>
+                            <div style={{ display: "block" }}>
                                 <span className={classes.tableContent}>Project Creator : </span>
                                 <span className={classes.tableContent}>{i.projectCreator}</span>
                             </div>
-                            <div style={{ display: "flex" }}>
+                            <div style={{ display: "block" }}>
                                 <span className={classes.tableContent}>Project Creator : </span>
                                 <span className={classes.tableContent}>{participantsInfo ?? "No one"}</span>
                             </div>
@@ -132,10 +128,21 @@ export default function RecentWork() {
                 </div>
             )
         }
+        return tmpContent;
+    }
+
+    useEffect(() => {
         let width = (d3.select("#view")?.node() as any)?.getBoundingClientRect().width;
         d3.select(".carousel-root").style("max-width", `${width}px`)
-        setContent(tmpContent);
     }, [projectData])
+
+    useEffect(() => {
+        if (state) {
+            d3.select("#view").style("overflow-y", "hidden")
+        } else {
+            d3.select("#view").style("overflow-y", "scroll")
+        }
+    }, [state])
 
 
 
@@ -197,7 +204,7 @@ export default function RecentWork() {
                         infiniteLoop
                         useKeyboardArrows={true}
                     >
-                        {content !== undefined && content.map((v: any) => v)}
+                        {drawCarouselView().map((v: any) => v)}
                     </Carousel>
                 </>}
                 {!state && drawTableView().map((v: any) => v)}

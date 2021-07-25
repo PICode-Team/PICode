@@ -63,7 +63,7 @@ export const recentWorkStyle = makeStyles((theme: IThemeStyle) =>
             top: "45%",
             zIndex: 2,
             left: "10px",
-            color: `${theme.font.high.color} !important`,
+            color: `${theme.font.high.color}!important `,
         },
         rightButton: {
             position: "absolute !important",
