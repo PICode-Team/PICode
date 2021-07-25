@@ -73,21 +73,34 @@ export default class DataProjectManager {
         }
     }
 
-    static gitCloneFromURL(projectId: string, gitUrl: any) {
-        const clonePath = this.getProjectWorkPath(projectId);
-
+    static gitCloneFromURL(
+        projectId: string,
+        source: {
+            gitUrl?: string;
+        }
+    ) {
+        const clonePath = DataProjectManager.getProjectWorkPath(projectId);
+        log.debug(clonePath);
         if (!fs.existsSync(clonePath)) {
             fs.mkdirSync(clonePath, { recursive: true });
         }
         try {
             child.exec(
-                `git clone ${gitUrl}`,
+                `git clone ${source.gitUrl}`,
                 {
                     cwd: clonePath,
                     env: process.env,
                 },
                 (error, _stdout, stderr) => {
-                    error ? log.error(error) : log.info(stderr);
+                    const fileToSize: TUploadFileLanguageToSize = {};
+                    error
+                        ? (log.error(_stdout), log.error(stderr))
+                        : (log.info(stderr),
+                          searchProjectFiles(clonePath, { fileToSize: fileToSize }),
+                          DataProjectManager.setProjectInfo(projectId, {
+                              ...DataProjectManager.getProjectInfo(projectId),
+                              projectLanguage: fileToSize,
+                          } as TProjectUpdateData));
                 }
             );
         } catch (e) {
