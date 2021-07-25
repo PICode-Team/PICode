@@ -3,7 +3,7 @@ import { ObjectType, Field, ID } from 'type-graphql';
 @ObjectType()
 export class GQLDocument {
     @Field(() => ID)
-    id?: string;
+    documentId?: string;
 
     @Field({ nullable: false })
     path?: string;

@@ -13,7 +13,6 @@ const SocketFuncs = {
 
 export function webSocketInit(server: expressWs.Application) {
     server.ws("/", (ws, req) => {
-        req.session.userId = "eunpyo";
         if (req?.session?.userId === undefined) {
             return ws.close();
         }
