@@ -1,11 +1,11 @@
-import { Layout } from "../components/layout";
+import { Layout } from "../../components/layout";
 import React from "react";
-import CreateTmp from "../components/service/project/createtmp";
+import EditProject from "../../components/service/project/edit";
 
 export default function CodePages(pageProps: any) {
     return (
         <Layout {...pageProps}>
-            <CreateTmp />
+            <EditProject />
         </Layout>
     );
 }

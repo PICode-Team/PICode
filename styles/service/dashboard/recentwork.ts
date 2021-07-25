@@ -102,7 +102,7 @@ export const recentWorkStyle = makeStyles((theme: IThemeStyle) =>
             borderRadius: "12px",
         },
         tableContent: {
-            display: "block",
+            display: "inline-block",
             color: "white",
         },
     })
