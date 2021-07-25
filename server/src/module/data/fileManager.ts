@@ -1,17 +1,11 @@
 import fs from "fs";
 import path from "path";
-import {
-    TUploadFileLanguageToSize,
-    TUploadManager,
-    TUploadMimeType,
-    TLanguageList,
-} from "../../types/module/data/file.types";
+import { TUploadFileLanguageToSize, TUploadMimeType, TLanguageList } from "../../types/module/data/file.types";
 import log from "../log";
 import admZip from "adm-zip";
 import DataProjectManager from "./projectManager";
+import DataUploadManager from "./uploadManager";
 import { UploadDirectoryPath } from "../../types/module/data/data.types";
-
-export const UploadFileManager: TUploadManager = {};
 
 function isNormalPath(dataPath: string) {
     const projectRootPath = path.resolve(`${__dirname}/../../../../`);
@@ -59,12 +53,7 @@ export function setJsonData(dataPath: string, data: any) {
         if (!isNormalPath(dataPath)) {
             throw new Error("Error: Invalid path");
         }
-        const onlyDirPath = path
-            .resolve(dataPath)
-            .replace(/\\/g, "/")
-            .split("/")
-            .slice(0, -1)
-            .join("/");
+        const onlyDirPath = path.resolve(dataPath).replace(/\\/g, "/").split("/").slice(0, -1).join("/");
 
         if (!fs.existsSync(onlyDirPath)) {
             fs.mkdirSync(onlyDirPath, { recursive: true });
@@ -83,7 +72,7 @@ export function getUUID(filePath: string) {
 }
 
 export function getFileInfo(filePath: string) {
-    return UploadFileManager[getUUID(filePath)];
+    return DataUploadManager.UploadFileManager[getUUID(filePath)];
 }
 
 export function unzipFileAsync(
@@ -118,16 +107,11 @@ export function searchProjectFiles(
     });
 }
 
-export function calculateFileSize(
-    filePath: string,
-    fileToSize: TUploadFileLanguageToSize
-) {
+export function calculateFileSize(filePath: string, fileToSize: TUploadFileLanguageToSize) {
     const fileSizeInBytes = fs.statSync(filePath).size;
     const fileLanguage = path.extname(filePath).replace(".", "").trim();
     if (TLanguageList.includes(fileLanguage)) {
-        fileLanguage in fileToSize
-            ? (fileToSize[fileLanguage] += fileSizeInBytes)
-            : (fileToSize[fileLanguage] = fileSizeInBytes);
+        fileLanguage in fileToSize ? (fileToSize[fileLanguage] += fileSizeInBytes) : (fileToSize[fileLanguage] = fileSizeInBytes);
     }
 }
 
@@ -178,21 +162,21 @@ export function handle(
     return true;
 }
 
-export function getThumbnailfromUUID(userId: string, projectThumbnail: string) {
+export function getThumbnailfromUUID(userId: string, thumbnail: string) {
     if (!fs.existsSync(UploadDirectoryPath)) {
         fs.mkdirSync(UploadDirectoryPath, { recursive: true });
     }
 
     const projectId = fs.readdirSync(DataProjectManager.getProjectDefaultPath()).filter((projectId) => {
-        DataProjectManager.getProjectInfo(projectId)?.projectThumbnail === projectThumbnail && DataProjectManager.isProjectParticipants(userId, projectId);
+        return DataProjectManager.getProjectInfo(projectId)?.projectThumbnail === thumbnail && DataProjectManager.isProjectParticipants(userId, projectId);
     });
     try {
-        fs.copyFileSync(`${DataProjectManager.getProjectWorkPath(projectId[0])}${projectThumbnail}`, `${UploadDirectoryPath}/${UploadFileManager[projectThumbnail].originalname}`);
+        fs.copyFileSync(`${DataProjectManager.getProjectWorkPath(projectId[0])}${thumbnail}`, `${UploadDirectoryPath}/${DataUploadManager.UploadFileManager[thumbnail].originalname}`);
     } catch (e) {
         log.error(e.stack);
         return "";
     }
-    return path.resolve(`${UploadDirectoryPath}/${UploadFileManager[projectThumbnail].originalname}`);
+    return path.resolve(`${UploadDirectoryPath}/${DataUploadManager.UploadFileManager[thumbnail].originalname}`);
 }
 
 export function readCodesFromFile(serverPath: string, clientPath: string) {
@@ -201,11 +185,7 @@ export function readCodesFromFile(serverPath: string, clientPath: string) {
     return fs.readFileSync(fullPath).toString();
 }
 
-export function writeCodeToFile(
-    serverPath: string,
-    clientPath: string,
-    code: string
-) {
+export function writeCodeToFile(serverPath: string, clientPath: string, code: string) {
     const fullPath = path.join(serverPath, clientPath);
     if (!isExists(fullPath)) return false;
     try {
