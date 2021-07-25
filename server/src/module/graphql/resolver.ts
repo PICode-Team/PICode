@@ -6,8 +6,6 @@ import log from '../log';
 import { getTime } from '../datetime';
 import DataDocumentManager from '../data/documentManager';
 
-console.log(DataDocumentManager.get())
-
 @Resolver()
 export class TestResolver {
     @Query(() => [GQLDocument])
