@@ -5,6 +5,7 @@ import DataProjectManager from "../data/projectManager";
 const codeLoadFuncs: {
     [key in string]: (userId: string, projectInfo: any) => void;
 } = {
+    loadProject: loadProject,
     getCode: getCode,
     changeCode: changeCode,
     moveFileOrDir: moveFileOrDir,
@@ -12,6 +13,11 @@ const codeLoadFuncs: {
     createFile: createFile,
     deleteFileOrDir: deleteFileOrDir,
 };
+
+function loadProject(userId: string, projectInfo: { projectName: string }) {
+    const sendData = JSON.stringify(makePacket("code", "loadProject", DataProjectManager.getAllProjectPath(userId, projectInfo.projectName)));
+    getSocket(userId).send(sendData);
+}
 
 function getCode(userId: string, projectInfo: { projectName: string; filePath: string }) {
     const sendData = JSON.stringify(makePacket("code", "getCode", DataProjectManager.getCodesFromProject(userId, projectInfo)));
