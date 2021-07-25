@@ -4,10 +4,6 @@ import upload from "../../lib/router/upload";
 
 const router = express.Router();
 
-router.get("/", (_, res) => {
-    res.sendFile("C:/Users/dldms/Desktop/프로젝트 개발 폴더/PICode/server/src/route/data/upload.html");
-});
-
 router.post("/", upload.single("uploadFile"), (req, res) => {
     const uploadFile = req.file;
 

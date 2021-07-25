@@ -3,6 +3,8 @@ import path from "path";
 import { TUploadFileLanguageToSize, TUploadManager, TUploadMimeType, TLanguageList } from "../../types/module/data/file.types";
 import log from "../log";
 import admZip from "adm-zip";
+import DataProjectManager from "./projectManager";
+import { UploadDirectoryPath } from "../../types/module/data/data.types";
 
 export const UploadFileManager: TUploadManager = {};
 
@@ -137,6 +139,7 @@ export function handle(
             case "image/bmp":
             case "image/jpeg": {
                 fs.renameSync(oldPath, newPath);
+                //fs.renameSync(newPath, newPath.replace(getUUID(oldPath), "") + fileData.originalname);
                 break;
             }
             case "application/zip":
@@ -160,6 +163,23 @@ export function handle(
     return true;
 }
 
+export function getThumbnailfromUUID(userId: string, projectThumbnail: string) {
+    if (!fs.existsSync(UploadDirectoryPath)) {
+        fs.mkdirSync(UploadDirectoryPath, { recursive: true });
+    }
+
+    const projectId = fs.readdirSync(DataProjectManager.getProjectDefaultPath()).filter((projectId) => {
+        DataProjectManager.getProjectInfo(projectId)?.projectThumbnail === projectThumbnail && DataProjectManager.isProjectParticipants(userId, projectId);
+    });
+    try {
+        fs.copyFileSync(`${DataProjectManager.getProjectWorkPath(projectId[0])}${projectThumbnail}`, `${UploadDirectoryPath}/${UploadFileManager[projectThumbnail].originalname}`);
+    } catch (e) {
+        log.error(e.stack);
+        return "";
+    }
+    return path.resolve(`${UploadDirectoryPath}/${UploadFileManager[projectThumbnail].originalname}`);
+}
+
 export function readCodesFromFile(serverPath: string, clientPath: string) {
     const fullPath = path.join(serverPath, clientPath);
     if (!isExists(fullPath)) return undefined;
@@ -176,4 +196,12 @@ export function writeCodeToFile(serverPath: string, clientPath: string, code: st
         return false;
     }
     return true;
+}
+
+export function getAllChildren(projectPath: string, loopPath: string): TFile {
+    const fullPath = path.join(projectPath, loopPath);
+    const replacePath = path.join(projectPath, "");
+    const children: string[] | undefined = fs.statSync(fullPath).isDirectory() ? fs.readdirSync(fullPath) : undefined;
+
+    return { path: fullPath.replace(`${replacePath}\\`, "") + "/", children: children ? children.map((v) => getAllChildren(fullPath, v)) : undefined };
 }
