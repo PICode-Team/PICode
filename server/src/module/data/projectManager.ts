@@ -1,14 +1,12 @@
 import log from "../../module/log";
 import { UploadDirectoryPath, WorkDirectoryPath, DataDirectoryPath } from "../../types/module/data/data.types";
 import { TprojectCreateData, TProjectData, TProjectUpdateData } from "../../types/module/data/project.type";
-import { setJsonData, getJsonData, isExists, removeData, handle, UploadFileManager, searchProjectFiles, readCodesFromFile, writeCodeToFile, getAllChildren } from "./fileManager";
+import { setJsonData, getJsonData, isExists, removeData, handle, searchProjectFiles, readCodesFromFile, writeCodeToFile, getAllChildren } from "./fileManager";
+import DataUploadManager from "./uploadManager";
 import fs from "fs";
 import * as child from "child_process";
 import { zip } from "zip-a-folder";
-import {
-    TFileData,
-    TUploadFileLanguageToSize,
-} from "../../types/module/data/file.types";
+import { TFileData, TUploadFileLanguageToSize } from "../../types/module/data/file.types";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 
@@ -25,10 +23,7 @@ export default class DataProjectManager {
         return `${WorkDirectoryPath}/project/${projectId}/`;
     }
 
-    static getProjectDataPath(
-        projectId: string,
-        type: "" | "projectInfo.json" = ""
-    ) {
+    static getProjectDataPath(projectId: string, type: "" | "projectInfo.json" = "") {
         return `${DataDirectoryPath}/project/${projectId}/${type}`;
     }
 
@@ -37,68 +32,38 @@ export default class DataProjectManager {
             return undefined;
         }
 
-        return getJsonData(
-            this.getProjectDataPath(projectId, "projectInfo.json")
-        ) as TProjectData;
+        return getJsonData(this.getProjectDataPath(projectId, "projectInfo.json")) as TProjectData;
     }
 
-    static setProjectInfo(
-        projectId: string,
-        data: TProjectData | TprojectCreateData | TProjectUpdateData
-    ) {
+    static setProjectInfo(projectId: string, data: TProjectData | TprojectCreateData | TProjectUpdateData) {
         if (!this.isExists(projectId, this.getProjectDataPath)) {
             return undefined;
         }
 
-        return setJsonData(
-            this.getProjectDataPath(projectId, "projectInfo.json"),
-            data
-        );
+        return setJsonData(this.getProjectDataPath(projectId, "projectInfo.json"), data);
     }
 
     static compareProjectName(projectId: string, projectName?: string) {
-        return (
-            (this.getProjectInfo(projectId) as TProjectData).projectName ===
-            projectName
-        );
+        return (this.getProjectInfo(projectId) as TProjectData).projectName === projectName;
     }
 
     static isProjectCreator(userId: string, projectId: string) {
-        return (
-            (this.getProjectInfo(projectId) as TProjectData).projectCreator ===
-            userId
-        );
+        return (this.getProjectInfo(projectId) as TProjectData).projectCreator === userId;
     }
 
     static isProjectParticipants(userId: string, projectId: string) {
-        return (
-            this.getProjectInfo(projectId) as TProjectData
-        ).projectParticipants?.includes(userId);
+        return (this.getProjectInfo(projectId) as TProjectData).projectParticipants?.includes(userId);
     }
 
-    static canEditProject(
-        userId: string,
-        projectId: string,
-        participantIncluded: boolean
-    ) {
-        return this.isProjectCreator(userId, projectId) || participantIncluded
-            ? this.isProjectParticipants(userId, projectId)
-            : false;
+    static canEditProject(userId: string, projectId: string, participantIncluded: boolean) {
+        return this.isProjectCreator(userId, projectId) || participantIncluded ? this.isProjectParticipants(userId, projectId) : false;
     }
 
     static getProjectId(userId: string, projectName: string) {
-        const projectId = fs
-            .readdirSync(this.getProjectDefaultPath())
-            .filter((projectId) => {
-                const projectInfo = this.getProjectInfo(
-                    projectId
-                ) as TProjectData;
-                return (
-                    (projectInfo.projectCreator === userId ||
-                        projectInfo.projectParticipants?.includes(userId)) &&
-                    projectInfo.projectName === projectName
-                );
-            });
+        const projectId = fs.readdirSync(this.getProjectDefaultPath()).filter((projectId) => {
+            const projectInfo = this.getProjectInfo(projectId) as TProjectData;
+            return (projectInfo.projectCreator === userId || projectInfo.projectParticipants?.includes(userId)) && projectInfo.projectName === projectName;
+        });
         if (projectId.length > 1) {
             return projectId;
         } else if (projectId.length === 1) {
@@ -143,33 +108,29 @@ export default class DataProjectManager {
     ) {
         const uploadFileId = source.upload.uploadFileId;
         const isExtract = source.upload.isExtract;
-        const fileName = UploadFileManager[uploadFileId].originalname;
+        const fileName = DataUploadManager.UploadFileManager[uploadFileId].originalname;
         const newPath = DataProjectManager.getProjectWorkPath(projectId);
         if (!fs.existsSync(newPath)) {
             fs.mkdirSync(newPath, { recursive: true });
         }
-        return handle(
-            `${UploadDirectoryPath}/${uploadFileId}`,
-            `${newPath}/${fileName}`,
-            {
-                isExtract: isExtract,
-                extractPath: isExtract ? newPath : undefined,
-                extractCallback: (err) => {
-                    if (err) {
-                        log.error(err.stack);
-                    } else {
-                        fs.unlinkSync(`${newPath}/${fileName}`);
-                        const fileToSize: TUploadFileLanguageToSize = {};
-                        searchProjectFiles(newPath, { fileToSize: fileToSize });
-                        DataProjectManager.setProjectInfo(projectId, {
-                            ...DataProjectManager.getProjectInfo(projectId),
-                            projectLanguage: fileToSize,
-                        } as TProjectUpdateData);
-                        delete UploadFileManager[uploadFileId];
-                    }
-                },
-            }
-        )
+        return handle(`${UploadDirectoryPath}/${uploadFileId}`, `${newPath}/${fileName}`, {
+            isExtract: isExtract,
+            extractPath: isExtract ? newPath : undefined,
+            extractCallback: (err) => {
+                if (err) {
+                    log.error(err.stack);
+                } else {
+                    fs.unlinkSync(`${newPath}/${fileName}`);
+                    const fileToSize: TUploadFileLanguageToSize = {};
+                    searchProjectFiles(newPath, { fileToSize: fileToSize });
+                    DataProjectManager.setProjectInfo(projectId, {
+                        ...DataProjectManager.getProjectInfo(projectId),
+                        projectLanguage: fileToSize,
+                    } as TProjectUpdateData);
+                    delete DataUploadManager.UploadFileManager[uploadFileId];
+                }
+            },
+        })
             ? true
             : false;
     }
@@ -187,6 +148,7 @@ export default class DataProjectManager {
     }
 
     static get(userId: string, projectName?: string): TProjectData[] {
+        DataUploadManager.loadUploadFileInfo();
         if (!fs.existsSync(this.getProjectDefaultPath())) {
             fs.mkdirSync(this.getProjectDefaultPath(), { recursive: true });
         }
@@ -195,11 +157,8 @@ export default class DataProjectManager {
             .readdirSync(this.getProjectDefaultPath())
             .filter((projectUUID) => {
                 return (
-                    (this.isProjectCreator(userId, projectUUID) ||
-                        this.isProjectParticipants(userId, projectUUID)) &&
-                    (this.compareProjectName(projectUUID, projectName) ||
-                        projectName === undefined ||
-                        projectName === "")
+                    (this.isProjectCreator(userId, projectUUID) || this.isProjectParticipants(userId, projectUUID)) &&
+                    (this.compareProjectName(projectUUID, projectName) || projectName === undefined || projectName === "")
                 );
             })
             .map((projectId) => {
@@ -209,12 +168,7 @@ export default class DataProjectManager {
 
     static create(
         userId: string,
-        {
-            projectName,
-            projectDescription,
-            projectThumbnail,
-            projectParticipants,
-        }: TprojectCreateData,
+        { projectName, projectDescription, projectThumbnail, projectParticipants }: TprojectCreateData,
         source: {
             type: "gitUrl" | "upload" | "nothing";
             gitUrl?: string;
@@ -252,17 +206,9 @@ export default class DataProjectManager {
             }
 
             if (projectThumbnail !== undefined) {
-                if (
-                    !handle(
-                        `${UploadDirectoryPath}/${projectThumbnail}`,
-                        `${this.getProjectWorkPath(
-                            projectId
-                        )}${projectThumbnail}`
-                    )
-                ) {
+                if (!handle(`${UploadDirectoryPath}/${projectThumbnail}`, `${this.getProjectWorkPath(projectId)}${projectThumbnail}`)) {
                     return false;
                 }
-
                 //delete UploadFileManager[projectThumbnail];
             }
 
@@ -272,9 +218,7 @@ export default class DataProjectManager {
                 projectDescription: projectDescription,
                 projectThumbnail: projectThumbnail,
                 projectCreator: userId,
-                projectParticipants: projectParticipants
-                    ? [...projectParticipants, userId]
-                    : [userId],
+                projectParticipants: projectParticipants ? [...projectParticipants, userId] : [userId],
             });
         } catch (err) {
             log.error(err.stack);
@@ -283,12 +227,7 @@ export default class DataProjectManager {
         return true;
     }
 
-    static update(
-        userId: string,
-        projectName: string,
-        participantIncluded: boolean,
-        projectInfo: TProjectUpdateData
-    ): boolean {
+    static update(userId: string, projectName: string, participantIncluded: boolean, projectInfo: TProjectUpdateData): boolean {
         const projectId = this.getProjectId(userId, projectName);
         if (typeof projectId !== "string") {
             return false;
@@ -305,18 +244,11 @@ export default class DataProjectManager {
             if (
                 !this.setProjectInfo(projectId, {
                     projectId: projectData.projectId,
-                    projectName:
-                        projectInfo.projectName ?? projectData.projectName,
-                    projectDescription:
-                        projectInfo.projectDescription ??
-                        projectData.projectDescription,
-                    projectThumbnail:
-                        projectInfo.projectThumbnail ??
-                        projectData.projectThumbnail,
+                    projectName: projectInfo.projectName ?? projectData.projectName,
+                    projectDescription: projectInfo.projectDescription ?? projectData.projectDescription,
+                    projectThumbnail: projectInfo.projectThumbnail ?? projectData.projectThumbnail,
                     projectLanguage: projectData.projectLanguage,
-                    projectParticipants:
-                        projectInfo.projectParticipants ??
-                        projectData.projectParticipants,
+                    projectParticipants: projectInfo.projectParticipants ?? projectData.projectParticipants,
                 })
             ) {
                 return false;
@@ -358,10 +290,7 @@ export default class DataProjectManager {
             return false;
         }
         try {
-            zip(
-                this.getProjectWorkPath(projectId),
-                `${this.getProjectWorkPath(projectId)}/${projectName}.zip`
-            );
+            zip(this.getProjectWorkPath(projectId), `${this.getProjectWorkPath(projectId)}/${projectName}.zip`);
         } catch (e) {
             log.error(e.stack);
             return false;
@@ -369,10 +298,7 @@ export default class DataProjectManager {
         return true;
     }
 
-    static getCodesFromProject(
-        userId: string,
-        { projectName, filePath }: { projectName: string; filePath: string }
-    ) {
+    static getCodesFromProject(userId: string, { projectName, filePath }: { projectName: string; filePath: string }) {
         const projectId = this.getProjectId(userId, projectName);
         if (typeof projectId !== "string") {
             return { message: "could not find project" };
@@ -381,10 +307,7 @@ export default class DataProjectManager {
             return { message: "could not edit project" };
         }
         const fileData: TFileData = {};
-        const codeData = readCodesFromFile(
-            this.getProjectWorkPath(projectId),
-            filePath
-        );
+        const codeData = readCodesFromFile(this.getProjectWorkPath(projectId), filePath);
         if (codeData !== undefined) {
             fileData["filePath"] = filePath;
             fileData["fileContent"] = codeData;
@@ -392,14 +315,7 @@ export default class DataProjectManager {
         return fileData;
     }
 
-    static changeProjectCode(
-        userId: string,
-        {
-            projectName,
-            filePath,
-            code,
-        }: { projectName: string; filePath: string; code: string }
-    ) {
+    static changeProjectCode(userId: string, { projectName, filePath, code }: { projectName: string; filePath: string; code: string }) {
         const projectId = this.getProjectId(userId, projectName);
         if (typeof projectId !== "string") {
             return { message: "could not find project" };
@@ -408,22 +324,13 @@ export default class DataProjectManager {
             return { message: "could not edit project" };
         }
 
-        if (
-            !writeCodeToFile(this.getProjectWorkPath(projectId), filePath, code)
-        ) {
+        if (!writeCodeToFile(this.getProjectWorkPath(projectId), filePath, code)) {
             return { message: "file write error" };
         }
         return { message: "file write complete" };
     }
 
-    static moveProjectFileOrDir(
-        userId: string,
-        {
-            projectName,
-            oldPath,
-            newPath,
-        }: { projectName: string; oldPath: string; newPath: string }
-    ) {
+    static moveProjectFileOrDir(userId: string, { projectName, oldPath, newPath }: { projectName: string; oldPath: string; newPath: string }) {
         const projectId = this.getProjectId(userId, projectName);
         if (typeof projectId !== "string") {
             return { message: "could not find project" };
@@ -431,14 +338,8 @@ export default class DataProjectManager {
         if (!this.canEditProject(userId, projectId, true)) {
             return { message: "could not change file or dir" };
         }
-        const fullOldPath = path.join(
-            this.getProjectWorkPath(projectId),
-            oldPath
-        );
-        const fullNewPath = path.join(
-            this.getProjectWorkPath(projectId),
-            newPath
-        );
+        const fullOldPath = path.join(this.getProjectWorkPath(projectId), oldPath);
+        const fullNewPath = path.join(this.getProjectWorkPath(projectId), newPath);
         if (!isExists(fullOldPath)) {
             return { message: "could not find path" };
         }
@@ -451,14 +352,7 @@ export default class DataProjectManager {
         return { message: "move complete" };
     }
 
-    static deleteFileOrDir(
-        userId: string,
-        {
-            projectName,
-            deletePath,
-            recursive,
-        }: { projectName: string; deletePath: string; recursive?: boolean }
-    ) {
+    static deleteFileOrDir(userId: string, { projectName, deletePath, recursive }: { projectName: string; deletePath: string; recursive?: boolean }) {
         const projectId = this.getProjectId(userId, projectName);
         if (typeof projectId !== "string") {
             return { message: "could not find project" };
@@ -467,10 +361,7 @@ export default class DataProjectManager {
             return { message: "could not change file or dir" };
         }
         try {
-            const fullPath = path.join(
-                this.getProjectWorkPath(projectId),
-                deletePath
-            );
+            const fullPath = path.join(this.getProjectWorkPath(projectId), deletePath);
             if (fs.statSync(fullPath).isDirectory()) {
                 fs.rmdirSync(fullPath, { recursive: recursive });
             } else if (fs.statSync(fullPath).isFile()) {
@@ -482,10 +373,7 @@ export default class DataProjectManager {
         }
         return { message: "delete complete" };
     }
-    static createProjectFile(
-        userId: string,
-        { projectName, filePath }: { projectName: string; filePath: string }
-    ) {
+    static createProjectFile(userId: string, { projectName, filePath }: { projectName: string; filePath: string }) {
         const projectId = this.getProjectId(userId, projectName);
         if (typeof projectId !== "string") {
             return { message: "could not find project" };
@@ -494,10 +382,7 @@ export default class DataProjectManager {
             return { message: "could not create file" };
         }
         try {
-            const fullPath = path.join(
-                this.getProjectWorkPath(projectId),
-                filePath
-            );
+            const fullPath = path.join(this.getProjectWorkPath(projectId), filePath);
             fs.openSync(fullPath, "w");
         } catch (e) {
             log.error(e.stack);
@@ -505,10 +390,7 @@ export default class DataProjectManager {
         }
         return { message: "create file complete" };
     }
-    static createProjectDir(
-        userId: string,
-        { projectName, dirPath }: { projectName: string; dirPath: string }
-    ) {
+    static createProjectDir(userId: string, { projectName, dirPath }: { projectName: string; dirPath: string }) {
         const projectId = this.getProjectId(userId, projectName);
         if (typeof projectId !== "string") {
             return { message: "could not find project" };
@@ -517,10 +399,7 @@ export default class DataProjectManager {
             return { message: "could not create dir" };
         }
         try {
-            const fullPath = path.join(
-                this.getProjectWorkPath(projectId),
-                dirPath
-            );
+            const fullPath = path.join(this.getProjectWorkPath(projectId), dirPath);
             fs.mkdirSync(fullPath, { recursive: true });
         } catch (e) {
             log.error(e.stack);
