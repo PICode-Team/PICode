@@ -94,7 +94,7 @@ export const recentWorkStyle = makeStyles((theme: IThemeStyle) =>
             borderRadius: "12px",
         },
         carouselButton: {
-            color: theme.font.high.color,
+            color: `${theme.font.high.color} !important`,
         },
         tableDiv: {
             background: theme.backgroundColor.step3,
@@ -103,7 +103,7 @@ export const recentWorkStyle = makeStyles((theme: IThemeStyle) =>
         },
         tableContent: {
             display: "inline-block",
-            color: "white",
+            color: theme.font.high.color,
         },
     })
 );
