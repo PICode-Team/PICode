@@ -5,7 +5,7 @@ import { IThemeStyle } from "../../theme";
 export const messengerStyle = makeStyles((theme: IThemeStyle) =>
   createStyles({
     chatButton: {
-      backgroundColor: "#ffffff",
+      backgroundColor: theme.font.high.color,
       width: "60px",
       height: "60px",
       borderRadius: "30px",
@@ -19,6 +19,7 @@ export const messengerStyle = makeStyles((theme: IThemeStyle) =>
       "&>svg": {
         width: "32px",
         height: "32px",
+        color: theme.backgroundColor.step0,
       },
       "&:hover": {
         boxShadow: "rgba(0, 0, 0, 0.35) 0px 5px 15px",
@@ -32,6 +33,7 @@ export const messengerStyle = makeStyles((theme: IThemeStyle) =>
       right: "30px",
       bottom: "24px",
       borderRadius: "8px",
+      boxShadow: "rgba(0, 0, 0, 0.35) 0px 5px 10px",
     },
 
     wrapper: {
@@ -228,6 +230,15 @@ export const messengerStyle = makeStyles((theme: IThemeStyle) =>
       overflow: "auto",
       display: "flex",
       flexDirection: "column",
+      "&::-webkit-scrollbar": {
+        backgroundColor: "rgba(230, 230, 230, 0.3) !important",
+      },
+      "&::-webkit-scrollbar-thumb": {
+        backgroundColor: "rgba(0, 0, 0, 0.1)",
+      },
+      "&::-webkit-scrollbar-track": {
+        backgroundColor: "rgba(230, 230, 230, 0.3) !important",
+      },
     },
     homeFooter: {
       display: "flex",

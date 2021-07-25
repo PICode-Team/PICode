@@ -12,7 +12,6 @@ router.get("/", sessionRouter, (req, res) => {
     const projectName = req.query?.projectName as string;
 
     const projectDataList = DataProjectManager.get(userId, projectName);
-
     return res.json({ code: ResponseCode.ok, projectList: projectDataList });
 });
 

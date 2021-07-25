@@ -50,7 +50,7 @@ export default function SignUp() {
             userName: userName,
             passwd: passwd,
         }
-        let data = await fetch(`http://picode.nevation.io:4000/api/user`, {
+        let data = await fetch(`http://localhost:8000/api/user`, {
             method: "POST",
             mode: "cors",
             headers: {
@@ -58,10 +58,7 @@ export default function SignUp() {
             },
             body: JSON.stringify(payload)
         }).then((res) => res.json())
-        console.log(data)
-        // if(true){
-        //     window.location.href="/login"
-        // }
+        window.location.href = "/"
     }
 
     return <div className={classes.root}>

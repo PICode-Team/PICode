@@ -1,7 +1,7 @@
 import log from "../../module/log";
 import { UploadDirectoryPath, WorkDirectoryPath, DataDirectoryPath } from "../../types/module/data/data.types";
 import { TprojectCreateData, TProjectData, TProjectUpdateData } from "../../types/module/data/project.type";
-import { setJsonData, getJsonData, isExists, removeData, handle, UploadFileManager, searchProjectFiles, readCodesFromFile, writeCodeToFile } from "./fileManager";
+import { setJsonData, getJsonData, isExists, removeData, handle, UploadFileManager, searchProjectFiles, readCodesFromFile, writeCodeToFile, getAllChildren } from "./fileManager";
 import fs from "fs";
 import * as child from "child_process";
 import { zip } from "zip-a-folder";
@@ -205,7 +205,8 @@ export default class DataProjectManager {
                 if (!handle(`${UploadDirectoryPath}/${projectThumbnail}`, `${this.getProjectWorkPath(projectId)}${projectThumbnail}`)) {
                     return false;
                 }
-                delete UploadFileManager[projectThumbnail];
+
+                //delete UploadFileManager[projectThumbnail];
             }
 
             this.setProjectInfo(projectId, {
@@ -225,7 +226,6 @@ export default class DataProjectManager {
 
     static update(userId: string, projectName: string, participantIncluded: boolean, projectInfo: TProjectUpdateData): boolean {
         const projectId = this.getProjectId(userId, projectName);
-        log.debug(projectId);
         if (typeof projectId !== "string") {
             return false;
         }
@@ -259,7 +259,6 @@ export default class DataProjectManager {
 
     static delete(userId: string, projectName: string): boolean {
         const projectId = this.getProjectId(userId, projectName);
-        log.debug(projectId);
         if (typeof projectId !== "string") {
             return false;
         }
@@ -404,5 +403,17 @@ export default class DataProjectManager {
             return { message: "fail to create dir" };
         }
         return { message: "create dir complete" };
+    }
+
+    static getAllProjectPath(userId: string, projectName: string) {
+        const projectId = this.getProjectId(userId, projectName);
+        if (typeof projectId !== "string") {
+            return { message: "could not find project" };
+        }
+        if (!this.canEditProject(userId, projectId, true)) {
+            return { message: "could not create dir" };
+        }
+        const projectPath = DataProjectManager.getProjectWorkPath(projectId);
+        return getAllChildren(projectPath, "");
     }
 }

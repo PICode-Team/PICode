@@ -24,7 +24,7 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
     title: {
       padding: "8px 12px",
       fontWeight: "bold",
-      color: "#ffffff",
+      color: theme.font.high.color,
       fontSize: "16px",
       borderBottom: "1px solid rgba(255, 255, 255, 0.2)",
       height: "40px",
@@ -33,7 +33,7 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       padding: "4px 0px",
     },
     tool: {
-      color: "rgba(255, 255, 255, 0.55)",
+      color: theme.font.low.color,
       padding: "2px 10px",
       display: "flex",
       alignItems: "center",
@@ -42,7 +42,7 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       fontSize: "13px",
       cursor: "pointer",
       "&:hover": {
-        backgroundColor: "rgba(255, 255, 255, 0.1)",
+        backgroundColor: theme.hover,
       },
       "&>svg": {
         width: "16px",
@@ -57,10 +57,6 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       "&>div>svg": {
         transform: "rotate(-0.25turn)",
       },
-    },
-    on: {
-      backgroundColor: "#0576B9",
-      color: "#ffffff !important",
     },
 
     channelList: {
@@ -77,14 +73,14 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       alignItems: "center",
       height: "28px",
       lineHeight: "28px",
-      color: "rgba(255, 255, 255, 0.55)",
+      color: theme.font.medium.color,
     },
     channel: {
-      color: "rgba(255, 255, 255, 0.55)",
+      color: theme.font.medium.color,
       padding: "2px 10px",
       cursor: "pointer",
       "&:hover": {
-        backgroundColor: "rgba(255, 255, 255, 0.1)",
+        backgroundColor: theme.hover,
       },
     },
     box: {
@@ -109,7 +105,7 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       borderRadius: "2px",
       margin: "0px 6px",
       padding: "0px 4px",
-      backgroundColor: "rgba(255, 255, 255, 0.2)",
+      backgroundColor: theme.hover,
     },
 
     directList: {
@@ -125,17 +121,17 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       alignItems: "center",
       height: "28px",
       lineHeight: "28px",
-      color: "rgba(255, 255, 255, 0.55)",
+      color: theme.font.medium.color,
     },
     direct: {
-      color: "rgba(255, 255, 255, 0.55)",
+      color: theme.font.medium.color,
       padding: "2px 10px",
       paddingLeft: "16px",
       cursor: "pointer",
       display: "flex",
       justifyContent: "space-between",
       "&:hover": {
-        backgroundColor: "rgba(255, 255, 255, 0.1)",
+        backgroundColor: theme.hover,
         "&>span": {
           visibility: "visible",
         },
@@ -216,7 +212,7 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
         height: "calc(100% - 24px)",
         width: "100%",
         backgroundColor: theme.backgroundColor.step1,
-
+        color: theme.font.medium.color,
         outline: "none",
         border: "1px solid rgba(255, 255, 255, 0.5)",
       },
@@ -231,7 +227,7 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       "&>svg": {
         width: "10px",
         height: "9px",
-        color: "rgba(255, 255, 255, 0.7)",
+        color: theme.font.medium.color,
         transition: "all ease-in 0.2s",
         animation: "$entering 2s infinite",
         "&:nth-child(1)": {},
@@ -240,7 +236,7 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       },
     },
     enterText: {
-      color: "rgba(255, 255, 255, 0.7)",
+      color: theme.font.medium.color,
       fontSize: "11px",
       fontWeight: "bold",
       lineHeight: "24px",
@@ -261,7 +257,7 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
     timeTicket: {
       position: "relative",
       left: "50%",
-      color: "#ffffff",
+      color: theme.font.high.color,
       width: "fit-content",
       height: "22px",
       lineHeight: "22px",
@@ -290,7 +286,7 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       borderRadius: "11px",
     },
     name: {
-      color: "rgba(255, 255, 255, 1)",
+      color: theme.font.high.color,
       fontWeight: "bold",
       marginLeft: "6px",
     },
@@ -301,14 +297,14 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       alignItems: "flex-end",
     },
     messageText: {
-      backgroundColor: "rgba(255, 255, 255, 0.3)",
+      backgroundColor: theme.backgroundColor.step3,
       borderRadius: "3px",
       padding: "4px 10px",
-      color: "#ffffff",
+      color: theme.font.high.color,
       maxWidth: "750px",
     },
     time: {
-      color: "#ffffff",
+      color: theme.font.high.color,
       fontSize: "10px",
       margin: "0px 5px",
     },
@@ -326,6 +322,66 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       "100%": {
         transform: "translateY(0)",
       },
+    },
+  })
+);
+
+export const createChannelStyle = makeStyles((theme: IThemeStyle) =>
+  createStyles({
+    overlay: {
+      width: "100%",
+      height: "100%",
+      position: "absolute",
+      display: "fixed",
+      backgroundColor: "black",
+      top: 0,
+      left: 0,
+      opacity: 0.4,
+      zIndex: 9999,
+    },
+    modal: {
+      width: "30%",
+      height: "40%",
+      position: "absolute",
+      display: "fixed",
+      backgroundColor: theme.backgroundColor.step1,
+      zIndex: 9999,
+      marginLeft: "35%",
+      marginTop: "10%",
+      padding: "30px",
+      borderRadius: "12px",
+    },
+    modalHeader: {
+      fontWeight: "bold",
+      fontSize: "28px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      color: theme.font.medium.color,
+      "&>div": {
+        display: "flex",
+        alignItems: "center",
+      },
+      "&>div>svg": {
+        width: "28px",
+        height: "28px",
+        cursor: "pointer",
+      },
+    },
+    modalBody: {
+      height: "70%",
+    },
+    modalFooter: {
+      width: "100%",
+      display: "flex",
+      justifyContent: "flex-end",
+      alignItems: "flex-end",
+      "&>button": {
+        marginBottom: "-24px",
+      },
+    },
+    visibility: {
+      visibility: "hidden",
     },
   })
 );

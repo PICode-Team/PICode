@@ -10,7 +10,7 @@ function checkTogglePath(path: string): boolean {
 }
 
 function Row(props: {
-  data: { url: string; icon: string; title: string };
+  data: { url: string; icon: JSX.Element; title: string };
   toggle: boolean;
 }): JSX.Element {
   const classes = rowStyle();
@@ -20,7 +20,7 @@ function Row(props: {
       className={`${classes.row} ${props.toggle && classes.toggle}`}
       href={props.data.url}
     >
-      <RadioButtonUnchecked />
+      {props.data.icon}
       <span className={`${classes.text} ${props.toggle && classes.hidden}`}>
         {props.data.title}
       </span>

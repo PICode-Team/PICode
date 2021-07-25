@@ -4,7 +4,7 @@ import Chat from "../components/service/chat/chat";
 
 export default function ChatPages(pageProps: any) {
   return (
-    <Layout>
+    <Layout {...pageProps}>
       <Chat {...pageProps} />
     </Layout>
   );
