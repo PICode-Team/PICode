@@ -261,6 +261,7 @@ export default class DataProjectManager {
                     projectDescription: projectInfo.projectDescription ?? projectData.projectDescription,
                     projectThumbnail: projectInfo.projectThumbnail ?? projectData.projectThumbnail,
                     projectLanguage: projectData.projectLanguage,
+                    projectCreator: projectData.projectCreator,
                     projectParticipants: projectInfo.projectParticipants ?? projectData.projectParticipants,
                 })
             ) {

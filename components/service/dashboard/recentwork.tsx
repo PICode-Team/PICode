@@ -9,14 +9,19 @@ import { recentWorkStyle } from "../../../styles/service/dashboard/recentwork";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import EditIcon from '@material-ui/icons/Edit';
+import DeleteIcon from '@material-ui/icons/Delete';
+import Swal from "sweetalert2"
 
 import * as d3 from "d3"
+import { resultType } from "../../constant/fetch/result";
 interface IProjectData {
     projectName: string;
     projectDescription: string;
     language: string;
     projectCreator: string;
     projectParticipants: string[]
+    projectThumbnail?: string;
 }
 
 export default function RecentWork() {
@@ -42,7 +47,7 @@ export default function RecentWork() {
         let tmpContent = [<div key={"addProject"} style={{ padding: "20px", width: col + "px", height: "200px", display: "inline-block" }}>
             <div className={classes.tableDiv}>
                 <div style={{ textAlign: "center" }}>
-                    <IconButton className={classes.carouselButton} onClick={() => { window.location.href = "/createproject" }}>
+                    <IconButton className={classes.carouselButton} onClick={() => { window.location.href = "/project/create" }}>
                         <AddIcon />
                     </IconButton>
                     <span style={{ display: "block", textAlign: "center", color: "#fff" }}>
@@ -74,6 +79,7 @@ export default function RecentWork() {
                 'Content-Type': 'application/json'
             },
         }).then((res) => res.json())
+
         setProjectData(data.projectList ?? [])
     }
 
@@ -85,7 +91,7 @@ export default function RecentWork() {
         let tmpContent = [<div key={"addProject"} style={{ padding: "0px 20px", height: "100%" }}>
             <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }} className={classes.carouselContent}>
                 <div style={{ textAlign: "center" }}>
-                    <IconButton className={classes.carouselButton} onClick={() => { window.location.href = "/createproject" }}>
+                    <IconButton className={classes.carouselButton} onClick={() => { window.location.href = "/project/create" }}>
                         <AddIcon />
                     </IconButton>
                     <span style={{ display: "block", textAlign: "center" }} className={classes.carouselButton}>
@@ -104,9 +110,15 @@ export default function RecentWork() {
             }
 
             tmpContent.push(
-                <div style={{ padding: "0px 20px", height: "100%" }}>
+                <div style={{ padding: "0px 20px", height: "100%", cursor: "pointer" }}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.location.href = `/code?projectName=${i.projectName}`
+                    }}>
                     <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }} className={classes.carouselContent}>
-                        <div>
+                        <div style={{ padding: "30px" }}>
+                            <img alt="logo" style={{ maxWidth: "256px", paddingBottom: "20px", maxHeight: "256px" }} src={`http://localhost:8000/api/temp?uuid=${i.projectThumbnail}`} />
                             <div style={{ display: "block" }}>
                                 <span className={classes.tableContent}>Project Name : </span>
                                 <span className={classes.tableContent}>{i.projectName}</span>
@@ -123,6 +135,62 @@ export default function RecentWork() {
                                 <span className={classes.tableContent}>Project Creator : </span>
                                 <span className={classes.tableContent}>{participantsInfo ?? "No one"}</span>
                             </div>
+                            <IconButton className={classes.carouselButton}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    window.location.href = `/project/edit?projectName=${i.projectName}`
+                                }}
+                            >
+                                <EditIcon />
+                            </IconButton>
+                            <IconButton className={classes.carouselButton} onClick={async (e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                let result = await Swal.fire({
+                                    title: "Delete Project",
+                                    text: `Are you sure delete ${i.projectName} Project?`,
+                                    icon: 'warning',
+                                    heightAuto: false,
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Yes',
+                                    cancelButtonText: 'No'
+                                })
+                                if (result.isConfirmed) {
+                                    let resultData = await fetch(`/api/project?projectName=${i.projectName}`, {
+                                        method: "DELETE",
+                                        mode: "cors",
+                                        credentials: 'same-origin',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                    }).then((res) => res.json())
+
+                                    if (resultData.code / 100 === 2) {
+                                        Swal.fire({
+                                            title: "SUCCESS",
+                                            text: `DELETE ${i.projectName}`,
+                                            icon: 'success',
+                                            heightAuto: false,
+                                        }).then(() => {
+                                            window.location.reload();
+                                        })
+                                    } else {
+                                        Swal.fire({
+                                            title: "ERROR",
+                                            html: `
+                                                ERROR in DELETE ${i.projectName}
+                                                <br />
+                                                <span>${resultType[resultData.code]}</span>
+                                            `,
+                                            icon: 'error',
+                                            heightAuto: false,
+                                        })
+                                    }
+                                }
+                            }}>
+                                <DeleteIcon />
+                            </IconButton>
                         </div>
                     </div>
                 </div>
