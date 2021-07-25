@@ -118,7 +118,10 @@ export default function RecentWork() {
                     }}>
                     <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }} className={classes.carouselContent}>
                         <div style={{ padding: "30px" }}>
-                            <img alt="logo" style={{ maxWidth: "256px", paddingBottom: "20px", maxHeight: "256px" }} src={`http://localhost:8000/api/temp?uuid=${i.projectThumbnail}`} />
+                            {i.projectThumbnail === undefined ?
+                                <img alt="logo" style={{ maxWidth: "256px", paddingBottom: "20px", maxHeight: "256px" }} src={`/images/picode-7.svg`} />
+                                : <img alt="logo" style={{ maxWidth: "256px", paddingBottom: "20px", maxHeight: "256px" }} src={`/api/temp?uuid=${i.projectThumbnail}`} />
+                            }
                             <div style={{ display: "block" }}>
                                 <span className={classes.tableContent}>Project Name : </span>
                                 <span className={classes.tableContent}>{i.projectName}</span>
@@ -132,7 +135,7 @@ export default function RecentWork() {
                                 <span className={classes.tableContent}>{i.projectCreator}</span>
                             </div>
                             <div style={{ display: "block" }}>
-                                <span className={classes.tableContent}>Project Creator : </span>
+                                <span className={classes.tableContent}>Project Participants : </span>
                                 <span className={classes.tableContent}>{participantsInfo ?? "No one"}</span>
                             </div>
                             <IconButton className={classes.carouselButton}

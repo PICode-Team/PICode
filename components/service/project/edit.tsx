@@ -31,7 +31,7 @@ export default function EditProject() {
             }
             setProjectData({
                 projectName: data.projectList[0].projectName,
-                projectDescription: data.projectList[0].projectParticipants,
+                projectDescription: data.projectList[0].projectDescription,
                 projectThumbnail: undefined,
                 projectParticipants: data.projectList[0].projectParticipants
             })
