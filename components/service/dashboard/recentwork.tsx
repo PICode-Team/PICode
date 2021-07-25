@@ -17,6 +17,7 @@ interface IProjectData {
     language: string;
     projectCreator: string;
     projectParticipants: string[]
+    projectThumbnail?: string;
 }
 
 export default function RecentWork() {
@@ -74,6 +75,7 @@ export default function RecentWork() {
                 'Content-Type': 'application/json'
             },
         }).then((res) => res.json())
+
         setProjectData(data.projectList ?? [])
     }
 
@@ -107,6 +109,7 @@ export default function RecentWork() {
                 <div style={{ padding: "0px 20px", height: "100%" }}>
                     <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }} className={classes.carouselContent}>
                         <div>
+                            <img alt="logo" src={`http://localhost:8000/api/temp?uuid=${i.projectThumbnail}`} />
                             <div style={{ display: "block" }}>
                                 <span className={classes.tableContent}>Project Name : </span>
                                 <span className={classes.tableContent}>{i.projectName}</span>
