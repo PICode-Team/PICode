@@ -9,9 +9,8 @@ export default class DataDocumentManager {
     }
 
     static get(documentId?: string) {
-        return (getJsonData(
-            `${this.getDocumentDataPath()}/documentData.json`
-        ) as GQLDocument[]).filter(v => documentId === undefined || v.documentId === documentId)
+        return ((getJsonData(`${this.getDocumentDataPath()}/documentData.json`) ?? []) as GQLDocument[])
+            .filter((v: GQLDocument) => documentId === undefined || v.documentId === documentId)
     }
 
     static create(data: GQLDocument) {
@@ -25,7 +24,7 @@ export default class DataDocumentManager {
 
     static update(documentId: string, newData: TDataDocumentUpdataSet) {
         const originData = this.get()
-        const targetData = originData.find(v => v.documentId === documentId)
+        const targetData = originData.find((v: GQLDocument) => v.documentId === documentId)
 
         if (targetData === undefined) {
             return false
@@ -44,7 +43,7 @@ export default class DataDocumentManager {
     static delete(documentId: string) {
         const originData = this.get()
 
-        const targetIndex = originData.findIndex(v => v.documentId === documentId)
+        const targetIndex = originData.findIndex((v: GQLDocument) => v.documentId === documentId)
 
         if (targetIndex < 0) {
             return false
