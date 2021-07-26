@@ -10,6 +10,7 @@ import DragIndicatorIcon from '@material-ui/icons/DragIndicator';
 import ExpandMoreRoundedIcon from '@material-ui/icons/ExpandMoreRounded';
 import DescriptionIcon from '@material-ui/icons/Description';
 import DetailsIcon from '@material-ui/icons/Details';
+import { gql, useMutation, useQuery } from "@apollo/client";
 
 interface INoteContent {
     text: string;
@@ -35,8 +36,31 @@ interface IFileView {
     open?: boolean;
 }
 
-export default function TestNote() {
+const GETQUERY = gql`{
+    getDocument{
+      documentId
+    }
+  }`
+
+export default function TestNote(ctx: any) {
     const classes: any = noteStyle();
+
+    let POSTQUERY = gql`
+        mutation {
+            createDocument(content:"test", path: "./test/test/test.md", creator:"jaesang")
+    }`
+
+    let UPDATEQUERY = gql`
+        mutation {
+        updateDocument(documentId: "24194650-f825-4e36-86ad-c61d76d26c2d", content:"test333")
+      }
+    `
+
+    let DELETEQUERY = gql`mutation {
+        deleteDocument(documentId:"9ef0fa73-77df-4d50-9773-9a833f0f598d")
+      }
+    `
+
     const [cursor, setCursor] = React.useState<string>();
     const [test, setTest] = React.useState<INoteContent[]>([]);
     const [show, setShow] = React.useState<boolean>(false);
@@ -47,6 +71,9 @@ export default function TestNote() {
     const [fileView, setFileView] = React.useState<IFileView[]>()
     const [selectFile, setSelectFile] = React.useState<IFileView>()
     const [selectFolder, setSelectFolder] = React.useState<string[]>([]);
+    const [addPostData] = useMutation(POSTQUERY);
+    const [updateDocuData] = useMutation(UPDATEQUERY);
+    const { data, loading, error } = useQuery(GETQUERY);
 
     let tmpPosition: any = [];
 
@@ -70,6 +97,7 @@ export default function TestNote() {
     }, [dragEnd])
 
     useEffect(() => {
+
         for (let i in test) {
             let node = document.getElementById(`${i}`)
             if (node) {
@@ -204,6 +232,17 @@ export default function TestNote() {
 
     return <div className={classes.root}>
         <div className={classes.fileView}>
+            <div>
+                <button onClick={() => {
+                    POSTQUERY = gql`
+                    mutation {
+                        createDocument(content:"test", path: "./test/test/test.md", creator:${ctx.session.userId})
+                    }`
+                    addPostData()
+                }}>
+                    add new
+                </button>
+            </div>
             {fileView && makeFileView(fileView, 1)}
         </div>
         {

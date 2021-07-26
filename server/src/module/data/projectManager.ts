@@ -15,11 +15,12 @@ import {
     isExists,
     removeData,
     handle,
-    UploadFileManager,
     searchProjectFiles,
     readCodesFromFile,
     writeCodeToFile,
+    getAllChildren,
 } from "./fileManager";
+import DataUploadManager from "./uploadManager";
 import fs from "fs";
 import * as child from "child_process";
 import { zip } from "zip-a-folder";
@@ -127,7 +128,7 @@ export default class DataProjectManager {
     }
 
     static gitCloneFromURL(projectId: string, gitUrl: any) {
-        const clonePath = this.getProjectWorkPath(projectId);
+        const clonePath = DataProjectManager.getProjectWorkPath(projectId);
 
         if (!fs.existsSync(clonePath)) {
             fs.mkdirSync(clonePath, { recursive: true });
@@ -161,7 +162,8 @@ export default class DataProjectManager {
     ) {
         const uploadFileId = source.upload.uploadFileId;
         const isExtract = source.upload.isExtract;
-        const fileName = UploadFileManager[uploadFileId].originalname;
+        const fileName =
+            DataUploadManager.UploadFileManager[uploadFileId].originalname;
         const newPath = DataProjectManager.getProjectWorkPath(projectId);
         if (!fs.existsSync(newPath)) {
             fs.mkdirSync(newPath, { recursive: true });
@@ -183,7 +185,9 @@ export default class DataProjectManager {
                             ...DataProjectManager.getProjectInfo(projectId),
                             projectLanguage: fileToSize,
                         } as TProjectUpdateData);
-                        delete UploadFileManager[uploadFileId];
+                        delete DataUploadManager.UploadFileManager[
+                            uploadFileId
+                        ];
                     }
                 },
             }
@@ -205,6 +209,7 @@ export default class DataProjectManager {
     }
 
     static get(userId: string, projectName?: string): TProjectData[] {
+        DataUploadManager.loadUploadFileInfo();
         if (!fs.existsSync(this.getProjectDefaultPath())) {
             fs.mkdirSync(this.getProjectDefaultPath(), { recursive: true });
         }
@@ -280,7 +285,7 @@ export default class DataProjectManager {
                 ) {
                     return false;
                 }
-                delete UploadFileManager[projectThumbnail];
+                //delete UploadFileManager[projectThumbnail];
             }
 
             this.setProjectInfo(projectId, {
@@ -307,7 +312,6 @@ export default class DataProjectManager {
         projectInfo: TProjectUpdateData
     ): boolean {
         const projectId = this.getProjectId(userId, projectName);
-        log.debug(projectId);
         if (typeof projectId !== "string") {
             return false;
         }
@@ -348,7 +352,6 @@ export default class DataProjectManager {
 
     static delete(userId: string, projectName: string): boolean {
         const projectId = this.getProjectId(userId, projectName);
-        log.debug(projectId);
         if (typeof projectId !== "string") {
             return false;
         }
@@ -546,5 +549,17 @@ export default class DataProjectManager {
             return { message: "fail to create dir" };
         }
         return { message: "create dir complete" };
+    }
+
+    static getAllProjectPath(userId: string, projectName: string) {
+        const projectId = this.getProjectId(userId, projectName);
+        if (typeof projectId !== "string") {
+            return { message: "could not find project" };
+        }
+        if (!this.canEditProject(userId, projectId, true)) {
+            return { message: "could not create dir" };
+        }
+        const projectPath = DataProjectManager.getProjectWorkPath(projectId);
+        return getAllChildren(projectPath, "");
     }
 }

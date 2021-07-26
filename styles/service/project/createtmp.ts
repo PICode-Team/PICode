@@ -108,6 +108,10 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
                 color: theme.font.high.color,
                 fontSize: theme.font.small.size,
             },
+            "&>div": {
+                color: theme.font.high.color,
+                fontSize: theme.font.small.size,
+            },
         },
         imageUpload: {
             height: "150px",
