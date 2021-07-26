@@ -4,7 +4,7 @@ import { TprojectCreateData, TProjectData, TProjectUpdateData } from "../../type
 import { setJsonData, getJsonData, isExists, removeData, handle, searchProjectFiles, readCodesFromFile, writeCodeToFile, getAllChildren } from "./fileManager";
 import DataUploadManager from "./uploadManager";
 import fs from "fs";
-import * as child from "child_process";
+import simpleGit from "simple-git";
 import { zip } from "zip-a-folder";
 import { TFileData, TUploadFileLanguageToSize } from "../../types/module/data/file.types";
 import path from "path";
@@ -60,17 +60,10 @@ export default class DataProjectManager {
     }
 
     static getProjectId(userId: string, projectName: string) {
-        const projectId = fs.readdirSync(this.getProjectDefaultPath()).filter((projectId) => {
+        return fs.readdirSync(this.getProjectDefaultPath()).find((projectId) => {
             const projectInfo = this.getProjectInfo(projectId) as TProjectData;
             return (projectInfo.projectCreator === userId || projectInfo.projectParticipants?.includes(userId)) && projectInfo.projectName === projectName;
         });
-        if (projectId.length > 1) {
-            return projectId;
-        } else if (projectId.length === 1) {
-            return projectId[0];
-        } else {
-            return undefined;
-        }
     }
 
     static gitCloneFromURL(
@@ -85,24 +78,23 @@ export default class DataProjectManager {
             fs.mkdirSync(clonePath, { recursive: true });
         }
         try {
-            child.exec(
-                `git clone ${source.gitUrl}`,
-                {
-                    cwd: clonePath,
-                    env: process.env,
-                },
-                (error, _stdout, stderr) => {
-                    const fileToSize: TUploadFileLanguageToSize = {};
-                    error
-                        ? (log.error(_stdout), log.error(stderr))
-                        : (log.info(stderr),
+            source.gitUrl
+                ? simpleGit()
+                      .clone(source.gitUrl, clonePath)
+                      .then(() => {
+                          const fileToSize: TUploadFileLanguageToSize = {};
                           searchProjectFiles(clonePath, { fileToSize: fileToSize }),
-                          DataProjectManager.setProjectInfo(projectId, {
-                              ...DataProjectManager.getProjectInfo(projectId),
-                              projectLanguage: fileToSize,
-                          } as TProjectUpdateData));
-                }
-            );
+                              DataProjectManager.setProjectInfo(projectId, {
+                                  ...DataProjectManager.getProjectInfo(projectId),
+                                  projectLanguage: fileToSize,
+                              } as TProjectUpdateData);
+                          log.info(`git clone complete gitUrl :${source.gitUrl}`);
+                      })
+                      .catch((e) => {
+                          log.error(e.stack);
+                          return false;
+                      })
+                : log.error(`invalid git URL`);
         } catch (e) {
             log.error(e.stack);
             return false;
@@ -195,7 +187,7 @@ export default class DataProjectManager {
             fs.mkdirSync(this.getProjectDefaultPath(), { recursive: true });
         }
 
-        if (typeof this.getProjectId(userId, projectName) !== "undefined") {
+        if (this.getProjectId(userId, projectName) !== undefined) {
             return false;
         }
 
@@ -219,10 +211,9 @@ export default class DataProjectManager {
             }
 
             if (projectThumbnail !== undefined) {
-                if (!handle(`${UploadDirectoryPath}/${projectThumbnail}`, `${this.getProjectWorkPath(projectId)}${projectThumbnail}`)) {
+                if (!handle(`${UploadDirectoryPath}/${projectThumbnail}`, `${this.getProjectDataPath(projectId)}${projectThumbnail}`)) {
                     return false;
                 }
-                //delete UploadFileManager[projectThumbnail];
             }
 
             this.setProjectInfo(projectId, {
@@ -242,7 +233,7 @@ export default class DataProjectManager {
 
     static update(userId: string, projectName: string, participantIncluded: boolean, projectInfo: TProjectUpdateData): boolean {
         const projectId = this.getProjectId(userId, projectName);
-        if (typeof projectId !== "string") {
+        if (projectId === undefined) {
             return false;
         }
         try {
@@ -253,7 +244,9 @@ export default class DataProjectManager {
             if (projectData === undefined) {
                 return false;
             }
-            //projectParticipants가 있는지,없는지, 있다면 creator인 userId가 포함돼있는지, 아닌지
+            if (projectInfo.projectThumbnail !== undefined) {
+                fs.unlinkSync(`${this.getProjectDataPath(projectId)}${projectData.projectThumbnail}`);
+            }
             if (
                 !this.setProjectInfo(projectId, {
                     projectId: projectData.projectId,
@@ -276,7 +269,7 @@ export default class DataProjectManager {
 
     static delete(userId: string, projectName: string): boolean {
         const projectId = this.getProjectId(userId, projectName);
-        if (typeof projectId !== "string") {
+        if (projectId === undefined) {
             return false;
         }
 
@@ -300,7 +293,7 @@ export default class DataProjectManager {
 
     static export(userId: string, projectName: string) {
         const projectId = this.getProjectId(userId, projectName);
-        if (typeof projectId !== "string") {
+        if (projectId === undefined) {
             return false;
         }
         try {
@@ -314,7 +307,7 @@ export default class DataProjectManager {
 
     static getCodesFromProject(userId: string, { projectName, filePath }: { projectName: string; filePath: string }) {
         const projectId = this.getProjectId(userId, projectName);
-        if (typeof projectId !== "string") {
+        if (projectId === undefined) {
             return { message: "could not find project" };
         }
         if (!this.canEditProject(userId, projectId, true)) {
@@ -331,7 +324,7 @@ export default class DataProjectManager {
 
     static changeProjectCode(userId: string, { projectName, filePath, code }: { projectName: string; filePath: string; code: string }) {
         const projectId = this.getProjectId(userId, projectName);
-        if (typeof projectId !== "string") {
+        if (projectId === undefined) {
             return { message: "could not find project" };
         }
         if (!this.canEditProject(userId, projectId, true)) {
@@ -346,7 +339,7 @@ export default class DataProjectManager {
 
     static moveProjectFileOrDir(userId: string, { projectName, oldPath, newPath }: { projectName: string; oldPath: string; newPath: string }) {
         const projectId = this.getProjectId(userId, projectName);
-        if (typeof projectId !== "string") {
+        if (projectId === undefined) {
             return { message: "could not find project" };
         }
         if (!this.canEditProject(userId, projectId, true)) {
@@ -368,7 +361,7 @@ export default class DataProjectManager {
 
     static deleteFileOrDir(userId: string, { projectName, deletePath, recursive }: { projectName: string; deletePath: string; recursive?: boolean }) {
         const projectId = this.getProjectId(userId, projectName);
-        if (typeof projectId !== "string") {
+        if (projectId === undefined) {
             return { message: "could not find project" };
         }
         if (!this.canEditProject(userId, projectId, true)) {
@@ -389,7 +382,7 @@ export default class DataProjectManager {
     }
     static createProjectFile(userId: string, { projectName, filePath }: { projectName: string; filePath: string }) {
         const projectId = this.getProjectId(userId, projectName);
-        if (typeof projectId !== "string") {
+        if (projectId === undefined) {
             return { message: "could not find project" };
         }
         if (!this.canEditProject(userId, projectId, true)) {
@@ -406,7 +399,7 @@ export default class DataProjectManager {
     }
     static createProjectDir(userId: string, { projectName, dirPath }: { projectName: string; dirPath: string }) {
         const projectId = this.getProjectId(userId, projectName);
-        if (typeof projectId !== "string") {
+        if (projectId === undefined) {
             return { message: "could not find project" };
         }
         if (!this.canEditProject(userId, projectId, true)) {
@@ -424,13 +417,13 @@ export default class DataProjectManager {
 
     static getAllProjectPath(userId: string, projectName: string) {
         const projectId = this.getProjectId(userId, projectName);
-        if (typeof projectId !== "string") {
+        if (projectId === undefined) {
             return { message: "could not find project" };
         }
         if (!this.canEditProject(userId, projectId, true)) {
             return { message: "could not create dir" };
         }
         const projectPath = DataProjectManager.getProjectWorkPath(projectId);
-        return getAllChildren(projectPath, "");
+        return getAllChildren(projectId, projectPath, "");
     }
 }
