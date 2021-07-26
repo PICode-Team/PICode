@@ -8,10 +8,12 @@ router.get("/", (req, res) => {
     const userId = req.session.userId as string;
     const thumbnail = req.query?.uuid as string;
     //const type: "user" | "project" = "project";
-
-    const thumbnailPath = getThumbnailfromUUID(userId, thumbnail);
-    res.set("Content-Type", `${DataUploadManager.UploadFileManager[thumbnail].mimetype}`);
-    res.sendFile(thumbnailPath);
+    if (thumbnail !== "undefined") {
+        DataUploadManager.loadUploadFileInfo();
+        const thumbnailPath = getThumbnailfromUUID(userId, thumbnail);
+        res.set("Content-Type", `${DataUploadManager.UploadFileManager[thumbnail].mimetype}`);
+        res.sendFile(thumbnailPath);
+    }
 });
 
 export default router;

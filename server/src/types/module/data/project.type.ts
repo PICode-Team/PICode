@@ -1,4 +1,4 @@
-import { TUploadFileLanguageToSize, TUploadManager } from "./file.types";
+import { TUploadFileLanguageToSize } from "./file.types";
 
 export interface TprojectCreateData {
     projectName: string;

@@ -14,41 +14,41 @@ const codeLoadFuncs: {
     deleteFileOrDir: deleteFileOrDir,
 };
 
-function loadProject(userId: string, projectInfo: { projectName: string }) {
-    const sendData = JSON.stringify(makePacket("code", "loadProject", DataProjectManager.getAllProjectPath(userId, projectInfo.projectName)));
+function loadProject(userId: string, data: { projectName: string }) {
+    const sendData = JSON.stringify(makePacket("code", "loadProject", DataProjectManager.getAllProjectPath(userId, data.projectName)));
     getSocket(userId).send(sendData);
 }
 
-function getCode(userId: string, projectInfo: { projectName: string; filePath: string }) {
-    const sendData = JSON.stringify(makePacket("code", "getCode", DataProjectManager.getCodesFromProject(userId, projectInfo)));
+function getCode(userId: string, data: { projectName: string; filePath: string }) {
+    const sendData = JSON.stringify(makePacket("code", "getCode", DataProjectManager.getCodesFromProject(userId, data)));
     getSocket(userId).send(sendData);
 }
 
-function changeCode(userId: string, projectInfo: { projectName: string; filePath: string; code: string }) {
-    const sendData = JSON.stringify(makePacket("code", "changeCode", DataProjectManager.changeProjectCode(userId, projectInfo)));
+function changeCode(userId: string, data: { projectName: string; filePath: string; code: string }) {
+    const sendData = JSON.stringify(makePacket("code", "changeCode", DataProjectManager.changeProjectCode(userId, data)));
     getSocket(userId).send(sendData);
 }
 
-function moveFileOrDir(userId: string, projectInfo: { projectName: string; oldPath: string; newPath: string }) {
-    const sendData = JSON.stringify(makePacket("code", "moveFileOrDir", DataProjectManager.moveProjectFileOrDir(userId, projectInfo)));
+function moveFileOrDir(userId: string, data: { projectName: string; oldPath: string; newPath: string }) {
+    const sendData = JSON.stringify(makePacket("code", "moveFileOrDir", DataProjectManager.moveProjectFileOrDir(userId, data)));
     getSocket(userId).send(sendData);
 }
 
-function deleteFileOrDir(userId: string, projectInfo: { projectName: string; deletePath: string; recursive?: boolean }) {
-    const sendData = JSON.stringify(makePacket("code", "deleteFileOrDir", DataProjectManager.deleteFileOrDir(userId, projectInfo)));
+function deleteFileOrDir(userId: string, data: { projectName: string; deletePath: string; recursive?: boolean }) {
+    const sendData = JSON.stringify(makePacket("code", "deleteFileOrDir", DataProjectManager.deleteFileOrDir(userId, data)));
     getSocket(userId).send(sendData);
 }
 
-function createFile(userId: string, projectInfo: { projectName: string; filePath: string }) {
-    const sendData = JSON.stringify(makePacket("code", "createFile", DataProjectManager.createProjectFile(userId, projectInfo)));
+function createFile(userId: string, data: { projectName: string; filePath: string }) {
+    const sendData = JSON.stringify(makePacket("code", "createFile", DataProjectManager.createProjectFile(userId, data)));
     getSocket(userId).send(sendData);
 }
 
-function createDir(userId: string, projectInfo: { projectName: string; dirPath: string }) {
-    const sendData = JSON.stringify(makePacket("code", "createDir", DataProjectManager.createProjectDir(userId, projectInfo)));
+function createDir(userId: string, data: { projectName: string; dirPath: string }) {
+    const sendData = JSON.stringify(makePacket("code", "createDir", DataProjectManager.createProjectDir(userId, data)));
     getSocket(userId).send(sendData);
 }
 
 export default function code(userId: string, packet: TSocketPacket) {
-    codeLoadFuncs[packet.type](userId, packet.data.projectInfo);
+    codeLoadFuncs[packet.type](userId, packet.data);
 }
