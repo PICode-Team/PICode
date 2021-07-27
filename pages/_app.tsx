@@ -1,17 +1,15 @@
 import "../styles/globals.css";
 import type { AppContext, AppInitialProps, AppProps } from "next/app";
 import React from "react";
-import withRedux from 'next-redux-wrapper';
 import { CssBaseline, ThemeProvider } from "@material-ui/core";
 import { darkTheme, whiteTheme } from "../styles/theme";
 import wrapper from "../stores";
 import { useSelector, useStore } from "react-redux";
-import { ReactReduxContext } from 'react-redux'
-import { PersistGate } from 'redux-persist/integration/react';
+import { ApolloProvider } from "@apollo/client";
+import client from "../apollo/apollo-client";
 
 function App({ Component, pageProps }: AppProps) {
   const theme = useSelector((state: any) => state.theme)
-  const store: any = useStore();
 
   return (
     <React.Fragment>
@@ -22,7 +20,9 @@ function App({ Component, pageProps }: AppProps) {
         theme={theme.theme === "dark" ? darkTheme : whiteTheme}
       >
         <CssBaseline />
-        <Component {...pageProps} />
+        <ApolloProvider client={client} >
+          <Component {...pageProps} />
+        </ApolloProvider>
       </ThemeProvider>
     </React.Fragment>
   );

@@ -87,8 +87,7 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       paddingLeft: "10px",
       paddingRight: "10px",
     },
-    join: {},
-    unjoin: {
+    join: {
       display: "flex",
       justifyContent: "space-between",
       "&:hover": {
@@ -97,6 +96,7 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
         },
       },
     },
+    unjoin: {},
     deleteChannel: {
       visibility: "hidden",
       paddingRight: "8px",

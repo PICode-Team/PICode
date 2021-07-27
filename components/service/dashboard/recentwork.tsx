@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 import { Grid, IconButton, Slider, Switch, Typography } from "@material-ui/core";
 import React, { useState } from "react"
@@ -8,14 +9,19 @@ import { recentWorkStyle } from "../../../styles/service/dashboard/recentwork";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import EditIcon from '@material-ui/icons/Edit';
+import DeleteIcon from '@material-ui/icons/Delete';
+import Swal from "sweetalert2"
 
 import * as d3 from "d3"
+import { resultType } from "../../constant/fetch/result";
 interface IProjectData {
     projectName: string;
     projectDescription: string;
     language: string;
     projectCreator: string;
     projectParticipants: string[]
+    projectThumbnail?: string;
 }
 
 export default function RecentWork() {
@@ -36,13 +42,12 @@ export default function RecentWork() {
     }, [sliderNum])
 
     const drawTableView = () => {
-        d3.select("#view").style("overflow-y", "scroll")
         let width = (d3.select("#view")?.node() as any)?.getBoundingClientRect().width;
         let col = width / Number(sliderNum) - 20;
         let tmpContent = [<div key={"addProject"} style={{ padding: "20px", width: col + "px", height: "200px", display: "inline-block" }}>
-            <div style={{ background: "black", height: "100%", borderRadius: "12px" }}>
+            <div className={classes.tableDiv}>
                 <div style={{ textAlign: "center" }}>
-                    <IconButton style={{ color: "#fff" }} onClick={() => { window.location.href = "/createproject" }}>
+                    <IconButton className={classes.carouselButton} onClick={() => { window.location.href = "/project/create" }}>
                         <AddIcon />
                     </IconButton>
                     <span style={{ display: "block", textAlign: "center", color: "#fff" }}>
@@ -53,11 +58,11 @@ export default function RecentWork() {
         </div>];
         for (let i of projectData) {
             tmpContent.push(<div key={"addProject"} style={{ padding: "20px", width: col + "px", height: "200px", display: "inline-block" }}>
-                <div style={{ background: "black", height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }}>
+                <div className={classes.carouselContent}>
                     <div style={{ textAlign: "center" }}>
-                        <span style={{ display: "block", color: "white" }}>{i.projectDescription}</span>
-                        <span style={{ display: "block", color: "white" }} className="">{i.projectName}</span>
-                        <span style={{ display: "block", color: "white" }} className="">{i.projectCreator}</span>
+                        <span className={classes.tableContent}>{i.projectDescription}</span>
+                        <span className={classes.tableContent} >{i.projectName}</span>
+                        <span className={classes.tableContent} >{i.projectCreator}</span>
                     </div>
                 </div>
             </div>)
@@ -74,6 +79,7 @@ export default function RecentWork() {
                 'Content-Type': 'application/json'
             },
         }).then((res) => res.json())
+
         setProjectData(data.projectList ?? [])
     }
 
@@ -81,36 +87,133 @@ export default function RecentWork() {
         getData();
     }, [])
 
-    useEffect(() => {
+    let drawCarouselView = () => {
         let tmpContent = [<div key={"addProject"} style={{ padding: "0px 20px", height: "100%" }}>
-            <div style={{ background: "black", height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }}>
+            <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }} className={classes.carouselContent}>
                 <div style={{ textAlign: "center" }}>
-                    <IconButton style={{ color: "#fff" }} onClick={() => { window.location.href = "/createproject" }}>
+                    <IconButton className={classes.carouselButton} onClick={() => { window.location.href = "/project/create" }}>
                         <AddIcon />
                     </IconButton>
-                    <span style={{ display: "block", textAlign: "center", color: "#fff" }}>
+                    <span style={{ display: "block", textAlign: "center" }} className={classes.carouselButton}>
                         Create Project
                     </span>
                 </div>
             </div>
         </div>];
         for (let i of projectData) {
+            let participantsInfo: any = i.projectParticipants
+            if (participantsInfo !== undefined) {
+                participantsInfo = participantsInfo.join(", ")
+                if (participantsInfo.length > 15) {
+                    participantsInfo = participantsInfo.substring(0, 15) + "..."
+                }
+            }
+
             tmpContent.push(
-                <div style={{ padding: "0px 20px", height: "100%" }}>
-                    <div style={{ background: "black", height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }}>
-                        <div>
-                            <span style={{ display: "block", color: "white" }}>{i.projectDescription}</span>
-                            <span style={{ display: "block", color: "white" }} className="">{i.projectName}</span>
-                            <span style={{ display: "block", color: "white" }} className="">{i.projectCreator}</span>
+                <div style={{ padding: "0px 20px", height: "100%", cursor: "pointer" }}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.location.href = `/code?projectName=${i.projectName}`
+                    }}>
+                    <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }} className={classes.carouselContent}>
+                        <div style={{ padding: "30px" }}>
+                            {i.projectThumbnail === undefined ?
+                                <img alt="logo" style={{ maxWidth: "256px", paddingBottom: "20px", maxHeight: "256px" }} src={`/images/picode-7.svg`} />
+                                : <img alt="logo" style={{ maxWidth: "256px", paddingBottom: "20px", maxHeight: "256px" }} src={`/api/temp?uuid=${i.projectThumbnail}`} />
+                            }
+                            <div style={{ display: "block" }}>
+                                <span className={classes.tableContent}>Project Name : </span>
+                                <span className={classes.tableContent}>{i.projectName}</span>
+                            </div>
+                            <div style={{ display: "block" }}>
+                                <span className={classes.tableContent}>Project Description : </span>
+                                <span className={classes.tableContent}>{i.projectDescription}</span>
+                            </div>
+                            <div style={{ display: "block" }}>
+                                <span className={classes.tableContent}>Project Creator : </span>
+                                <span className={classes.tableContent}>{i.projectCreator}</span>
+                            </div>
+                            <div style={{ display: "block" }}>
+                                <span className={classes.tableContent}>Project Participants : </span>
+                                <span className={classes.tableContent}>{participantsInfo ?? "No one"}</span>
+                            </div>
+                            <IconButton className={classes.carouselButton}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    window.location.href = `/project/edit?projectName=${i.projectName}`
+                                }}
+                            >
+                                <EditIcon />
+                            </IconButton>
+                            <IconButton className={classes.carouselButton} onClick={async (e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                let result = await Swal.fire({
+                                    title: "Delete Project",
+                                    text: `Are you sure delete ${i.projectName} Project?`,
+                                    icon: 'warning',
+                                    heightAuto: false,
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Yes',
+                                    cancelButtonText: 'No'
+                                })
+                                if (result.isConfirmed) {
+                                    let resultData = await fetch(`/api/project?projectName=${i.projectName}`, {
+                                        method: "DELETE",
+                                        mode: "cors",
+                                        credentials: 'same-origin',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                    }).then((res) => res.json())
+
+                                    if (resultData.code / 100 === 2) {
+                                        Swal.fire({
+                                            title: "SUCCESS",
+                                            text: `DELETE ${i.projectName}`,
+                                            icon: 'success',
+                                            heightAuto: false,
+                                        }).then(() => {
+                                            window.location.reload();
+                                        })
+                                    } else {
+                                        Swal.fire({
+                                            title: "ERROR",
+                                            html: `
+                                                ERROR in DELETE ${i.projectName}
+                                                <br />
+                                                <span>${resultType[resultData.code]}</span>
+                                            `,
+                                            icon: 'error',
+                                            heightAuto: false,
+                                        })
+                                    }
+                                }
+                            }}>
+                                <DeleteIcon />
+                            </IconButton>
                         </div>
                     </div>
                 </div>
             )
         }
+        return tmpContent;
+    }
+
+    useEffect(() => {
         let width = (d3.select("#view")?.node() as any)?.getBoundingClientRect().width;
         d3.select(".carousel-root").style("max-width", `${width}px`)
-        setContent(tmpContent);
     }, [projectData])
+
+    useEffect(() => {
+        if (state) {
+            d3.select("#view").style("overflow-y", "hidden")
+        } else {
+            d3.select("#view").style("overflow-y", "scroll")
+        }
+    }, [state])
 
 
 
@@ -172,7 +275,7 @@ export default function RecentWork() {
                         infiniteLoop
                         useKeyboardArrows={true}
                     >
-                        {content !== undefined && content.map((v: any) => v)}
+                        {drawCarouselView().map((v: any) => v)}
                     </Carousel>
                 </>}
                 {!state && drawTableView().map((v: any) => v)}

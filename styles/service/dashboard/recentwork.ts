@@ -63,7 +63,7 @@ export const recentWorkStyle = makeStyles((theme: IThemeStyle) =>
             top: "45%",
             zIndex: 2,
             left: "10px",
-            color: `${theme.font.high.color} !important`,
+            color: `${theme.font.high.color}!important `,
         },
         rightButton: {
             position: "absolute !important",
@@ -80,6 +80,30 @@ export const recentWorkStyle = makeStyles((theme: IThemeStyle) =>
             height: "30px",
             color: `${theme.font.high.color} !important`,
             zIndex: 3,
+        },
+        carouselDiv: {
+            padding: "0px 20px",
+            height: "100%",
+        },
+        carouselContent: {
+            background: theme.backgroundColor.step3,
+            height: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: "12px",
+        },
+        carouselButton: {
+            color: `${theme.font.high.color} !important`,
+        },
+        tableDiv: {
+            background: theme.backgroundColor.step3,
+            height: "100%",
+            borderRadius: "12px",
+        },
+        tableContent: {
+            display: "inline-block",
+            color: theme.font.high.color,
         },
     })
 );
