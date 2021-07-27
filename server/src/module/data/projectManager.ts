@@ -272,20 +272,14 @@ export default class DataProjectManager {
         if (projectId === undefined) {
             return false;
         }
-
         if (!this.canEditProject(userId, projectId, false)) {
             return false;
         }
-        if (!this.isExists(projectId, this.getProjectWorkPath)) {
+
+        if (!this.isExists(projectId, this.getProjectWorkPath) || !removeData(this.getProjectWorkPath(projectId))) {
             return false;
         }
-        if (!removeData(this.getProjectWorkPath(projectId))) {
-            return false;
-        }
-        if (!this.isExists(projectId, this.getProjectDataPath)) {
-            return false;
-        }
-        if (!removeData(this.getProjectDataPath(projectId))) {
+        if (!this.isExists(projectId, this.getProjectDataPath) || !removeData(this.getProjectDataPath(projectId))) {
             return false;
         }
         return true;
