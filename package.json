@@ -46,6 +46,8 @@
     "redux-persist": "^6.0.0",
     "redux-thunk": "^2.3.0",
     "reflect-metadata": "^0.1.13",
+    "simple-git": "^2.41.1",
+    "source-map-support": "^0.5.19",
     "styled-components": "^5.3.0",
     "styled-jsx": "^3.4.4",
     "type-graphql": "^1.1.1",

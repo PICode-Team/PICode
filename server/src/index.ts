@@ -1,3 +1,4 @@
+require('source-map-support').install();
 import express from 'express'
 import setting from './lib/setting'
 import logging from './lib/logging'
@@ -45,7 +46,6 @@ async function main() {
         console.log(`╚═╝░░░░░╚═╝  ░╚════╝░░╚════╝░╚═════╝░╚══════╝  ╚═════╝░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░╚══════╝╚═╝░░╚═╝`)
         log.info(`Start PICode server - 0.0.0.0:${PORT}`)
     })
-
 }
 
 main()
