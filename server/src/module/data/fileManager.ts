@@ -6,6 +6,7 @@ import admZip from "adm-zip";
 import DataProjectManager from "./projectManager";
 import DataUploadManager from "./uploadManager";
 import { UploadDirectoryPath } from "../../types/module/data/data.types";
+import DataUserManager from "./userManager";
 
 function isNormalPath(dataPath: string) {
     const projectRootPath = path.resolve(`${__dirname}/../../../../`);
@@ -168,10 +169,18 @@ export function getThumbnailfromUUID(userId: string, thumbnail: string) {
     }
 
     const projectId = fs.readdirSync(DataProjectManager.getProjectDefaultPath()).filter((projectId) => {
-        return DataProjectManager.getProjectInfo(projectId)?.projectThumbnail === thumbnail && DataProjectManager.isProjectParticipants(userId, projectId);
+        return (
+            DataProjectManager.getProjectInfo(projectId)?.projectThumbnail === thumbnail &&
+            (DataProjectManager.isProjectParticipants(userId, projectId) || DataProjectManager.isProjectCreator(userId, projectId))
+        );
     });
+    const userThumnail = fs.readdirSync(DataUserManager.getUserDataPath(userId)).find((UUID) => UUID === thumbnail);
     try {
-        fs.copyFileSync(`${DataProjectManager.getProjectWorkPath(projectId[0])}${thumbnail}`, `${UploadDirectoryPath}/${DataUploadManager.UploadFileManager[thumbnail].originalname}`);
+        if (projectId !== undefined) {
+            fs.copyFileSync(`${DataProjectManager.getProjectDataPath(projectId[0])}${thumbnail}`, `${UploadDirectoryPath}/${DataUploadManager.UploadFileManager[thumbnail].originalname}`);
+        } else if (userThumnail !== undefined) {
+            fs.copyFileSync(`${DataUserManager.getUserDataPath(userId)}${thumbnail}`, `${UploadDirectoryPath}/${DataUploadManager.UploadFileManager[thumbnail].originalname}`);
+        }
     } catch (e) {
         log.error(e.stack);
         return "";
@@ -197,10 +206,10 @@ export function writeCodeToFile(serverPath: string, clientPath: string, code: st
     return true;
 }
 
-export function getAllChildren(projectPath: string, loopPath: string): TFile {
+export function getAllChildren(projectId: string, projectPath: string, loopPath: string): TFile {
     const fullPath = path.join(projectPath, loopPath);
-    const replacePath = path.join(projectPath, "");
+    const replacePath = fullPath.replace(path.join(DataProjectManager.getProjectWorkPath(projectId)).replace(".", ""), "");
     const children: string[] | undefined = fs.statSync(fullPath).isDirectory() ? fs.readdirSync(fullPath) : undefined;
 
-    return { path: fullPath.replace(`${replacePath}\\`, "") + "/", children: children ? children.map((v) => getAllChildren(fullPath, v)) : undefined };
+    return { path: replacePath !== "" ? replacePath : "/", children: children ? children.map((v) => getAllChildren(projectId, fullPath, v)) : undefined };
 }

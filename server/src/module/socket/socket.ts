@@ -3,12 +3,13 @@ import { TSocketPacket } from "../../types/module/socket.types";
 import log from "../log";
 import chat from "./chat";
 import code from "./code";
-
+import work from "./work";
 import { SocketInfo } from "./manager";
 
 const SocketFuncs = {
     chat: chat,
     code: code,
+    work: work,
 };
 
 export function webSocketInit(server: expressWs.Application) {
