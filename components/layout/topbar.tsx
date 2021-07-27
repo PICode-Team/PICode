@@ -9,6 +9,8 @@ import { TopbarStyle } from "../../styles/layout/topbar";
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 import UserInfo from "./item/tooltip";
 import { useEffect } from "react";
+import socket from "ws"
+
 
 export function Topbar(ctx: any) {
     const theme = useSelector((state: any) => state.theme).theme
@@ -29,6 +31,13 @@ export function Topbar(ctx: any) {
             },
         }).then((res) => res.json())
         setData(data.user)
+    }
+
+    const getLoginUserData = () => {
+        let ws = new socket("ws://localhost:8000/ws")
+        ws.onopen = () => {
+            console.log("connect")
+        }
     }
 
     useEffect(() => {
