@@ -103,8 +103,14 @@ export default class DataChatManager {
             return false
         }
 
-        return setJsonData(
+        const result = setJsonData(
             `${this.getChatDataPath()}/${this.getDirName(channelData.userId, channelData.chatName)}/chatInfo.json`, { ...channelData, creation: getTime() }
         )
+
+        if (result) {
+            fs.mkdirSync(`${this.getChatDataPath()}/${this.getDirName(channelData.userId, channelData.chatName)}/log`, { recursive: true })
+        }
+
+        return result
     }
 }
