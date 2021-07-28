@@ -1,6 +1,6 @@
 import { TSocketPacket } from "../../types/module/socket.types";
-import { makePacket, getSocket, userWorkInfo, getUserWork } from "./manager";
-
+import { makePacket, getSocket, userWorkInfo, getUserWork, SocketInfo } from "./manager";
+import { TWorkInfo, TUserToWork } from "../../types/module/data/work.types";
 const workLoadFuncs: {
     [key in string]: (userId: string, workingPath: any) => void;
 } = {
@@ -9,22 +9,24 @@ const workLoadFuncs: {
     deleteInfo: deleteInfo,
 };
 
-function getWorkingPath(userId: string, workingPath: string) {
-    userWorkInfo[userId] = workingPath;
-
+function getWorkingPath(userId: string, workInfo: TWorkInfo) {
+    userWorkInfo[userId] = workInfo;
+    const sendData: TUserToWork[] = [];
     Object.keys(userWorkInfo)
-        .filter((otherUserId) => otherUserId !== userId)
-        .forEach((otherUserId: string) => {
-            const sendOwnData = JSON.stringify(makePacket("work", "getWorkingPath", { userId, workingPath }));
-            getSocket(otherUserId)?.send(sendOwnData);
-            const otherWorkPath = getUserWork(otherUserId);
-            const sendOtherData = JSON.stringify(makePacket("work", "getWorkingPath", { otherUserId, otherWorkPath }));
-            getSocket(userId).send(sendOtherData);
+        .filter((userIdElement) => Object.keys(SocketInfo).includes(userIdElement))
+        .forEach((userIdElement) => {
+            const otherWorkInfo = { userId: userIdElement, workInfo: getUserWork(userIdElement) };
+            sendData.push(otherWorkInfo);
+        });
+    Object.keys(userWorkInfo)
+        .filter((userIdElement) => Object.keys(SocketInfo).includes(userIdElement))
+        .map((userIdElement) => {
+            getSocket(userIdElement).send(JSON.stringify(makePacket("work", "getWorkingPath", sendData)));
         });
 }
 
-function createInfo(userId: string, workingPath: string) {
-    userWorkInfo[userId] = workingPath;
+function createInfo(userId: string, workInfo: TWorkInfo) {
+    userWorkInfo[userId] = workInfo;
     const sendData = JSON.stringify(makePacket("work", "createInfo", { message: "create complete" }));
     getSocket(userId).send(sendData);
 }
