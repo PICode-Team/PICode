@@ -408,3 +408,186 @@ export function findTabByPathInCode(
 
   return -1;
 }
+
+export function setTabInCode(
+  codeList: TCode[],
+  codeId: number,
+  tabId: number,
+  content: string
+) {}
+
+export function getTabInCode(
+  codeList: TCode[],
+  codeId: number
+): TTab | undefined {
+  for (let i = 0; i < codeList.length; i++) {
+    if (codeList[i].codeId === codeId) {
+      return codeList[i].tabList.find(
+        (tab) => tab.tabId === codeList[i].tabOrderStack[0]
+      );
+    }
+
+    const value = getTabInCode(codeList[i].children, codeId);
+    if (value !== undefined) return value;
+  }
+}
+
+interface TFile {
+  path: string;
+  children?: TFile[] | undefined;
+}
+
+export function getFileInfo(
+  fileStructure: TFile,
+  targetPath: string
+): TFile | undefined {
+  if (fileStructure.path === targetPath) return fileStructure;
+
+  if (fileStructure.children) {
+    for (let i = 0; i < fileStructure.children.length; i++) {
+      const value = getFileInfo(fileStructure.children[i], targetPath);
+      if (value !== undefined) return value;
+    }
+  }
+}
+
+export function reorderFileStructure(fileStructure: TFile): TFile {
+  const newChildren: TFile[] | undefined = (() => {
+    if (fileStructure.children !== undefined) {
+      const dirList: TFile[] = [];
+      const fileList: TFile[] = [];
+
+      fileStructure.children.forEach((v, i) => {
+        if (v.children !== undefined)
+          dirList.push({ ...v, children: reorderFileStructure(v).children });
+        else fileList.push(v);
+      });
+      return [...dirList, ...fileList];
+    }
+    return undefined;
+  })();
+
+  return {
+    path: fileStructure.path,
+    children: newChildren,
+  };
+}
+
+export function addCreateInput(
+  fileStructure: TFile,
+  targetPath: string,
+  isDirectory: boolean
+): TFile {
+  const newChildren: TFile[] | undefined = (() => {
+    if (fileStructure.children !== undefined) {
+      if (targetPath === fileStructure.path) {
+        if (isDirectory) {
+          return [{ path: "///create:directory" }, ...fileStructure.children];
+        } else {
+          const dirList: TFile[] = [];
+          const fileList: TFile[] = [];
+
+          fileStructure.children.forEach((v, i) => {
+            if (v.children !== undefined) dirList.push(v);
+            else fileList.push(v);
+          });
+
+          return [...dirList, { path: "///create:file" }, ...fileList];
+        }
+      }
+      return fileStructure.children.map((v, i) =>
+        addCreateInput(v, targetPath, isDirectory)
+      );
+    }
+    return undefined;
+  })();
+
+  return {
+    path: fileStructure.path,
+    children: newChildren,
+  };
+}
+
+export function deleteCreateInput(fileStructure: TFile): TFile {
+  const newChildren: TFile[] | undefined = (() => {
+    if (fileStructure.children !== undefined) {
+      return fileStructure.children.reduce((a: TFile[], c: TFile): TFile[] => {
+        if (c.path.includes("///create:")) {
+          return a;
+        }
+        return [...a, deleteCreateInput(c)];
+      }, []);
+    }
+    return undefined;
+  })();
+
+  return {
+    path: fileStructure.path,
+    children: newChildren,
+  };
+}
+
+export function checkSamePath(
+  fileStructure: TFile,
+  targetPath: string
+): boolean {
+  if (targetPath === fileStructure.path) return true;
+  let check = false;
+
+  if (fileStructure.children !== undefined) {
+    check = fileStructure.children.some((v, i) => {
+      return checkSamePath(v, targetPath);
+    });
+  }
+
+  return check;
+}
+
+export function addRenameField(fileStructure: TFile, targetPath: string) {
+  const newChildren: TFile[] | undefined = (() => {
+    if (fileStructure.children !== undefined) {
+      return fileStructure.children.reduce((a: TFile[], c: TFile): TFile[] => {
+        console.log(c.path, targetPath);
+        if (c.path === targetPath) {
+          return [
+            ...a,
+            {
+              path:
+                c.children !== undefined
+                  ? "///create:directory"
+                  : "///create:file",
+            },
+          ];
+        }
+        return [...a, addRenameField(c, targetPath)];
+      }, []);
+    }
+    return undefined;
+  })();
+
+  return {
+    path: fileStructure.path,
+    children: newChildren,
+  };
+}
+
+export function pasteFile() {}
+
+export function insertCodeContent(
+  codeList: TCode[],
+  targetPath: string,
+  content: string
+): TCode[] {
+  return codeList.map((code) => {
+    return {
+      ...code,
+      tabList: code.tabList.map((tab) => {
+        if (tab.path === targetPath) {
+          return { ...tab, content: content };
+        }
+        return tab;
+      }),
+      children: insertCodeContent(code.children, targetPath, content),
+    };
+  });
+}
