@@ -32,5 +32,12 @@ export const TopbarStyle = makeStyles((theme: IThemeStyle) =>
             marginRight: "20px",
             color: theme.font.high.color,
         },
+        loginUserInfo: {
+            lineHeight: "50px",
+            display: "inline-block",
+            float: "right",
+            marginRight: "20px",
+            color: theme.font.high.color,
+        },
     })
 );

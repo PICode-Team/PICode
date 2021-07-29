@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 import { IconButton } from "@material-ui/core";
 import Brightness7Icon from '@material-ui/icons/Brightness7';
@@ -9,7 +10,6 @@ import { TopbarStyle } from "../../styles/layout/topbar";
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 import UserInfo from "./item/tooltip";
 import { useEffect } from "react";
-import socket from "ws"
 
 
 export function Topbar(ctx: any) {
@@ -33,12 +33,6 @@ export function Topbar(ctx: any) {
         setData(data.user)
     }
 
-    const getLoginUserData = () => {
-        let ws = new socket("ws://localhost:8000/ws")
-        ws.onopen = () => {
-            console.log("connect")
-        }
-    }
 
     useEffect(() => {
         getUserData();
@@ -60,7 +54,9 @@ export function Topbar(ctx: any) {
                     <IconButton onClick={() => theme === "dark" ? dispatch(toWhite()) : dispatch(toDark())} style={{ color: theme === "dark" ? "#fff" : "#121212" }}>
                         <Brightness4Icon />
                     </IconButton>
-
+                </div>
+                <div className={classes.loginUserInfo}>
+                    {(ctx.loginUser !== undefined && ctx.loginUser.userId !== undefined) && <div>{ctx.loginUser.userId}</div>}
                 </div>
             </div>
             {open === true && <UserInfo open={open} setOpen={setOpen} data={data} theme={theme} />}

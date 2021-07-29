@@ -9,7 +9,6 @@ import { IconButton } from "@material-ui/core";
 import DragIndicatorIcon from '@material-ui/icons/DragIndicator';
 import ExpandMoreRoundedIcon from '@material-ui/icons/ExpandMoreRounded';
 import DescriptionIcon from '@material-ui/icons/Description';
-import DetailsIcon from '@material-ui/icons/Details';
 import { gql, useMutation, useQuery } from "@apollo/client";
 
 interface INoteContent {
@@ -45,22 +44,6 @@ const GETQUERY = gql`{
 export default function TestNote(ctx: any) {
     const classes: any = noteStyle();
 
-    let POSTQUERY = gql`
-        mutation {
-            createDocument(content:"test", path: "./test/test/test.md", creator:"jaesang")
-    }`
-
-    let UPDATEQUERY = gql`
-        mutation {
-        updateDocument(documentId: "24194650-f825-4e36-86ad-c61d76d26c2d", content:"test333")
-      }
-    `
-
-    let DELETEQUERY = gql`mutation {
-        deleteDocument(documentId:"9ef0fa73-77df-4d50-9773-9a833f0f598d")
-      }
-    `
-
     const [cursor, setCursor] = React.useState<string>();
     const [test, setTest] = React.useState<INoteContent[]>([]);
     const [show, setShow] = React.useState<boolean>(false);
@@ -71,8 +54,6 @@ export default function TestNote(ctx: any) {
     const [fileView, setFileView] = React.useState<IFileView[]>()
     const [selectFile, setSelectFile] = React.useState<IFileView>()
     const [selectFolder, setSelectFolder] = React.useState<string[]>([]);
-    const [addPostData] = useMutation(POSTQUERY);
-    const [updateDocuData] = useMutation(UPDATEQUERY);
     const { data, loading, error } = useQuery(GETQUERY);
 
     let tmpPosition: any = [];
@@ -107,83 +88,7 @@ export default function TestNote(ctx: any) {
     }, [selectFile])
 
     useEffect(() => {
-        const data: IFileView[] = [
-            {
-                title: "folder1",
-                creation: "2021-07-18 22:12:30",
-                isFolder: true,
-                author: ["진구짱"],
-                children: [
-                    {
-                        title: "folder3",
-                        creation: "2021-07-18 22:12:30",
-                        isFolder: true,
-                        author: ["진구짱"],
-                        children: [
-                            {
-                                title: "file3",
-                                creation: "2021-07-18 22:13:00",
-                                author: ["재상갓"],
-                                type: ["개발", "백엔드"],
-                                isFolder: false,
-                            }, {
-                                title: "file4",
-                                creation: "2021-07-18 22:14:00",
-                                author: ["은표찡", "재상갓"],
-                                type: ["백엔드", "회의"],
-                                isFolder: false,
-                                content: [
-                                    { text: "test입니다.", type: "h1Input" },
-                                    { text: "test1입니다." },
-
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        title: "file1",
-                        creation: "2021-07-18 22:13:00",
-                        author: ["진구짱"],
-                        type: ["개발"],
-                        isFolder: false,
-                    }, {
-                        title: "file2",
-                        creation: "2021-07-18 22:14:00",
-                        author: ["진구짱", "은표찡", "재상갓"],
-                        type: ["개발", "회의"],
-                        isFolder: false,
-                    }
-                ]
-            },
-            {
-                title: "folder2",
-                creation: "2021-07-18 22:12:30",
-                isFolder: true,
-                author: ["재상짱"],
-                children: [
-                    {
-                        title: "file1",
-                        creation: "2021-07-18 22:13:00",
-                        author: ["진구짱"],
-                        type: ["개발"],
-                        isFolder: false,
-                    }, {
-                        title: "file2",
-                        creation: "2021-07-18 22:14:00",
-                        author: ["진구짱", "은표찡", "재상갓"],
-                        type: ["개발", "회의"],
-                        isFolder: false,
-                    }
-                ]
-            }, {
-                title: "file12",
-                creation: "2021-07-18 22:13:00",
-                author: ["진구짱"],
-                type: ["개발"],
-                isFolder: false,
-            }
-        ] /// 추후 fetch로 변경
-        setFileView(data)
+        console.log(data)
     }, [])
 
     const findNode = (data: IFileView[] | undefined, title: string) => {
@@ -232,13 +137,9 @@ export default function TestNote(ctx: any) {
 
     return <div className={classes.root}>
         <div className={classes.fileView}>
-            <div>
+            <div className={classes.fileEdit}>
                 <button onClick={() => {
-                    POSTQUERY = gql`
-                    mutation {
-                        createDocument(content:"test", path: "./test/test/test.md", creator:${ctx.session.userId})
-                    }`
-                    addPostData()
+                    //
                 }}>
                     add new
                 </button>

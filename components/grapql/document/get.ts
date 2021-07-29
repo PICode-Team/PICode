@@ -1,6 +1,6 @@
 import { gql, useQuery } from "@apollo/client";
 
-export default function QueryUpdate(documentId: string) {
+export default function GetQuery(documentId: string) {
     const GETQUERY = gql`
         {
             getDocument {

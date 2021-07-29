@@ -3,8 +3,9 @@ import { TSocketPacket } from "../../types/module/socket.types";
 import log from "../log";
 import chat from "./chat";
 import code from "./code";
-import work from "./work";
+
 import { SocketInfo } from "./manager";
+import work from "./work";
 
 const SocketFuncs = {
     chat: chat,
@@ -14,24 +15,22 @@ const SocketFuncs = {
 
 export function webSocketInit(server: expressWs.Application) {
     server.ws("/", (ws, req) => {
-        if (req?.session?.userId === undefined) {
+        if (req?.query?.userId === undefined) {
             return ws.close();
         }
 
-        const userId = req?.session?.userId;
+        const userId = req?.query?.userId as string;
         ws.on("message", (msg) => {
-            if (req.session.userId === undefined) {
+            if (req.query.userId === undefined) {
                 return;
             }
 
             try {
                 const data = JSON.parse(msg.toString()) as TSocketPacket;
-
                 if (data.category === "connect") {
                     SocketInfo[userId] = ws as any;
                     return;
                 }
-
                 SocketFuncs[data.category](userId, data);
             } catch (e) {
                 log.error(e.stack);
