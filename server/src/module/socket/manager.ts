@@ -1,4 +1,5 @@
-import { TSocketInfo, TUserWorkInfo } from "../../types/module/socket.types";
+import { TSocketInfo } from "../../types/module/socket.types";
+import { TUserWorkInfo } from "../../types/module/data/work.types";
 
 export const SocketInfo: TSocketInfo = {};
 export const userWorkInfo: TUserWorkInfo = {};
