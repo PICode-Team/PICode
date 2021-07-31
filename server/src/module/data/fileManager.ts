@@ -5,8 +5,6 @@ import log from "../log";
 import admZip from "adm-zip";
 import DataProjectManager from "./projectManager";
 import DataUploadManager from "./uploadManager";
-import { UploadDirectoryPath } from "../../types/module/data/data.types";
-import DataUserManager from "./userManager";
 
 function isNormalPath(dataPath: string) {
     const projectRootPath = path.resolve(`${__dirname}/../../../../`);
@@ -97,7 +95,8 @@ export function searchProjectFiles(
     }
 ) {
     fs.readdirSync(dir, { withFileTypes: true }).forEach((entry) => {
-        let fullPath = path.join(dir, entry.name);
+        //need to manage memory(global variable)
+        const fullPath = path.join(dir, entry.name);
         if (entry.isDirectory()) {
             searchProjectFiles(fullPath, func);
         } else if (entry.isFile()) {
@@ -139,7 +138,6 @@ export function handle(
             case "image/bmp":
             case "image/jpeg": {
                 fs.renameSync(oldPath, newPath);
-                //fs.renameSync(newPath, newPath.replace(getUUID(oldPath), "") + fileData.originalname);
                 break;
             }
             case "application/zip":
@@ -161,31 +159,6 @@ export function handle(
         return false;
     }
     return true;
-}
-
-export function getThumbnailfromUUID(userId: string, thumbnail: string) {
-    if (!fs.existsSync(UploadDirectoryPath)) {
-        fs.mkdirSync(UploadDirectoryPath, { recursive: true });
-    }
-
-    const projectId = fs.readdirSync(DataProjectManager.getProjectDefaultPath()).filter((projectId) => {
-        return (
-            DataProjectManager.getProjectInfo(projectId)?.projectThumbnail === thumbnail &&
-            (DataProjectManager.isProjectParticipants(userId, projectId) || DataProjectManager.isProjectCreator(userId, projectId))
-        );
-    });
-    const userThumnail = fs.readdirSync(DataUserManager.getUserDataPath(userId)).find((UUID) => UUID === thumbnail);
-    try {
-        if (projectId !== undefined) {
-            fs.copyFileSync(`${DataProjectManager.getProjectDataPath(projectId[0])}${thumbnail}`, `${UploadDirectoryPath}/${DataUploadManager.UploadFileManager[thumbnail].originalname}`);
-        } else if (userThumnail !== undefined) {
-            fs.copyFileSync(`${DataUserManager.getUserDataPath(userId)}${thumbnail}`, `${UploadDirectoryPath}/${DataUploadManager.UploadFileManager[thumbnail].originalname}`);
-        }
-    } catch (e) {
-        log.error(e.stack);
-        return "";
-    }
-    return path.resolve(`${UploadDirectoryPath}/${DataUploadManager.UploadFileManager[thumbnail].originalname}`);
 }
 
 export function readCodesFromFile(serverPath: string, clientPath: string) {

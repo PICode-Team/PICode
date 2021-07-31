@@ -5,22 +5,23 @@ import chat from "./chat";
 import code from "./code";
 
 import { SocketInfo } from "./manager";
+import work from "./work";
 
 const SocketFuncs = {
     chat: chat,
     code: code,
+    work: work,
 };
 
 export function webSocketInit(server: expressWs.Application) {
     server.ws("/", (ws, req) => {
-        req.session.userId = "dldmsvy1010@naver.com";
-        if (req?.session?.userId === undefined) {
+        if (req?.query?.userId === undefined) {
             return ws.close();
         }
 
-        const userId = req?.session?.userId;
+        const userId = req?.query?.userId as string;
         ws.on("message", (msg) => {
-            if (req.session.userId === undefined) {
+            if (req.query.userId === undefined) {
                 return;
             }
 

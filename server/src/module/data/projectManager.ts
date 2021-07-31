@@ -1,5 +1,5 @@
 import log from "../../module/log";
-import { UploadDirectoryPath, WorkDirectoryPath, DataDirectoryPath } from "../../types/module/data/data.types";
+import { UploadDirectoryPath, WorkDirectoryPath, DataDirectoryPath, StaticDirectoryPath } from "../../types/module/data/data.types";
 import { TprojectCreateData, TProjectData, TProjectUpdateData } from "../../types/module/data/project.type";
 import { setJsonData, getJsonData, isExists, removeData, handle, searchProjectFiles, readCodesFromFile, writeCodeToFile, getAllChildren } from "./fileManager";
 import DataUploadManager from "./uploadManager";
@@ -11,7 +11,7 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 
 export default class DataProjectManager {
-    static isExists(projectId: string, projectPath: Function) {
+    static isExists(projectId: string, projectPath: (projectId: string, type?: undefined) => string) {
         return isExists(projectPath(projectId));
     }
 
@@ -20,11 +20,11 @@ export default class DataProjectManager {
     }
 
     static getProjectWorkPath(projectId: string) {
-        return `${WorkDirectoryPath}/project/${projectId}/`;
+        return `${WorkDirectoryPath}/project/${projectId}`;
     }
 
-    static getProjectDataPath(projectId: string, type: "" | "projectInfo.json" = "") {
-        return `${DataDirectoryPath}/project/${projectId}/${type}`;
+    static getProjectDataPath(projectId: string, type: undefined | "projectInfo.json" = undefined) {
+        return type !== undefined ? `${DataDirectoryPath}/project/${projectId}/${type}` : `${DataDirectoryPath}/project/${projectId}`;
     }
 
     static getProjectInfo(projectId: string) {
@@ -61,8 +61,8 @@ export default class DataProjectManager {
 
     static getProjectId(userId: string, projectName: string) {
         return fs.readdirSync(this.getProjectDefaultPath()).find((projectId) => {
-            const projectInfo = this.getProjectInfo(projectId) as TProjectData;
-            return (projectInfo.projectCreator === userId || projectInfo.projectParticipants?.includes(userId)) && projectInfo.projectName === projectName;
+            const projectInfo = this.getProjectInfo(projectId);
+            return projectInfo ? (projectInfo.projectCreator === userId || projectInfo.projectParticipants?.includes(userId)) && projectInfo.projectName === projectName : false;
         });
     }
 
@@ -73,28 +73,32 @@ export default class DataProjectManager {
         }
     ) {
         const clonePath = DataProjectManager.getProjectWorkPath(projectId);
-        log.debug(clonePath);
         if (!fs.existsSync(clonePath)) {
             fs.mkdirSync(clonePath, { recursive: true });
         }
         try {
-            source.gitUrl
-                ? simpleGit()
-                      .clone(source.gitUrl, clonePath)
-                      .then(() => {
-                          const fileToSize: TUploadFileLanguageToSize = {};
-                          searchProjectFiles(clonePath, { fileToSize: fileToSize }),
-                              DataProjectManager.setProjectInfo(projectId, {
-                                  ...DataProjectManager.getProjectInfo(projectId),
-                                  projectLanguage: fileToSize,
-                              } as TProjectUpdateData);
-                          log.info(`git clone complete gitUrl :${source.gitUrl}`);
-                      })
-                      .catch((e) => {
-                          log.error(e.stack);
-                          return false;
-                      })
-                : log.error(`invalid git URL`);
+            if (source.gitUrl === undefined) {
+                log.error(`invalid git URL`);
+                return false;
+            }
+            simpleGit()
+                .clone(source.gitUrl, clonePath)
+                .then(() => {
+                    const fileToSize: TUploadFileLanguageToSize = {};
+                    const projectInfo = DataProjectManager.getProjectInfo(projectId);
+                    if (projectInfo === undefined) {
+                        throw new Error(`could not find projectInfo`);
+                    }
+                    searchProjectFiles(clonePath, { fileToSize: fileToSize }),
+                        DataProjectManager.setProjectInfo(projectId, {
+                            ...projectInfo,
+                            projectLanguage: fileToSize,
+                        } as TProjectUpdateData);
+                    log.info(`git clone complete gitUrl: ${source.gitUrl}`);
+                })
+                .catch((e) => {
+                    log.error(e.stack);
+                });
         } catch (e) {
             log.error(e.stack);
             return false;
@@ -209,13 +213,18 @@ export default class DataProjectManager {
                     recursive: true,
                 });
             }
-
             if (projectThumbnail !== undefined) {
-                if (!handle(`${UploadDirectoryPath}/${projectThumbnail}`, `${this.getProjectDataPath(projectId)}${projectThumbnail}`)) {
+                const extension = DataUploadManager.UploadFileManager[projectThumbnail].originalname.split(".").pop();
+                if (!fs.existsSync(StaticDirectoryPath)) {
+                    fs.mkdirSync(StaticDirectoryPath, {
+                        recursive: true,
+                    });
+                }
+                if (!handle(`${UploadDirectoryPath}/${projectThumbnail}`, `${StaticDirectoryPath}/${projectThumbnail}.${extension}`)) {
                     return false;
                 }
+                projectThumbnail = `${projectThumbnail}.${extension}`;
             }
-
             this.setProjectInfo(projectId, {
                 projectId: projectId,
                 projectName: projectName,
@@ -245,7 +254,7 @@ export default class DataProjectManager {
                 return false;
             }
             if (projectInfo.projectThumbnail !== undefined) {
-                fs.unlinkSync(`${this.getProjectDataPath(projectId)}${projectData.projectThumbnail}`);
+                fs.unlinkSync(`${this.getProjectDataPath(projectId)}/${projectData.projectThumbnail}`);
             }
             if (
                 !this.setProjectInfo(projectId, {
@@ -272,20 +281,14 @@ export default class DataProjectManager {
         if (projectId === undefined) {
             return false;
         }
-
         if (!this.canEditProject(userId, projectId, false)) {
             return false;
         }
-        if (!this.isExists(projectId, this.getProjectWorkPath)) {
+
+        if (!this.isExists(projectId, this.getProjectWorkPath) || !removeData(this.getProjectWorkPath(projectId))) {
             return false;
         }
-        if (!removeData(this.getProjectWorkPath(projectId))) {
-            return false;
-        }
-        if (!this.isExists(projectId, this.getProjectDataPath)) {
-            return false;
-        }
-        if (!removeData(this.getProjectDataPath(projectId))) {
+        if (!this.isExists(projectId, this.getProjectDataPath) || !removeData(this.getProjectDataPath(projectId))) {
             return false;
         }
         return true;
@@ -424,6 +427,6 @@ export default class DataProjectManager {
             return { message: "could not create dir" };
         }
         const projectPath = DataProjectManager.getProjectWorkPath(projectId);
-        return getAllChildren(projectId, projectPath, "");
+        return getAllChildren(projectId, projectPath, "/");
     }
 }

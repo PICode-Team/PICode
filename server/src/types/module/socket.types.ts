@@ -3,7 +3,7 @@ export type TSocketInfo = {
 };
 
 export interface TSocketPacket {
-    category: "chat" | "connect" | "code";
+    category: "chat" | "connect" | "code" | "work";
     type: string;
     data: any;
 }
