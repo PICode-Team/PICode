@@ -9,12 +9,9 @@ import { toDark } from "../modules/theme";
 export default function Home(pageProps: any) {
   return (
     <React.Fragment>
-      {pageProps.session.userId ?
         <Layout {...pageProps}>
           <RecentWork />
         </Layout> :
-        <Login {...pageProps} />
-      }
     </React.Fragment>
   );
 }

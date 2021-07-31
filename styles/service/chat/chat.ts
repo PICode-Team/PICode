@@ -323,6 +323,16 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
         transform: "translateY(0)",
       },
     },
+    emptyWrapper: {
+      width: "calc(100% - 220px)",
+      height: "100%",
+      color: theme.font.high.color,
+      fontSize: theme.font.high.size,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: theme.backgroundColor.step0,
+    },
   })
 );
 

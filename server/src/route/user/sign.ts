@@ -25,6 +25,9 @@ router.post("/", (req, res) => {
     // save session
     req.session.userId = userId;
     req.session.userName = userData.userName;
+
+    console.log(req.session);
+    
     req.session.save();
 
     return res.json({ code: ResponseCode.created });

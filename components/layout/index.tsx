@@ -23,11 +23,6 @@ export function Layout(ctx: any) {
   const [userMouse, setUserMouse] = React.useState<IUserMouse>()
   const [loginUser, setLoginUser] = React.useState<{ [key: string]: ISocket }>()
 
-  if (typeof window !== "undefined") {
-    if (ctx.session.userId === undefined) {
-      window.location.href = "/";
-    }
-  }
 
   const getLoginUserData = () => {
     ws.current = new WebSocket(`ws://localhost:8000/?userId=${ctx.session.userId}`)

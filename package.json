@@ -7,12 +7,12 @@
     "build": "next build",
     "lint": "next lint",
     "client:start": "next start",
-    "client:dev": "export NODE_ENV=development && ts-node  --project ./server/tsconfig.json --files ./server/src",
-    "server:dev": "export MODE=server && npx tsc-watch -p ./server/tsconfig.json --onSuccess \"node ./server/dist\"",
+    "client:dev": "set NODE_ENV=development && ts-node  --project ./server/tsconfig.json --files ./server/src",
+    "server:dev": "set MODE=server && npx tsc-watch -p ./server/tsconfig.json --onSuccess \"node ./server/dist\"",
     "server:build": "npx tsc -p ./server/tsconfig.json",
     "preserver:start": "npm run-script server:build",
     "server:start": "node ./server/dist",
-    "start": "export NODE_ENV=production && node ./server/dist"
+    "start": "set NODE_ENV=production && node ./server/dist"
   },
   "dependencies": {
     "@material-ui/core": "^4.12.0",
