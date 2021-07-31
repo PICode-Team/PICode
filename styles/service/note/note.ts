@@ -170,5 +170,9 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
                 background: theme.backgroundColor.step4,
             },
         },
+        fileEdit: {
+            height: "22px",
+            width: "100%",
+        },
     })
 );

@@ -27,12 +27,10 @@ export function webSocketInit(server: expressWs.Application) {
 
             try {
                 const data = JSON.parse(msg.toString()) as TSocketPacket;
-
                 if (data.category === "connect") {
                     SocketInfo[userId] = ws as any;
                     return;
                 }
-
                 SocketFuncs[data.category](userId, data);
             } catch (e) {
                 log.error(e.stack);
