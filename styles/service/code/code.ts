@@ -72,8 +72,6 @@ export const sidebarStyle = makeStyles((theme: IThemeStyle) =>
       fontSize: "14px",
       fontWeight: "bold",
       color: theme.font.low.color,
-      borderBottom: "1px solid",
-      borderBottomColor: theme.editor.divider,
       textTransform: "uppercase",
       cursor: "pointer",
       "& svg": {
@@ -143,7 +141,7 @@ export const sidebarStyle = makeStyles((theme: IThemeStyle) =>
         color: theme.font.high.color,
       },
       "&:hover": {
-        opacity: 1,
+        backgroundColor: theme.hover
       },
     },
     group: {},

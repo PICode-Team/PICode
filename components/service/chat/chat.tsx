@@ -246,7 +246,14 @@ export default function Chat(ctx: any) {
   // }, [])
 
   useEffect(() => {
-    ws.current = new WebSocket("ws://192.168.0.23:4000/");
+    if(typeof window !== "undefined") {
+      const target = document.getElementById("contentBox")
+      target?.scrollTo(0, target.clientHeight)
+    }
+  }, [])
+
+  useEffect(() => {
+    ws.current = new WebSocket(`ws://127.0.0.1:8000/?userId=${ctx.session.userId}`);
 
     if (ws.current) {
       ws.current!.onopen = (event: any) => {
@@ -416,7 +423,7 @@ export default function Chat(ctx: any) {
           </div>
         </div>
       </div>
-      {target !== "" ? (
+      {target === "" ? (
         <div className={classes.contentWrapper}>
           <div className={classes.header}>
             <div className={classes.headerInfo}>
@@ -425,7 +432,7 @@ export default function Chat(ctx: any) {
             </div>
             <div className={classes.participant}></div>
           </div>
-          <div className={classes.contentBox}>
+          <div className={classes.contentBox} id="contentBox">
             <div className={classes.content}>
               {messages.map((v, i) => {
                 if (v.time === "~~") {
@@ -437,6 +444,15 @@ export default function Chat(ctx: any) {
                   return <MessageBox {...v} key={`messagebox-${i}`} />;
                 }
               })}
+              <MessageBox time="4555" message="123123" user="test" />
+              <MessageBox time="4555" message="123123" user="test" />
+              <MessageBox time="4555" message="123123" user="test" />
+              <MessageBox time="4555" message="123123" user="test" />
+              <MessageBox time="4555" message="123123" user="test" />
+              <MessageBox time="4555" message="123123" user="test" />
+              <MessageBox time="4555" message="123123" user="test" />
+              <MessageBox time="4555" message="123123" user="test" />
+              <MessageBox time="4555" message="123123" user="test" />
             </div>
           </div>
           <div className={classes.input}>
