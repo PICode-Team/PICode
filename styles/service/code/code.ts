@@ -72,8 +72,6 @@ export const sidebarStyle = makeStyles((theme: IThemeStyle) =>
       fontSize: "14px",
       fontWeight: "bold",
       color: theme.font.low.color,
-      borderBottom: "1px solid",
-      borderBottomColor: theme.editor.divider,
       textTransform: "uppercase",
       cursor: "pointer",
       "& svg": {
@@ -85,9 +83,12 @@ export const sidebarStyle = makeStyles((theme: IThemeStyle) =>
     },
     fileWrapper: {
       overflowY: "hidden",
-      display: "block",
-      transition: "height ease-in 1s",
-      height: "fit-content",
+      display: "flex",
+      height: "calc(100% - 21px)",
+      flexDirection: "column",
+      "&:hover": {
+        overflowY: "auto",
+      },
     },
     rootClose: {
       height: "0px !important",
@@ -133,10 +134,23 @@ export const sidebarStyle = makeStyles((theme: IThemeStyle) =>
         backgroundRepeat: "no-repeat",
         opacity: 1,
       },
+      "&>input": {
+        outline: "none",
+        border: "none",
+        backgroundColor: theme.backgroundColor.step2,
+        color: theme.font.high.color,
+      },
       "&:hover": {
-        opacity: 1,
+        backgroundColor: theme.hover,
       },
     },
+    cpp: {},
+    c: {},
+    typescript: {},
+    javascript: {},
+    go: {},
+    python: {},
+    cs: {},
     group: {},
 
     added: {},
@@ -148,6 +162,44 @@ export const sidebarStyle = makeStyles((theme: IThemeStyle) =>
     submodules: {},
     error: {},
     open: {},
+
+    fileFunctionMenu: {
+      position: "absolute",
+      left: 0,
+      top: 0,
+      width: "250px",
+      backgroundColor: theme.backgroundColor.step1,
+      padding: "4px 0px",
+      zIndex: 999,
+    },
+    fileMenu: {
+      fontSize: "11px",
+      height: "27px",
+      lineHeight: "27px",
+      display: "flex",
+      justifyContent: "space-between",
+      color: theme.font.high.color,
+      padding: "0px 20px",
+      cursor: "pointer",
+      "&:hover": {
+        backgroundColor: theme.backgroundColor.step0,
+      },
+    },
+    divider: {
+      margin: "4px 0px",
+      borderTop: "1px solid",
+      borderTopColor: theme.divider,
+    },
+
+    drag: {
+      backgroundColor: theme.backgroundColor.step2,
+    },
+    dragWrapper: {},
+
+    emptySpace: {
+      flex: 1,
+      backgroundColor: theme.backgroundColor.step3,
+    },
   })
 );
 
@@ -161,7 +213,8 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
   createStyles({
     tab: {
       flex: "0 0 auto",
-      width: "112px",
+      minWidth: "112px",
+      width: "fit-content",
       height: "100%",
       zIndex: 999,
       display: "flex",

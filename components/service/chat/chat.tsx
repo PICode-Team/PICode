@@ -73,12 +73,16 @@ function MessageReverseBox({ message, time }: TChat) {
 function CreateChannel({
   modal,
   setModal,
+  createChannel,
 }: {
   modal: boolean;
   setModal: React.Dispatch<React.SetStateAction<boolean>>;
+  createChannel: (chatName: string) => void;
 }) {
   const classes = createChannelStyle();
+  const [name, setName] = useState<string>("");
   const nameRef = useRef<HTMLInputElement>(null);
+  const [description, setDescription] = useState<string>("");
   const descriptionRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -103,28 +107,32 @@ function CreateChannel({
           </div>
         </div>
         <div className={classes.modalBody}>
-          <CustomTextField label="Name" ref={nameRef} />
-          <CustomTextField label="Description" ref={descriptionRef} />
+          <input
+            type="text"
+            ref={nameRef}
+            value={name}
+            onChange={(event: any) => {
+              setName(event.currentTarget.value);
+            }}
+          />
+          <input
+            type="text"
+            ref={descriptionRef}
+            value={description}
+            onChange={(event: any) => {
+              setDescription(event.currentTarget.value);
+            }}
+          />
         </div>
         <div className={classes.modalFooter}>
           <CustomButton
             text="CREATE"
             width="76px"
             onClick={() => {
-              if (nameRef.current && descriptionRef.current) {
-                // if (ws.current && ws.current.CONNECTING) {
-                //   ws.current.send(
-                //     JSON.stringify({
-                //       category: "chat",
-                //       type: "createChannel",
-                //       data: {
-                //         target: target,
-                //         chatName: nameRef.current.value
-                //       },
-                //     })
-                //   );
-                // }
-              }
+              createChannel(name);
+              setName("");
+              setDescription("");
+              setModal(false);
             }}
           />
         </div>
@@ -145,29 +153,19 @@ export default function Chat(ctx: any) {
   const [modal, setModal] = useState<boolean>(false);
   const [typing, setTyping] = useState<string[]>([]);
   const [target, setTarget] = useState<string>("");
-  const [channelList, setChannelList] = useState<string[]>([
-    "#frontend",
-    "#backend",
-    "#designer",
-    "#project",
-  ]);
-  const [directList, setDirectList] = useState<string[]>([
-    "@kim",
-    "@lee",
-    "@oh",
-    "@park",
-  ]);
+  const [channelList, setChannelList] = useState<string[]>([]);
+  const [directList, setDirectList] = useState<string[]>([]);
   const ws = useRef<WebSocket | null>(null);
   const messageRef = useRef<HTMLInputElement>(null);
 
   function sendMessage(target: string, msg: string) {
-    if (ws.current && ws.current.CONNECTING) {
+    if (ws.current) {
       ws.current.send(
         JSON.stringify({
           category: "chat",
           type: "sendMessage",
           data: {
-            target: target,
+            target: "target",
             msg: msg,
           },
         })
@@ -176,17 +174,21 @@ export default function Chat(ctx: any) {
   }
 
   function enterEvent(event: KeyboardEvent) {
-    if (event.keyCode === 13) {
-      if (messageRef.current && target !== "") {
+    if (event.key === "Enter") {
+      if (
+        messageRef.current &&
+        target !== "" &&
+        messageRef.current.value !== ""
+      ) {
         sendMessage(target, messageRef.current.value);
         messageRef.current.value = "";
       }
     }
   }
 
-  async function getChat() {
-    if (ws.current && ws.current.CONNECTING) {
-      await ws.current.send(
+  function getChat() {
+    if (ws.current) {
+      ws.current.send(
         JSON.stringify({
           category: "chat",
           type: "getChat",
@@ -195,9 +197,9 @@ export default function Chat(ctx: any) {
     }
   }
 
-  async function getChatLog(target: string, page: string) {
-    if (ws.current && ws.current.CONNECTING) {
-      await ws.current.send(
+  function getChatLog(target: string, page: string) {
+    if (ws.current) {
+      ws.current.send(
         JSON.stringify({
           category: "chat",
           type: "getChatLog",
@@ -210,9 +212,9 @@ export default function Chat(ctx: any) {
     }
   }
 
-  async function getChatLogList(target: string) {
-    if (ws.current && ws.current.CONNECTING) {
-      await ws.current.send(
+  function getChatLogList(target: string) {
+    if (ws.current) {
+      ws.current.send(
         JSON.stringify({
           category: "chat",
           type: "getChatLogList",
@@ -224,40 +226,124 @@ export default function Chat(ctx: any) {
     }
   }
 
-  useEffect(() => {
-    ws.current = new WebSocket("ws://192.168.0.23:4000/");
-    ws.current.onmessage = (msg) => {
-      if (msg.type === "chat") {
-        const message = JSON.parse(msg.data);
-        setMessages([
-          ...messages,
-          { user: message.target, message: message.msg, time: "" },
-        ]);
-      }
-    };
-
-    if (ws.current.CONNECTING) {
-      getChat();
-      // setChannelList()
-      // setDirectList()
-      // getChatLogList()
-      // setMessages()
+  function createChannel(chatName: string) {
+    if (ws.current) {
+      ws.current.send(
+        JSON.stringify({
+          category: "chat",
+          type: "createChannel",
+          data: {
+            target: `#${chatName}`,
+            chatName: "???",
+          },
+        })
+      );
     }
+  }
 
-    document.addEventListener("keypress", enterEvent);
+  useEffect(() => {
+    if (target !== "") {
+      getChatLogList(target);
+    }
+  }, [target]);
 
-    return () => {
-      document.removeEventListener("keypress", enterEvent);
-    };
+  // useEffect(() => {
+
+  // }, [])
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const target = document.getElementById("contentBox");
+      target?.scrollTo(0, target.clientHeight);
+    }
   }, []);
 
   useEffect(() => {
+    ws.current = new WebSocket(
+      `ws://127.0.0.1:8000/?userId=${ctx.session.userId}`
+    );
+
+    if (ws.current) {
+      ws.current!.onopen = (event: any) => {
+        ws.current!.send(
+          JSON.stringify({
+            category: "connect",
+          })
+        );
+
+        getChat();
+      };
+    }
+
+    ws.current.onmessage = (msg) => {
+      const message = JSON.parse(msg.data);
+
+      if (message.category === "chat") {
+        switch (message.type) {
+          case "createChannel":
+            getChat();
+            break;
+          case "getChat":
+            const channelList: string[] = [];
+            const directList: string[] = [];
+
+            message.data.forEach((v: any) => {
+              if (v.chatName.slice(0, 1) === "#") {
+                channelList.push(v.chatName);
+              } else {
+                directList.push(v.chatName);
+              }
+            });
+
+            setChannelList(channelList);
+            setDirectList(directList);
+            break;
+
+          case "getChatLog":
+            const messageList: TChat[] = [];
+            message.data.forEach((v: any) => {
+              messageList.push({
+                user: v.data.sender,
+                message: v.data.message,
+                time: "",
+              });
+            });
+            // setMessages([...messages, ...messageList]);
+            break;
+          case "getChatLogList":
+            message.data.forEach((v: string) => {
+              // getChatLog(target, v);
+            });
+            break;
+          case "sendMessage":
+            console.log(message.data);
+
+            setMessages([
+              ...messages,
+              {
+                user: message.data.sender,
+                message: message.data.message,
+                time: "",
+              },
+            ]);
+            break;
+        }
+      }
+    };
+
     return () => {
       if (ws.current) {
         ws.current.close();
       }
     };
-  }, [ws]);
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("keypress", enterEvent);
+    return () => {
+      document.removeEventListener("keypress", enterEvent);
+    };
+  }, [target]);
 
   return (
     <div className={classes.root}>
@@ -361,45 +447,55 @@ export default function Chat(ctx: any) {
           </div>
         </div>
       </div>
-      <div className={classes.contentWrapper}>
-        <div className={classes.header}>
-          <div className={classes.headerInfo}>
-            <div className={classes.headerUser}></div>
-            <div className={classes.headerName}>kim</div>
-          </div>
-          <div className={classes.participant}></div>
-        </div>
-        <div className={classes.contentBox}>
-          <div className={classes.content}>
-            {messages.map((v, i) => {
-              if (v.time === "~~") {
-                return <DayBoundary text={v.time} key={`dayboundary-${i}`} />;
-              }
-              if (v.user === ctx.session.userId) {
-                return <MessageReverseBox {...v} key={`messagebox-${i}`} />;
-              } else {
-                return <MessageBox {...v} key={`messagebox-${i}`} />;
-              }
-            })}
-          </div>
-        </div>
-        <div className={classes.input}>
-          <input type="text" ref={messageRef} />
-          {typing.length > 0 && (
-            <div className={classes.entering}>
-              <span className={classes.enterIcon}>
-                <FiberManualRecord />
-                <FiberManualRecord />
-                <FiberManualRecord />
-              </span>
-              <span className={classes.enterText}>
-                {`${typing.map((v) => `${v} `)} is typing...`}
-              </span>
+      {target !== "" ? (
+        <div className={classes.contentWrapper}>
+          <div className={classes.header}>
+            <div className={classes.headerInfo}>
+              <div className={classes.headerUser}></div>
+              <div className={classes.headerName}>{target}</div>
             </div>
-          )}
+            <div className={classes.participant}></div>
+          </div>
+          <div className={classes.contentBox} id="contentBox">
+            <div className={classes.content}>
+              {messages.map((v, i) => {
+                if (v.time === "~~") {
+                  return <DayBoundary text={v.time} key={`dayboundary-${i}`} />;
+                }
+                if (v.user === ctx.session.userId) {
+                  return <MessageReverseBox {...v} key={`messagebox-${i}`} />;
+                } else {
+                  return <MessageBox {...v} key={`messagebox-${i}`} />;
+                }
+              })}
+            </div>
+          </div>
+          <div className={classes.input}>
+            <input type="text" ref={messageRef} />
+            {typing.length > 0 && (
+              <div className={classes.entering}>
+                <span className={classes.enterIcon}>
+                  <FiberManualRecord />
+                  <FiberManualRecord />
+                  <FiberManualRecord />
+                </span>
+                <span className={classes.enterText}>
+                  {`${typing.map((v) => `${v} `)} is typing...`}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-      <CreateChannel modal={modal} setModal={setModal} />
+      ) : (
+        <div className={classes.emptyWrapper}>
+          <div>Select a target and start the conversation.</div>
+        </div>
+      )}
+      <CreateChannel
+        modal={modal}
+        setModal={setModal}
+        createChannel={createChannel}
+      />
     </div>
   );
 }

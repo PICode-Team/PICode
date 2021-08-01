@@ -3,6 +3,7 @@ export interface TTab {
   extension: string;
   langauge: string;
   tabId: number;
+  content: string;
 }
 
 export interface TCode {
