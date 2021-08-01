@@ -100,7 +100,7 @@ export function Layout(ctx: any) {
       <Topbar {...ctx} loginUser={loginUser} />
       <div className={classes.contentWrapper}>
         <Sidebar {...ctx} />
-        {ctx.children}
+        {React.cloneElement(ctx.children, { ws: ws })}
       </div>
       {(loginUser !== undefined && loginUser.length > 1) && <UserMouse loginUser={loginUser as any} loginId={ctx.session.userId} path={ctx.path} />}
       <Messenger />
