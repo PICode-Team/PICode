@@ -547,7 +547,6 @@ export function addRenameField(fileStructure: TFile, targetPath: string) {
   const newChildren: TFile[] | undefined = (() => {
     if (fileStructure.children !== undefined) {
       return fileStructure.children.reduce((a: TFile[], c: TFile): TFile[] => {
-        console.log(c.path, targetPath);
         if (c.path === targetPath) {
           return [
             ...a,

@@ -316,7 +316,6 @@ export default function Chat(ctx: any) {
             });
             break;
           case "sendMessage":
-            console.log(message.data);
 
             setMessages([
               ...messages,

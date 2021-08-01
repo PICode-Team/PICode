@@ -147,8 +147,6 @@ function makeFileStructure(
       .getElementsByClassName(classes.fileWrapper)[0]
       .classList.remove(classes.drag);
 
-    console.log(event.currentTarget.id, parentPath);
-
     if (event.currentTarget.id !== parentPath) {
       event.currentTarget.classList.add(classes.drag);
     }
@@ -239,13 +237,13 @@ function makeFileStructure(
                   if (inputValue !== "") {
                     classList!.contains("///create:directory")
                       ? functions.createDir(
-                          projectName,
-                          `${fileInfo.file.path}\\${inputValue}`
-                        )
+                        projectName,
+                        `${fileInfo.file.path}\\${inputValue}`
+                      )
                       : functions.createFile(
-                          projectName,
-                          `${fileInfo.file.path}\\${inputValue}`
-                        );
+                        projectName,
+                        `${fileInfo.file.path}\\${inputValue}`
+                      );
                   }
                 }
                 functions.setFileStructure(deleteCreateInput(fileStructure));
@@ -475,9 +473,9 @@ export function Sidebar({
     if (
       !(
         (event.target as HTMLElement).parentElement?.id ===
-          "fileFunctionMenu" ||
+        "fileFunctionMenu" ||
         (event.target as HTMLElement).parentElement?.parentElement?.id ===
-          "fileFunctionMenu"
+        "fileFunctionMenu"
       )
     ) {
       if (event.button === 0) {
@@ -521,13 +519,13 @@ export function Sidebar({
             if (inputValue !== "") {
               classList!.contains("///create:directory")
                 ? functions.createDir(
-                    projectName,
-                    `${fileInfo.file.path}\\${inputValue}`
-                  )
+                  projectName,
+                  `${fileInfo.file.path}\\${inputValue}`
+                )
                 : functions.createFile(
-                    projectName,
-                    `${fileInfo.file.path}\\${inputValue}`
-                  );
+                  projectName,
+                  `${fileInfo.file.path}\\${inputValue}`
+                );
             }
           }
           functions.setFileStructure(deleteCreateInput(fileStructure));
@@ -547,7 +545,7 @@ export function Sidebar({
   }, [fileStructure, fileInfo]);
 
   useEffect(() => {
-    return () => {};
+    return () => { };
   }, []);
 
   return (

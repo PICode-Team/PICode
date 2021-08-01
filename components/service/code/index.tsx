@@ -77,9 +77,8 @@ function EditorWrapper({
   if (codeRoot === undefined || codeRoot?.root.length === 0) {
     return (
       <div
-        className={`${classes.emptyCode} ${
-          drag.path !== "default" && classes.wrapperDrag
-        }`}
+        className={`${classes.emptyCode} ${drag.path !== "default" && classes.wrapperDrag
+          }`}
         onDragEnter={(event: React.DragEvent<HTMLElement>) => {
           event.currentTarget.classList.add(classes.drag);
         }}
@@ -155,7 +154,6 @@ export default function Code(ctx: any): JSX.Element {
   });
   const [projectName, setProjectName] = useState<string>("");
   function loadProject(projectName: string) {
-    console.log(ctx.ws.current.readyState);
 
     if (ctx.ws.current && ctx.ws.current.readyState === WebSocket.OPEN) {
       ctx.ws.current.send(
@@ -272,16 +270,12 @@ export default function Code(ctx: any): JSX.Element {
     if (ctx.ws === null) return;
     setProjectName(window?.location.href.split("?projectName=")[1] ?? "");
 
-    console.log(ctx.ws);
 
     if (ctx.ws.current) {
       loadProject(window?.location.href.split("?projectName=")[1]);
 
       ctx.ws.current.addEventListener("message", (msg: any) => {
         const message = JSON.parse(msg.data);
-
-        console.log(message);
-
         if (message.category === "code") {
           switch (message.type) {
             case "loadProject":
@@ -321,8 +315,6 @@ export default function Code(ctx: any): JSX.Element {
 
       ctx.ws.current.addEventListener("message", (msg: any) => {
         const message = JSON.parse(msg.data);
-
-        console.log(message);
 
         if (message.category === "code") {
           switch (message.type) {

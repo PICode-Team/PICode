@@ -52,8 +52,6 @@ export function Topbar(ctx: any) {
         break;
       }
       if (i.userId !== ctx.session.userId) {
-        console.log(111111, i.userId);
-        console.log(data);
 
         returnData.push(
           <div
@@ -128,7 +126,6 @@ export function Topbar(ctx: any) {
           </IconButton>
         </div>
         <div className={classes.loginUserInfo}>
-          {console.log(ctx.loginUser)}
           {ctx.loginUser !== undefined &&
             ctx.loginUser.length > 1 &&
             makeUserInfo(ctx.loginUser).map((v) => v)}

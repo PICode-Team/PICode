@@ -148,7 +148,6 @@ export default function TestNote(ctx: any) {
     }
 
     useEffect(() => {
-        console.log(fileView)
     }, [fileView])
 
     return <div className={classes.root}>
