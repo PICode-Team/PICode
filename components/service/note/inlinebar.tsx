@@ -9,9 +9,12 @@ import { IconButton } from "@material-ui/core";
 import DragIndicatorIcon from '@material-ui/icons/DragIndicator';
 import ExpandMoreRoundedIcon from '@material-ui/icons/ExpandMoreRounded';
 import DescriptionIcon from '@material-ui/icons/Description';
-import { gql, useMutation, useQuery } from "@apollo/client";
+import client from "../../../apollo/apollo-client";
+import GetQuery from "../../grapql/document/get";
+import QueryCreate from "../../grapql/document/create";
+import QueryDelete from "../../grapql/document/delete";
 
-interface INoteContent {
+export interface INoteContent {
     text: string;
     content?: any;//table 이나 이미지 같은 거 넣을 때 사용할 듯
     type?: string;
@@ -26,20 +29,15 @@ interface IPosition {
 
 interface IFileView {
     title: string;
-    creation: string;
+    createTime: string;
     type?: string[];
     isFolder: boolean;
-    author: string[];
+    creator: string[];
     children?: IFileView[];
     content?: INoteContent[];
     open?: boolean;
+    documentId: string;
 }
-
-const GETQUERY = gql`{
-    getDocument{
-      documentId
-    }
-  }`
 
 export default function TestNote(ctx: any) {
     const classes: any = noteStyle();
@@ -54,7 +52,6 @@ export default function TestNote(ctx: any) {
     const [fileView, setFileView] = React.useState<IFileView[]>()
     const [selectFile, setSelectFile] = React.useState<IFileView>()
     const [selectFolder, setSelectFolder] = React.useState<string[]>([]);
-    const { data, loading, error } = useQuery(GETQUERY);
 
     let tmpPosition: any = [];
 
@@ -78,7 +75,6 @@ export default function TestNote(ctx: any) {
     }, [dragEnd])
 
     useEffect(() => {
-
         for (let i in test) {
             let node = document.getElementById(`${i}`)
             if (node) {
@@ -88,7 +84,11 @@ export default function TestNote(ctx: any) {
     }, [selectFile])
 
     useEffect(() => {
-        console.log(data)
+        client.query({
+            query: GetQuery()
+        }).then((res) => {
+            setFileView(res.data.getDocument)
+        })
     }, [])
 
     const findNode = (data: IFileView[] | undefined, title: string) => {
@@ -129,19 +129,55 @@ export default function TestNote(ctx: any) {
                 }}>
                     {v.isFolder ? <ExpandMoreRoundedIcon style={{ height: "30px", transition: "all 0.3s", transform: `${(v.open === undefined || !v.open) ? "rotate(-90deg)" : "rotate(0deg)"}` }} /> : <DescriptionIcon style={{ height: "30px" }} />}
                     <div style={{ display: "flex", lineHeight: "30px" }}>{v.title}</div>
+                    <button onClick={(e) => {
+                        e.stopPropagation()
+                        client.mutate({
+                            mutation: QueryDelete(v.documentId)
+                        })
+                        client.query({
+                            query: GetQuery(),
+                            fetchPolicy: "network-only"
+                        }).then((res) => {
+                            setFileView(res.data.getDocument)
+                        })
+                    }}>Delete</button>
                 </div>
                 {(v.open && v.children !== undefined) && makeFileView(v.children, num + 1)}
             </>
         }))
     }
 
+    useEffect(() => {
+        console.log(fileView)
+    }, [fileView])
+
     return <div className={classes.root}>
         <div className={classes.fileView}>
             <div className={classes.fileEdit}>
                 <button onClick={() => {
-                    //
+                    client.mutate({
+                        mutation: QueryCreate("/test", ctx.session.userName, "test333")
+                    })
+
+                    client.query({
+                        query: GetQuery(),
+                        fetchPolicy: "network-only"
+                    }).then((res) => {
+                        setFileView(res.data.getDocument)
+                    })
                 }}>
                     add new
+                </button>
+
+                <button onClick={() => {
+                    client.query({
+                        query: GetQuery(),
+                        fetchPolicy: "network-only"
+                    }).then((res) => {
+                        setFileView(res.data.getDocument)
+                    })
+                }}>
+                    reload
                 </button>
             </div>
             {fileView && makeFileView(fileView, 1)}
@@ -153,9 +189,9 @@ export default function TestNote(ctx: any) {
                         <input className={clsx(classes.defaultTitle, classes.h1Input)} placeholder={"제목"} onChange={(e) => {
                             setSelectFile({ ...selectFile, title: e.target.value })
                         }} value={selectFile.title} />
-                        <input className={clsx(classes.defaultTitle, classes.h2Input)} placeholder={"작성자"} value={selectFile.author.join(", ")} />
+                        <input className={clsx(classes.defaultTitle, classes.h2Input)} placeholder={"작성자"} value={selectFile.creator} />
                         <input className={clsx(classes.defaultTitle, classes.h3Input)} placeholder={"구분"} value={selectFile.type && selectFile.type.join(", ")} />
-                        <input className={clsx(classes.defaultTitle, classes.h3Input)} placeholder={"날짜"} value={selectFile.creation} />
+                        <input className={clsx(classes.defaultTitle, classes.h3Input)} placeholder={"날짜"} value={selectFile.createTime} />
                     </div>
                 </div>
                 <div className={classes.writeRoot} onKeyDown={(e) => {

@@ -1,10 +1,15 @@
 import { gql, useMutation } from "@apollo/client";
+import { INoteContent } from "../../service/note/inlinebar";
 
-export default function QueryUpdate(path: string, creator: string) {
+export default function QueryCreate(
+    path: string,
+    creator: string,
+    content: string
+) {
     let POSTQUERY = gql`
     mutation {
-        createDocument(content:"[]", path: "${path}", creator:"${creator}")
+        createDocument(content:"${content}", path: "${path}", creator:"${creator}")
     }`;
 
-    const [addData] = useMutation(POSTQUERY);
+    return POSTQUERY;
 }

@@ -1,15 +1,17 @@
 import { gql, useQuery } from "@apollo/client";
 
-export default function GetQuery(documentId: string) {
+export default function GetQuery() {
     const GETQUERY = gql`
         {
             getDocument {
                 documentId
+                content
+                path
+                creator
+                createTime
             }
         }
     `;
 
-    const { data, loading, error } = useQuery(GETQUERY);
-
-    return data;
+    return GETQUERY;
 }
