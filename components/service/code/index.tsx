@@ -149,15 +149,16 @@ export default function Code(ctx: any): JSX.Element {
   const [codeRoot, setCodeRoot] = useState<TEditorRoot | undefined>(undefined);
   const { code, setCode } = useCode();
   const { drag, setDragInfo, deleteDragInfo } = useDrag();
-  const ws = useRef<WebSocket | null>(null);
   const [fileStructure, setFileStructure] = useState<TFile>({
     path: "none",
     children: undefined,
   });
   const [projectName, setProjectName] = useState<string>("");
   function loadProject(projectName: string) {
-    if (ws.current) {
-      ws.current.send(
+    console.log(ctx.ws.current.readyState);
+
+    if (ctx.ws.current && ctx.ws.current.readyState === WebSocket.OPEN) {
+      ctx.ws.current.send(
         JSON.stringify({
           category: "code",
           type: "loadProject",
@@ -170,9 +171,9 @@ export default function Code(ctx: any): JSX.Element {
   }
 
   function getCode(projectName: string, filePath: string): void {
-    if (ws.current && ws.current.OPEN) {
+    if (ctx.ws.current && ctx.ws.current.OPEN) {
       setTimeout(() => {
-        ws.current!.send(
+        ctx.ws.current!.send(
           JSON.stringify({
             category: "code",
             type: "getCode",
@@ -187,8 +188,8 @@ export default function Code(ctx: any): JSX.Element {
   }
 
   function changeCode(projectName: string, filePath: string, newCode: string) {
-    if (ws.current) {
-      ws.current.send(
+    if (ctx.ws.current) {
+      ctx.ws.current.send(
         JSON.stringify({
           category: "code",
           type: "changeCode",
@@ -207,8 +208,8 @@ export default function Code(ctx: any): JSX.Element {
     oldPath: string,
     newPath: string
   ) {
-    if (ws.current) {
-      ws.current.send(
+    if (ctx.ws.current) {
+      ctx.ws.current.send(
         JSON.stringify({
           category: "code",
           type: "moveFileOrDir",
@@ -223,8 +224,8 @@ export default function Code(ctx: any): JSX.Element {
   }
 
   function createDir(projectName: string, dirPath: string) {
-    if (ws.current) {
-      ws.current.send(
+    if (ctx.ws.current) {
+      ctx.ws.current.send(
         JSON.stringify({
           category: "code",
           type: "createDir",
@@ -238,8 +239,8 @@ export default function Code(ctx: any): JSX.Element {
   }
 
   function createFile(projectName: string, filePath: string) {
-    if (ws.current) {
-      ws.current.send(
+    if (ctx.ws.current) {
+      ctx.ws.current.send(
         JSON.stringify({
           category: "code",
           type: "createFile",
@@ -253,8 +254,8 @@ export default function Code(ctx: any): JSX.Element {
   }
 
   function deleteFileOrDir(projectName: string, deletePath: string) {
-    if (ws.current) {
-      ws.current.send(
+    if (ctx.ws.current) {
+      ctx.ws.current.send(
         JSON.stringify({
           category: "code",
           type: "deleteFileOrDir",
@@ -268,96 +269,90 @@ export default function Code(ctx: any): JSX.Element {
   }
 
   useEffect(() => {
+    if (ctx.ws === null) return;
     setProjectName(window?.location.href.split("?projectName=")[1] ?? "");
-    ws.current = new WebSocket(
-      `ws://127.0.0.1:8000/?userId=${ctx.session.userId}`
-    );
 
-    if (ws.current) {
-      ws.current!.onopen = (event: any) => {
-        ws.current!.send(
-          JSON.stringify({
-            category: "connect",
-          })
-        );
+    console.log(ctx.ws);
 
-        loadProject(window?.location.href.split("?projectName=")[1]);
-      };
-    }
+    if (ctx.ws.current) {
+      loadProject(window?.location.href.split("?projectName=")[1]);
 
-    ws.current.onmessage = (msg) => {
-      const message = JSON.parse(msg.data);
+      ctx.ws.current.addEventListener("message", (msg: any) => {
+        const message = JSON.parse(msg.data);
 
-      if (message.category === "code") {
-        switch (message.type) {
-          case "loadProject":
-            setFileStructure(reorderFileStructure(message.data));
-            break;
-          case "getCode":
-            setCode({
-              ...code,
-              root: insertCodeContent(
-                code.root,
-                message.data.filePath,
-                message.data.fileContent
-              ),
-            });
-            break;
-          case "changeCode":
-            break;
-          case "moveFileOrDir":
-          case "createDir":
-          case "createFile":
-          case "deleteFileOrDir":
-            loadProject(window?.location.href.split("?projectName=")[1]);
-            break;
-          default:
-            break;
+        console.log(message);
+
+        if (message.category === "code") {
+          switch (message.type) {
+            case "loadProject":
+              // setFileStructure(reorderFileStructure(message.data));
+              break;
+            case "getCode":
+              // setCode({
+              //   ...code,
+              //   root: insertCodeContent(
+              //     code.root,
+              //     message.data.filePath,
+              //     message.data.fileContent
+              //   ),
+              // });
+              break;
+            case "changeCode":
+              break;
+            case "moveFileOrDir":
+            case "createDir":
+            case "createFile":
+            case "deleteFileOrDir":
+              loadProject(window?.location.href.split("?projectName=")[1]);
+              break;
+            default:
+              break;
+          }
         }
-      }
-    };
-  }, []);
+      });
+    }
+  }, [ctx.ws.current]);
 
   useEffect(() => {
-    ws.current!.onmessage = (msg) => {
-      const message = JSON.parse(msg.data);
+    if (ctx.ws === null) return;
+    if (ctx.ws.current) {
+      if (fileStructure.path === "none")
+        loadProject(window?.location.href.split("?projectName=")[1]);
 
-      if (message.category === "code") {
-        switch (message.type) {
-          case "loadProject":
-            setFileStructure(reorderFileStructure(message.data));
-            break;
-          case "getCode":
-            console.log(
-              insertCodeContent(
-                code.root,
-                message.data.filePath,
-                message.data.fileContent
-              )
-            );
+      ctx.ws.current.addEventListener("message", (msg: any) => {
+        const message = JSON.parse(msg.data);
 
-            setCode({
-              ...code,
-              root: insertCodeContent(
-                code.root,
-                message.data.filePath,
-                message.data.fileContent
-              ),
-            });
-            break;
-          case "changeCode":
-            break;
-          case "moveFileOrDir":
-          case "createDir":
-          case "createFile":
-          case "deleteFileOrDir":
-            loadProject(window?.location.href.split("?projectName=")[1]);
-            break;
-          default:
-            break;
+        console.log(message);
+
+        if (message.category === "code") {
+          switch (message.type) {
+            case "loadProject":
+              // setFileStructure(reorderFileStructure(message.data));
+              break;
+            case "getCode":
+              // setCode({
+              //   ...code,
+              //   root: insertCodeContent(
+              //     code.root,
+              //     message.data.filePath,
+              //     message.data.fileContent
+              //   ),
+              // });
+              break;
+            case "changeCode":
+              break;
+            case "moveFileOrDir":
+            case "createDir":
+            case "createFile":
+            case "deleteFileOrDir":
+              loadProject(window?.location.href.split("?projectName=")[1]);
+              break;
+            default:
+              break;
+          }
         }
-      }
-    };
+      });
+    }
   }, [code]);
 
   function ctrlSEvent(event: KeyboardEvent) {
@@ -381,8 +376,8 @@ export default function Code(ctx: any): JSX.Element {
 
   useEffect(() => {
     return () => {
-      if (ws.current) {
-        ws.current.close();
+      if (ctx.ws.current) {
+        ctx.ws.current.close();
       }
     };
   }, []);
@@ -399,7 +394,9 @@ export default function Code(ctx: any): JSX.Element {
     //    console.log(fileStructure);
   }, [fileStructure]);
 
-  return (
+  return ctx.ws === null ? (
+    <React.Fragment></React.Fragment>
+  ) : (
     <div className={classes.root}>
       <Sidebar
         fileStructure={fileStructure}
