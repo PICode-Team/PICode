@@ -141,9 +141,16 @@ export const sidebarStyle = makeStyles((theme: IThemeStyle) =>
         color: theme.font.high.color,
       },
       "&:hover": {
-        backgroundColor: theme.hover
+        backgroundColor: theme.hover,
       },
     },
+    cpp: {},
+    c: {},
+    typescript: {},
+    javascript: {},
+    go: {},
+    python: {},
+    cs: {},
     group: {},
 
     added: {},

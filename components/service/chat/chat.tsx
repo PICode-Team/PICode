@@ -107,16 +107,16 @@ function CreateChannel({
           </div>
         </div>
         <div className={classes.modalBody}>
-          <CustomTextField
-            label="Name"
+          <input
+            type="text"
             ref={nameRef}
             value={name}
             onChange={(event: any) => {
               setName(event.currentTarget.value);
             }}
           />
-          <CustomTextField
-            label="Description"
+          <input
+            type="text"
             ref={descriptionRef}
             value={description}
             onChange={(event: any) => {
@@ -131,6 +131,8 @@ function CreateChannel({
             onClick={() => {
               createChannel(name);
               setName("");
+              setDescription("");
+              setModal(false);
             }}
           />
         </div>
@@ -163,7 +165,7 @@ export default function Chat(ctx: any) {
           category: "chat",
           type: "sendMessage",
           data: {
-            target: target,
+            target: "target",
             msg: msg,
           },
         })
@@ -172,8 +174,12 @@ export default function Chat(ctx: any) {
   }
 
   function enterEvent(event: KeyboardEvent) {
-    if (event.keyCode === 13) {
-      if (messageRef.current && target !== "") {
+    if (event.key === "Enter") {
+      if (
+        messageRef.current &&
+        target !== "" &&
+        messageRef.current.value !== ""
+      ) {
         sendMessage(target, messageRef.current.value);
         messageRef.current.value = "";
       }
@@ -227,8 +233,8 @@ export default function Chat(ctx: any) {
           category: "chat",
           type: "createChannel",
           data: {
-            target: ctx.session.id,
-            chatName: chatName,
+            target: `#${chatName}`,
+            chatName: "???",
           },
         })
       );
@@ -246,14 +252,16 @@ export default function Chat(ctx: any) {
   // }, [])
 
   useEffect(() => {
-    if(typeof window !== "undefined") {
-      const target = document.getElementById("contentBox")
-      target?.scrollTo(0, target.clientHeight)
+    if (typeof window !== "undefined") {
+      const target = document.getElementById("contentBox");
+      target?.scrollTo(0, target.clientHeight);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    ws.current = new WebSocket(`ws://127.0.0.1:8000/?userId=${ctx.session.userId}`);
+    ws.current = new WebSocket(
+      `ws://127.0.0.1:8000/?userId=${ctx.session.userId}`
+    );
 
     if (ws.current) {
       ws.current!.onopen = (event: any) => {
@@ -273,16 +281,17 @@ export default function Chat(ctx: any) {
       if (message.category === "chat") {
         switch (message.type) {
           case "createChannel":
+            getChat();
             break;
           case "getChat":
             const channelList: string[] = [];
             const directList: string[] = [];
 
-            message.data.forEach((v: string) => {
-              if (v.slice(0, 1) === "#") {
-                channelList.push(v);
+            message.data.forEach((v: any) => {
+              if (v.chatName.slice(0, 1) === "#") {
+                channelList.push(v.chatName);
               } else {
-                directList.push(v);
+                directList.push(v.chatName);
               }
             });
 
@@ -293,33 +302,48 @@ export default function Chat(ctx: any) {
           case "getChatLog":
             const messageList: TChat[] = [];
             message.data.forEach((v: any) => {
-              messageList.push({ user: v.target, message: v.msg, time: "" });
+              messageList.push({
+                user: v.data.sender,
+                message: v.data.message,
+                time: "",
+              });
             });
-            setMessages([...messages, ...messageList]);
+            // setMessages([...messages, ...messageList]);
             break;
           case "getChatLogList":
             message.data.forEach((v: string) => {
-              getChatLog(target, v);
+              // getChatLog(target, v);
             });
             break;
           case "sendMessage":
+            console.log(message.data);
+
             setMessages([
               ...messages,
-              { user: message.target, message: message.msg, time: "" },
+              {
+                user: message.data.sender,
+                message: message.data.message,
+                time: "",
+              },
             ]);
             break;
         }
       }
     };
 
-    document.addEventListener("keypress", enterEvent);
     return () => {
-      document.removeEventListener("keypress", enterEvent);
       if (ws.current) {
         ws.current.close();
       }
     };
   }, []);
+
+  useEffect(() => {
+    document.addEventListener("keypress", enterEvent);
+    return () => {
+      document.removeEventListener("keypress", enterEvent);
+    };
+  }, [target]);
 
   return (
     <div className={classes.root}>
@@ -423,12 +447,12 @@ export default function Chat(ctx: any) {
           </div>
         </div>
       </div>
-      {target === "" ? (
+      {target !== "" ? (
         <div className={classes.contentWrapper}>
           <div className={classes.header}>
             <div className={classes.headerInfo}>
               <div className={classes.headerUser}></div>
-              <div className={classes.headerName}>kim</div>
+              <div className={classes.headerName}>{target}</div>
             </div>
             <div className={classes.participant}></div>
           </div>
@@ -444,15 +468,6 @@ export default function Chat(ctx: any) {
                   return <MessageBox {...v} key={`messagebox-${i}`} />;
                 }
               })}
-              <MessageBox time="4555" message="123123" user="test" />
-              <MessageBox time="4555" message="123123" user="test" />
-              <MessageBox time="4555" message="123123" user="test" />
-              <MessageBox time="4555" message="123123" user="test" />
-              <MessageBox time="4555" message="123123" user="test" />
-              <MessageBox time="4555" message="123123" user="test" />
-              <MessageBox time="4555" message="123123" user="test" />
-              <MessageBox time="4555" message="123123" user="test" />
-              <MessageBox time="4555" message="123123" user="test" />
             </div>
           </div>
           <div className={classes.input}>

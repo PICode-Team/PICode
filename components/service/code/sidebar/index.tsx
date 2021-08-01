@@ -341,7 +341,11 @@ function makeFileStructure(
           }
       }}
     >
-      <span></span>
+      {getLanguage(getExtension(path)) !== "default" ? (
+        <span className={classes[getLanguage(getExtension(path))]}></span>
+      ) : (
+        <List />
+      )}
       {lastPath[lastPath.length - 1]}
     </div>
   );
@@ -681,38 +685,6 @@ export function Sidebar({
           >
             <span>New Directory</span>
             <span></span>
-          </div>
-          <div className={classes.divider}></div>
-          <div
-            className={classes.fileMenu}
-            onClick={() => {
-              setFileInfo({ ...fileInfo, cut: true });
-              setRightClick(false);
-            }}
-          >
-            <span>Cut</span>
-            <span>Ctrl + X</span>
-          </div>
-          <div
-            className={classes.fileMenu}
-            onClick={() => {
-              setFileInfo({ ...fileInfo, copy: true });
-
-              setRightClick(false);
-            }}
-          >
-            <span>Copy</span>
-            <span>Ctrl + C</span>
-          </div>
-          <div
-            className={classes.fileMenu}
-            onClick={() => {
-              console.log(123);
-              setRightClick(false);
-            }}
-          >
-            <span>Paste</span>
-            <span>Ctrl + V</span>
           </div>
           <div className={classes.divider}></div>
           <div
