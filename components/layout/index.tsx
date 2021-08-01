@@ -12,16 +12,17 @@ interface IUserMouse {
   y: number
 }
 
+
 export interface ISocket {
   workingPath: string;
-  userMouse?: IUserMouse;
+  userMouse?: { x: number, y: number, screenSize: IUserMouse };
 }
 
 export function Layout(ctx: any) {
   const classes = LayoutStyle();
   let ws = React.useRef<WebSocket | null>(null);
-  const [userMouse, setUserMouse] = React.useState<IUserMouse>()
-  const [loginUser, setLoginUser] = React.useState<{ [key: string]: ISocket }>()
+  const [userMouse, setUserMouse] = React.useState<{ x: number, y: number, screenSize: IUserMouse }>()
+  const [loginUser, setLoginUser] = React.useState<{ loginId: string, workInfo: ISocket }[]>()
 
   if (typeof window !== "undefined") {
     if (ctx.session.userId === undefined) {
@@ -66,12 +67,17 @@ export function Layout(ctx: any) {
 
   const userMouseMoveCapture = React.useCallback(throttle((e) => {
     if (ctx.path === "/code" || ctx.path === "/note") {
+      console.log()
       setUserMouse({
         x: e.clientX,
-        y: e.clientY
+        y: e.clientY,
+        screenSize: {
+          x: window.innerWidth,
+          y: window.innerHeight
+        }
       })
     }
-  }, 300), [])
+  }, 100), [])
 
   React.useEffect(() => {
     if (userMouse === null) return;
@@ -96,7 +102,7 @@ export function Layout(ctx: any) {
         <Sidebar {...ctx} />
         {ctx.children}
       </div>
-      <UserMouse loginUser={loginUser as any} />
+      {(loginUser !== undefined && loginUser.length > 1) && <UserMouse loginUser={loginUser as any} loginId={ctx.session.userId} path={ctx.path} />}
       <Messenger />
     </div>
   );

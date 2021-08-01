@@ -3,14 +3,19 @@
 import { IconButton } from "@material-ui/core";
 import Brightness7Icon from '@material-ui/icons/Brightness7';
 import Brightness4Icon from '@material-ui/icons/Brightness4';
-import React from "react";
+import React, { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toDark, toWhite } from "../../modules/theme";
 import { TopbarStyle } from "../../styles/layout/topbar";
 import AccountCircleRoundedIcon from '@material-ui/icons/AccountCircleRounded';
 import UserInfo from "./item/tooltip";
 import { useEffect } from "react";
+import { ISocket } from ".";
 
+interface IUserWorkInfo {
+    userId: string;
+    workInfo: ISocket;
+}
 
 export function Topbar(ctx: any) {
     const theme = useSelector((state: any) => state.theme).theme
@@ -21,6 +26,8 @@ export function Topbar(ctx: any) {
         userId: string;
         userName: string;
     }>({ userId: "", userName: "" });
+
+    const [overData, setOverData] = React.useState<IUserWorkInfo[]>();
 
     const getUserData = async () => {
         let data = await fetch(`http://localhost:8000/api/user`, {
@@ -33,10 +40,48 @@ export function Topbar(ctx: any) {
         setData(data.user)
     }
 
-
     useEffect(() => {
         getUserData();
     }, [])
+
+    const makeUserInfo = (data: IUserWorkInfo[]) => {
+        let returnData = [];
+        let idx = 0;
+        for (let i of data) {
+            if (idx === 5) {
+                break;
+            }
+            if (i.userId !== ctx.session.userId) {
+                returnData.push(
+                    <div
+                        className={classes.userInfoData}
+                        style={{ zIndex: idx }}
+                        onClick={() => {
+                            window.location.href = i.workInfo.workingPath
+                        }}
+                        title={i.workInfo.workingPath}
+                        onMouseOver={() => {
+                            if (ctx.loginUser !== undefined && ctx.loginUser !== undefined) {
+                                setOverData([i])
+                            }
+                        }}>
+                        <span>{i.userId.substring(0, 1)}</span>
+                    </div>
+                )
+            }
+            idx++;
+        }
+        if (data.length > 5) {
+            returnData.push(<span
+                style={{ paddingLeft: "8px", fontSize: "12px" }}
+                onMouseOver={() => {
+                    if (ctx.loginUser !== undefined && ctx.loginUser !== undefined) {
+                        setOverData(ctx.loginUser)
+                    }
+                }}> 외 {data.length - 5}명</span>)
+        }
+        return returnData
+    }
 
     return (
         <React.Fragment>
@@ -56,7 +101,7 @@ export function Topbar(ctx: any) {
                     </IconButton>
                 </div>
                 <div className={classes.loginUserInfo}>
-                    {(ctx.loginUser !== undefined && ctx.loginUser.userId !== undefined) && <div>{ctx.loginUser.userId}</div>}
+                    {(ctx.loginUser !== undefined && ctx.loginUser !== undefined) && makeUserInfo(ctx.loginUser).map((v) => v)}
                 </div>
             </div>
             {open === true && <UserInfo open={open} setOpen={setOpen} data={data} theme={theme} />}
