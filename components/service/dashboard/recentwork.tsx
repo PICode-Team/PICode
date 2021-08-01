@@ -120,7 +120,7 @@ export default function RecentWork() {
                         <div style={{ padding: "30px" }}>
                             {i.projectThumbnail === undefined ?
                                 <img alt="logo" style={{ maxWidth: "256px", paddingBottom: "20px", maxHeight: "256px" }} src={`/images/picode-7.svg`} />
-                                : <img alt="logo" style={{ maxWidth: "256px", paddingBottom: "20px", maxHeight: "256px" }} src={`/api/temp?uuid=${i.projectThumbnail}`} />
+                                : <img alt="logo" style={{ maxWidth: "256px", paddingBottom: "20px", maxHeight: "256px" }} src={`/api/temp/${i.projectThumbnail}`} />
                             }
                             <div style={{ display: "block" }}>
                                 <span className={classes.tableContent}>Project Name : </span>
