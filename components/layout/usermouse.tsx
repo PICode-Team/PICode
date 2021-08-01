@@ -2,7 +2,6 @@ import React from "react"
 import { ISocket } from "."
 
 export default function UserMouse({ loginUser, loginId, path }: any) {
-    console.log(1)
     return loginUser.map((v: { userId: string, workInfo: ISocket }) => {
         if (v.userId !== loginId && path === v.workInfo.workingPath && v.workInfo.userMouse !== undefined) {
             let realX = v.workInfo.userMouse.x / v.workInfo.userMouse.screenSize.x * window.innerWidth;
