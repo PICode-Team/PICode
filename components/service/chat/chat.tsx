@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef } from "react";
 import { useState } from "react";
 import {
@@ -316,7 +317,6 @@ export default function Chat(ctx: any) {
             });
             break;
           case "sendMessage":
-
             setMessages([
               ...messages,
               {

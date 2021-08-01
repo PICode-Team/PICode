@@ -52,7 +52,6 @@ export function Topbar(ctx: any) {
         break;
       }
       if (i.userId !== ctx.session.userId) {
-
         returnData.push(
           <div
             className={classes.userInfoData}
