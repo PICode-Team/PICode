@@ -52,7 +52,6 @@ export function Layout(ctx: any) {
 
     ws.current.onmessage = (msg: any) => {
       let loginUserData = JSON.parse(msg.data);
-      console.log(loginUserData);
 
       if (loginUserData.type === "work") {
         setLoginUser(loginUserData.data);
@@ -83,7 +82,6 @@ export function Layout(ctx: any) {
   const userMouseMoveCapture = React.useCallback(
     throttle((e) => {
       if (ctx.path === "/code" || ctx.path === "/note") {
-        console.log();
         setUserMouse({
           x: e.clientX,
           y: e.clientY,

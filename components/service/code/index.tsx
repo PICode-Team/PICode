@@ -155,8 +155,6 @@ export default function Code(ctx: any): JSX.Element {
   });
   const [projectName, setProjectName] = useState<string>("");
   function loadProject(projectName: string) {
-    console.log(ctx.ws.current.readyState);
-
     if (ctx.ws.current && ctx.ws.current.readyState === WebSocket.OPEN) {
       ctx.ws.current.send(
         JSON.stringify({
@@ -272,30 +270,26 @@ export default function Code(ctx: any): JSX.Element {
     if (ctx.ws === null) return;
     setProjectName(window?.location.href.split("?projectName=")[1] ?? "");
 
-    console.log(ctx.ws);
-
     if (ctx.ws.current) {
       loadProject(window?.location.href.split("?projectName=")[1]);
 
       ctx.ws.current.addEventListener("message", (msg: any) => {
         const message = JSON.parse(msg.data);
 
-        console.log(message);
-
         if (message.category === "code") {
           switch (message.type) {
             case "loadProject":
-              // setFileStructure(reorderFileStructure(message.data));
+              setFileStructure(reorderFileStructure(message.data));
               break;
             case "getCode":
-              // setCode({
-              //   ...code,
-              //   root: insertCodeContent(
-              //     code.root,
-              //     message.data.filePath,
-              //     message.data.fileContent
-              //   ),
-              // });
+              setCode({
+                ...code,
+                root: insertCodeContent(
+                  code.root,
+                  message.data.filePath,
+                  message.data.fileContent
+                ),
+              });
               break;
             case "changeCode":
               break;
@@ -322,22 +316,20 @@ export default function Code(ctx: any): JSX.Element {
       ctx.ws.current.addEventListener("message", (msg: any) => {
         const message = JSON.parse(msg.data);
 
-        console.log(message);
-
         if (message.category === "code") {
           switch (message.type) {
             case "loadProject":
-              // setFileStructure(reorderFileStructure(message.data));
+              setFileStructure(reorderFileStructure(message.data));
               break;
             case "getCode":
-              // setCode({
-              //   ...code,
-              //   root: insertCodeContent(
-              //     code.root,
-              //     message.data.filePath,
-              //     message.data.fileContent
-              //   ),
-              // });
+              setCode({
+                ...code,
+                root: insertCodeContent(
+                  code.root,
+                  message.data.filePath,
+                  message.data.fileContent
+                ),
+              });
               break;
             case "changeCode":
               break;
@@ -390,9 +382,7 @@ export default function Code(ctx: any): JSX.Element {
     };
   }, [code]);
 
-  useEffect(() => {
-    //    console.log(fileStructure);
-  }, [fileStructure]);
+  useEffect(() => {}, [fileStructure]);
 
   return ctx.ws === null ? (
     <React.Fragment></React.Fragment>
