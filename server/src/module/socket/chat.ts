@@ -9,11 +9,20 @@ function sendMessage(sender: string, target: string, message: string) {
   );
   DataChatManager.saveChat(sender, target, message);
 
-  if (sender !== target) {
-    getSocket(sender)?.send(sendData);
-  }
+  if (DataChatManager.getChatType(target) === "direct") {
+    if (sender !== target) {
+      getSocket(sender)?.send(sendData);
+    }
+    getSocket(target)?.send(sendData);
+  } else {
+    const [chatData] = DataChatManager.getChat(sender, target);
 
-  getSocket(target)?.send(sendData);
+    if (chatData !== undefined) {
+      chatData.chatParticipant?.forEach((userId) => {
+        getSocket(userId)?.send(sendData);
+      });
+    }
+  }
 }
 
 function createChannel(
@@ -36,7 +45,9 @@ function createChannel(
 
   chatParticipant.forEach((userId) => {
     try {
-      getSocket(userId)?.send(JSON.stringify(createData));
+      getSocket(userId)?.send(
+        JSON.stringify(makePacket("chat", "createChannel", createData))
+      );
     } catch {}
   });
 }
@@ -45,7 +56,7 @@ function getChat(userId: string) {
   const sendData = JSON.stringify(
     makePacket("chat", "getChat", DataChatManager.getChat(userId))
   );
-  getSocket(userId).send(sendData);
+  getSocket(userId)?.send(sendData);
 }
 
 function getChatLog(userId: string, chatName: string, page: string) {

@@ -30,8 +30,6 @@ export default class DataChatManager {
       const chatLogFilePath = `${chatDir}/${chatLogFileName}`;
 
       if (!fs.existsSync(chatDir)) {
-        console.log(chatDir);
-
         fs.mkdirSync(chatDir, { recursive: true });
       }
 
@@ -85,7 +83,13 @@ export default class DataChatManager {
           `${this.getChatDataPath()}/${v}/chatInfo.json`
         ) as TChatChannelData;
       })
-      .filter((v) => v.chatParticipant.indexOf(userId) > -1);
+      .filter((v) => v.chatParticipant.indexOf(userId) > -1)
+      .map((v) => {
+        if (this.getChatType(v.chatName) === "direct") {
+          v.chatName = v.chatParticipant.filter((o) => o !== userId)?.[0];
+        }
+        return v;
+      });
   }
 
   static saveChat(sender: string, chatName: string, message: string) {
@@ -117,7 +121,7 @@ export default class DataChatManager {
   }
 
   static getDirectMessageDirName(userId1: string, userId2: string) {
-    return [`@${userId1}`, userId2].sort().join("{sep}");
+    return [`@${userId1}`, `@${userId2}`].sort().join("{sep}");
   }
 
   static createChannel(channelData: TChatChannelData) {
