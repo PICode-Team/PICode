@@ -66,6 +66,17 @@ export default class DataProjectManager {
         });
     }
 
+    static isValidAuth(userId: string, projectName: string, participantIncluded: boolean) {
+        const projectId = this.getProjectId(userId, projectName);
+        if (projectId === undefined) {
+            return false;
+        }
+        if (!this.canEditProject(userId, projectId, participantIncluded)) {
+            return false;
+        }
+        return true;
+    }
+
     static gitCloneFromURL(
         projectId: string,
         source: {

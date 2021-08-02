@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { TUploadFileLanguageToSize, TUploadMimeType, TLanguageList } from "../../types/module/data/file.types";
+import { TUploadFileLanguageToSize, TUploadMimeType, TLanguageList, TFile } from "../../types/module/data/file.types";
 import log from "../log";
 import admZip from "adm-zip";
 import DataProjectManager from "./projectManager";

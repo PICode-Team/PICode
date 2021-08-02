@@ -8,6 +8,8 @@ import next from "next";
 import envConfig from "./config/env";
 import expressWs from "express-ws";
 import { webSocketInit } from "./module/socket/socket";
+import cluster from "cluster";
+import DataTerminalManager from "./module/data/terminalManager";
 
 async function main() {
     const dev = envConfig.NODE_ENV !== "production";
@@ -20,7 +22,7 @@ async function main() {
     server.use(setting);
     server.use(logging);
     server.use("/api", route);
-    server.use("./static", express.static("./public"));
+    server.use("/api/temp", express.static("./static"));
     graphQLServer.applyMiddleware({ app: server, path: "/graphql", cors: false });
 
     webSocketInit(expressWs(server).app);
@@ -47,7 +49,11 @@ async function main() {
     });
 }
 
-main();
+if (cluster.isMaster) {
+    main();
+} else if (cluster.isWorker) {
+    DataTerminalManager.setUpTerminal();
+}
 
 process.on("SIGINT", () => {
     console.log();
