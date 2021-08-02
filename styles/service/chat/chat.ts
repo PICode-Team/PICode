@@ -368,6 +368,7 @@ export const createChannelStyle = makeStyles((theme: IThemeStyle) =>
       justifyContent: "space-between",
       alignItems: "center",
       color: theme.font.medium.color,
+      marginBottom: "12px",
       "&>div": {
         display: "flex",
         alignItems: "center",
@@ -392,6 +393,31 @@ export const createChannelStyle = makeStyles((theme: IThemeStyle) =>
     },
     visibility: {
       visibility: "hidden",
+    },
+    input: {
+      backgroundColor: "#3b4a4f",
+      color: "#ffffff",
+      width: "240px",
+      outline: "none",
+      border: "none",
+      height: "30px",
+      marginBottom: "12px",
+      padding: "8px",
+    },
+    participantWrapper: {},
+    participant: {
+      display: "inline-block",
+      "&>input": {
+        marginRight: "4px",
+        border: "none",
+
+        "&:checked": {},
+
+        "&:disabled": {},
+      },
+      "&>label": {
+        color: theme.font.high.color,
+      },
     },
   })
 );

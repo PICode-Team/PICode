@@ -7,7 +7,7 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
     root: {
       backgroundColor: theme.backgroundColor.step0,
       width: "100%",
-      height: "100%",
+      height: "fit-content",
       display: "flex",
       justifyContent: "center",
     },

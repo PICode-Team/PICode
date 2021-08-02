@@ -13,6 +13,7 @@ import client from "../../../apollo/apollo-client";
 import GetQuery from "../../grapql/document/get";
 import QueryCreate from "../../grapql/document/create";
 import QueryDelete from "../../grapql/document/delete";
+import { Cancel, CancelOutlined, Close } from "@material-ui/icons";
 
 export interface INoteContent {
   text: string;
@@ -156,6 +157,7 @@ export default function TestNote(ctx: any) {
             )}
             <div style={{ display: "flex", lineHeight: "30px" }}>{v.title}</div>
             <button
+              className={classes.delete}
               onClick={(e) => {
                 e.stopPropagation();
                 client.mutate({
@@ -171,7 +173,7 @@ export default function TestNote(ctx: any) {
                   });
               }}
             >
-              Delete
+              <Close />
             </button>
           </div>
           {v.open &&
