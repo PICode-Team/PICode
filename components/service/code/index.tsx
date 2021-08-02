@@ -382,7 +382,9 @@ export default function Code(ctx: any): JSX.Element {
     };
   }, [code]);
 
-  useEffect(() => {}, [fileStructure]);
+  useEffect(() => {
+    //    console.log(fileStructure);
+  }, [fileStructure]);
 
   return ctx.ws === null ? (
     <React.Fragment></React.Fragment>

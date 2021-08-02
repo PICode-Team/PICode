@@ -11,7 +11,14 @@ import {
   Close,
 } from "@material-ui/icons";
 import CustomButton from "../../items/input/button";
-import CustomTextField from "../../items/input/textfield";
+import moment from "moment";
+
+function getTime(
+  time: Date | string | undefined = undefined,
+  format: string = "YYYY-MM-DD HH:mm:ss"
+) {
+  return moment(time).format(format);
+}
 
 interface TChat {
   user: string;
@@ -155,17 +162,16 @@ export default function Chat(ctx: any) {
   const [target, setTarget] = useState<string>("");
   const [channelList, setChannelList] = useState<string[]>([]);
   const [directList, setDirectList] = useState<string[]>([]);
-  const ws = useRef<WebSocket | null>(null);
   const messageRef = useRef<HTMLInputElement>(null);
 
   function sendMessage(target: string, msg: string) {
-    if (ws.current) {
-      ws.current.send(
+    if (ctx.ws.current) {
+      ctx.ws.current.send(
         JSON.stringify({
           category: "chat",
           type: "sendMessage",
           data: {
-            target: "target",
+            target: target,
             msg: msg,
           },
         })
@@ -187,8 +193,8 @@ export default function Chat(ctx: any) {
   }
 
   function getChat() {
-    if (ws.current) {
-      ws.current.send(
+    if (ctx.ws.current) {
+      ctx.ws.current.send(
         JSON.stringify({
           category: "chat",
           type: "getChat",
@@ -198,8 +204,8 @@ export default function Chat(ctx: any) {
   }
 
   function getChatLog(target: string, page: string) {
-    if (ws.current) {
-      ws.current.send(
+    if (ctx.ws.current) {
+      ctx.ws.current.send(
         JSON.stringify({
           category: "chat",
           type: "getChatLog",
@@ -213,8 +219,8 @@ export default function Chat(ctx: any) {
   }
 
   function getChatLogList(target: string) {
-    if (ws.current) {
-      ws.current.send(
+    if (ctx.ws.current) {
+      ctx.ws.current.send(
         JSON.stringify({
           category: "chat",
           type: "getChatLogList",
@@ -226,15 +232,20 @@ export default function Chat(ctx: any) {
     }
   }
 
-  function createChannel(chatName: string) {
-    if (ws.current) {
-      ws.current.send(
+  function createChannel(
+    chatName: string,
+    description?: string,
+    participant?: string[]
+  ) {
+    if (ctx.ws.current) {
+      ctx.ws.current.send(
         JSON.stringify({
           category: "chat",
           type: "createChannel",
           data: {
-            target: `#${chatName}`,
-            chatName: "???",
+            target: `${chatName}`,
+            description: description,
+            participant: ["test"],
           },
         })
       );
@@ -242,99 +253,85 @@ export default function Chat(ctx: any) {
   }
 
   useEffect(() => {
+    setMessages([]);
+
     if (target !== "") {
       getChatLogList(target);
     }
   }, [target]);
 
-  // useEffect(() => {
-
-  // }, [])
+  useEffect(() => {}, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const target = document.getElementById("contentBox");
       target?.scrollTo(0, target.clientHeight);
     }
-  }, []);
+  }, [messages]);
 
   useEffect(() => {
-    ws.current = new WebSocket(
-      `ws://127.0.0.1:8000/?userId=${ctx.session.userId}`
-    );
+    if (ctx.ws === null) return;
 
-    if (ws.current) {
-      ws.current!.onopen = (event: any) => {
-        ws.current!.send(
-          JSON.stringify({
-            category: "connect",
-          })
-        );
+    if (ctx.ws.current) {
+      getChat();
 
-        getChat();
+      ctx.ws.current.onmessage = (msg: any) => {
+        const message = JSON.parse(msg.data);
+
+        if (message.category === "chat") {
+          switch (message.type) {
+            case "createChannel":
+              console.log(123);
+
+              getChat();
+              break;
+            case "getChat":
+              const channelList: string[] = [];
+              const directList: string[] = [];
+
+              message.data.forEach((v: any) => {
+                if (v.chatName.slice(0, 1) === "#") {
+                  channelList.push(v.chatName);
+                } else {
+                  directList.push(v.chatName);
+                }
+              });
+
+              setChannelList(channelList);
+              setDirectList(directList);
+              break;
+
+            case "getChatLog":
+              const messageList: TChat[] = [];
+              message.data.forEach((v: any) => {
+                messageList.push({
+                  user: v.sender,
+                  message: v.message,
+                  time: v.time,
+                });
+              });
+              setMessages([...messages, ...messageList]);
+              break;
+            case "getChatLogList":
+              message.data.forEach((v: string) => {
+                getChatLog(target, v);
+              });
+              break;
+            case "sendMessage":
+              setMessages([
+                ...messages,
+                {
+                  user: message.data.sender,
+                  message: message.data.message,
+                  time: getTime(),
+                },
+              ]);
+              break;
+          }
+        }
       };
     }
-
-    ws.current.onmessage = (msg) => {
-      const message = JSON.parse(msg.data);
-
-      if (message.category === "chat") {
-        switch (message.type) {
-          case "createChannel":
-            getChat();
-            break;
-          case "getChat":
-            const channelList: string[] = [];
-            const directList: string[] = [];
-
-            message.data.forEach((v: any) => {
-              if (v.chatName.slice(0, 1) === "#") {
-                channelList.push(v.chatName);
-              } else {
-                directList.push(v.chatName);
-              }
-            });
-
-            setChannelList(channelList);
-            setDirectList(directList);
-            break;
-
-          case "getChatLog":
-            const messageList: TChat[] = [];
-            message.data.forEach((v: any) => {
-              messageList.push({
-                user: v.data.sender,
-                message: v.data.message,
-                time: "",
-              });
-            });
-            // setMessages([...messages, ...messageList]);
-            break;
-          case "getChatLogList":
-            message.data.forEach((v: string) => {
-              // getChatLog(target, v);
-            });
-            break;
-          case "sendMessage":
-            setMessages([
-              ...messages,
-              {
-                user: message.data.sender,
-                message: message.data.message,
-                time: "",
-              },
-            ]);
-            break;
-        }
-      }
-    };
-
-    return () => {
-      if (ws.current) {
-        ws.current.close();
-      }
-    };
-  }, []);
+  }, [ctx.ws.current, messages]);
 
   useEffect(() => {
     document.addEventListener("keypress", enterEvent);
@@ -457,9 +454,9 @@ export default function Chat(ctx: any) {
           <div className={classes.contentBox} id="contentBox">
             <div className={classes.content}>
               {messages.map((v, i) => {
-                if (v.time === "~~") {
-                  return <DayBoundary text={v.time} key={`dayboundary-${i}`} />;
-                }
+                // if (v.time === "~~") {
+                //   return <DayBoundary text={v.time} key={`dayboundary-${i}`} />;
+                // }
                 if (v.user === ctx.session.userId) {
                   return <MessageReverseBox {...v} key={`messagebox-${i}`} />;
                 } else {

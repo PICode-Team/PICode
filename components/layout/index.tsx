@@ -81,7 +81,11 @@ export function Layout(ctx: any) {
 
   const userMouseMoveCapture = React.useCallback(
     throttle((e) => {
-      if (ctx.path === "/code" || ctx.path === "/note") {
+      if (
+        ctx.path === "/code" ||
+        ctx.path === "/note" ||
+        ctx.path === "/chat"
+      ) {
         setUserMouse({
           x: e.clientX,
           y: e.clientY,
@@ -102,7 +106,11 @@ export function Layout(ctx: any) {
       let payload: ISocket = {
         workingPath: ctx.path,
       };
-      if (ctx.path === "/code" || ctx.path === "/note") {
+      if (
+        ctx.path === "/code" ||
+        ctx.path === "/note" ||
+        ctx.path === "/chat"
+      ) {
         payload.userMouse = userMouse;
       }
       ws.current!.send(
@@ -120,6 +128,7 @@ export function Layout(ctx: any) {
       <Topbar {...ctx} loginUser={loginUser} />
       <div className={classes.contentWrapper}>
         <Sidebar {...ctx} />
+
         {React.cloneElement(ctx.children, {
           ws:
             ws.current !== null &&
