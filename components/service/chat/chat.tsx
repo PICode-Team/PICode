@@ -127,6 +127,7 @@ function CreateChannel({
   userId,
   setModal,
   createChannel,
+  direct,
 }: {
   modal: boolean;
   userId: string;
@@ -136,6 +137,7 @@ function CreateChannel({
     description?: string,
     participant?: string[]
   ) => void;
+  direct: boolean;
 }) {
   const classes = createChannelStyle();
   const [name, setName] = useState<string>("");
@@ -165,7 +167,7 @@ function CreateChannel({
       ></div>
       <div className={`${classes.modal} ${!modal && classes.visibility}`}>
         <div className={classes.modalHeader}>
-          <span>Create Channel</span>
+          <span>{direct ? "Add Colleague" : "Create Channel"}</span>
           <div
             onClick={(event: React.MouseEvent<HTMLElement>) => {
               setModal(false);
@@ -221,7 +223,11 @@ function CreateChannel({
             onClick={() => {
               const participant = Object.keys(users).filter((v) => users[v]);
 
-              createChannel(name, description, participant);
+              createChannel(
+                direct ? name : `#${name}`,
+                description,
+                participant
+              );
               setName("");
               setDescription("");
               setModal(false);
@@ -248,6 +254,9 @@ export default function Chat(ctx: any) {
   const [channelList, setChannelList] = useState<string[]>([]);
   const [directList, setDirectList] = useState<string[]>([]);
   const messageRef = useRef<HTMLInputElement>(null);
+  const endRef = useRef<HTMLInputElement>(null);
+  const [direct, setDirect] = useState<boolean>(false);
+  const [newMessage, setNewMessage] = useState<boolean>(false);
 
   function sendMessage(target: string, msg: string) {
     if (ctx.ws.current) {
@@ -273,6 +282,7 @@ export default function Chat(ctx: any) {
       ) {
         sendMessage(target, messageRef.current.value);
         messageRef.current.value = "";
+        endRef.current!.scrollIntoView();
       }
     }
   }
@@ -345,14 +355,20 @@ export default function Chat(ctx: any) {
     }
   }, [target]);
 
-  useEffect(() => {}, []);
+  function handleResize() {
+    if (document.getElementsByClassName(classes.newMessage).length > 0) {
+      (
+        document.getElementsByClassName(classes.newMessage)[0] as HTMLElement
+      ).style.top = `${(Number(messageRef.current?.offsetTop) ?? 0) - 44}px`;
+    }
+  }
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const target = document.getElementById("contentBox");
-      target?.scrollTo(0, target.clientHeight);
-    }
-  }, [messages]);
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     if (ctx.ws === null) return;
@@ -401,6 +417,13 @@ export default function Chat(ctx: any) {
               });
               break;
             case "sendMessage":
+              if (message.data.sender !== ctx.session.userId) {
+                setNewMessage(true);
+                setTimeout(() => {
+                  setNewMessage(false);
+                }, 3000);
+              }
+
               setMessages([
                 ...messages,
                 {
@@ -483,6 +506,7 @@ export default function Chat(ctx: any) {
             className={classes.channel}
             onClick={() => {
               setModal(true);
+              setDirect(false);
             }}
           >
             <span className={classes.addChannel}>+</span>
@@ -519,7 +543,13 @@ export default function Chat(ctx: any) {
             );
           })}
 
-          <div className={classes.channel}>
+          <div
+            className={classes.channel}
+            onClick={() => {
+              setModal(true);
+              setDirect(true);
+            }}
+          >
             <span className={classes.addChannel}>+</span>
             Add Colleague
           </div>
@@ -536,16 +566,21 @@ export default function Chat(ctx: any) {
           </div>
           <div className={classes.contentBox} id="contentBox">
             <div className={classes.content}>
-              {messages.map((v, i) => {
-                // if (v.time === "~~") {
-                //   return <DayBoundary text={v.time} key={`dayboundary-${i}`} />;
-                // }
-                if (v.user === ctx.session.userId) {
-                  return <MessageReverseBox {...v} key={`messagebox-${i}`} />;
-                } else {
-                  return <MessageBox {...v} key={`messagebox-${i}`} />;
-                }
-              })}
+              {renderMessage(messages, classes, ctx.session.userId)}
+              <div ref={endRef} />
+            </div>
+            <div
+              style={{
+                top: `${(Number(messageRef.current?.offsetTop) ?? 0) - 44}px`,
+              }}
+              className={`${classes.newMessage} ${
+                newMessage && classes.visible
+              }`}
+              onClick={() => {
+                endRef.current?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              <div>New Message</div>
             </div>
           </div>
           <div className={classes.input}>
@@ -574,7 +609,41 @@ export default function Chat(ctx: any) {
         userId={ctx.session.userId}
         setModal={setModal}
         createChannel={createChannel}
+        direct={direct}
       />
     </div>
+  );
+}
+
+function renderMessage(messages: TChat[], classes: any, userId: string) {
+  const value = [];
+
+  for (let i = 0; i < messages.length; i++) {
+    const dayCheck =
+      i === 0 ||
+      messages[i - 1].time.split(" ")[0] !== messages[i].time.split(" ")[0];
+    if (messages[i].user === userId) {
+      value.push(
+        <React.Fragment>
+          {dayCheck && <DayBoundary text={messages[i].time.split(" ")[0]} />}
+          <MessageReverseBox {...messages[i]} key={`messagebox-${i}`} />
+        </React.Fragment>
+      );
+    } else {
+      value.push(
+        <React.Fragment>
+          {dayCheck && <DayBoundary text={messages[i].time.split(" ")[0]} />}
+          <MessageBox {...messages[i]} key={`messagebox-${i}`} />
+        </React.Fragment>
+      );
+    }
+  }
+
+  return (
+    <React.Fragment>
+      {value.map((v, i) => (
+        <React.Fragment key={`message-wrapper-${i}`}>{v}</React.Fragment>
+      ))}
+    </React.Fragment>
   );
 }
