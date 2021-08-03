@@ -18,6 +18,7 @@ import {
 } from "../../functions";
 import { useCode } from "../../../../../hooks/code";
 import { useDrag } from "../../../../../hooks/drag";
+import { List } from "@material-ui/icons";
 
 export function Tab({
   path,
@@ -198,8 +199,16 @@ export function Tab({
       onDrop={handleDropTab}
       onDragOver={handleDragOverTab}
     >
-      <div className={classes.icon}></div>
-      <div className={classes.text}>{lastPath}</div>
+      {getLanguage(getExtension(path)) !== "default" ? (
+        <span
+          className={
+            classes[getLanguage(getExtension(path.replace("\\", ""))) as any]
+          }
+        ></span>
+      ) : (
+        <List />
+      )}
+      <div className={classes.text}>{lastPath.replace("\\", "")}</div>
       <div className={classes.closeButton} onClick={handleTabClose}>
         <Clear />
       </div>

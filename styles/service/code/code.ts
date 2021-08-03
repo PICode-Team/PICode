@@ -128,7 +128,6 @@ export const sidebarStyle = makeStyles((theme: IThemeStyle) =>
         width: "12px",
         height: "12px",
         marginRight: "4px",
-        backgroundImage: `url('/images/language/typescript.svg')`,
         backgroundSize: "contain",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -144,13 +143,223 @@ export const sidebarStyle = makeStyles((theme: IThemeStyle) =>
         backgroundColor: theme.hover,
       },
     },
-    cpp: {},
-    c: {},
-    typescript: {},
-    javascript: {},
-    go: {},
-    python: {},
-    cs: {},
+    cpp: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_cpp2.svg')`,
+    },
+    c: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_c2.svg')`,
+    },
+    typescript: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_typescript.svg')`,
+    },
+    javascript: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_js.svg')`,
+    },
+    go: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_go.svg')`,
+    },
+    python: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_python.svg')`,
+    },
+    cs: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_csharp.svg')`,
+    },
+    json: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_json.svg')`,
+    },
+    jsx: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_reactjs.svg')`,
+    },
+    tsx: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_reactts.svg')`,
+    },
+    image: {
+      backgroundImage: `url('http')`,
+    },
+    svg: {
+      backgroundImage: `url('http')`,
+    },
+    icon: {
+      backgroundImage: `url('http')`,
+    },
+    tsconfig: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_typescript_official.svg')`,
+    },
+    yaml: {
+      backgroundImage: `url('http')`,
+    },
+    xml: {
+      backgroundImage: `url('http')`,
+    },
+    docker: {
+      backgroundImage: `url('http')`,
+    },
+    jenkins: {
+      backgroundImage: `url('http')`,
+    },
+    vue: {
+      backgroundImage: `url('http')`,
+    },
+    env: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_config.svg')`,
+    },
+    html: {
+      backgroundImage: `url('http')`,
+    },
+    css: {
+      backgroundImage: `url('http')`,
+    },
+    scss: {
+      backgroundImage: `url('http')`,
+    },
+    aspx: {
+      backgroundImage: `url('http')`,
+    },
+    ascx: {
+      backgroundImage: `url('http')`,
+    },
+    asm: {
+      backgroundImage: `url('http')`,
+    },
+    cake: {
+      backgroundImage: `url('http')`,
+    },
+    php: {
+      backgroundImage: `url('http')`,
+    },
+    sql: {
+      backgroundImage: `url('http')`,
+    },
+    h: {
+      backgroundImage: `url('http')`,
+    },
+    hpp: {
+      backgroundImage: `url('http')`,
+    },
+    coffee: {
+      backgroundImage: `url('http')`,
+    },
+    d: {
+      backgroundImage: `url('http')`,
+    },
+    r: {
+      backgroundImage: `url('http')`,
+    },
+    t: {
+      backgroundImage: `url('http')`,
+    },
+    dockerCompose: {
+      backgroundImage: `url('http')`,
+    },
+    ejs: {
+      backgroundImage: `url('http')`,
+    },
+    terraform: {
+      backgroundImage: `url('http')`,
+    },
+    fsproj: {
+      backgroundImage: `url('http')`,
+    },
+    graphQL: {
+      backgroundImage: `url('http')`,
+    },
+    gradle: {
+      backgroundImage: `url('http')`,
+    },
+    gulpfile: {
+      backgroundImage: `url('http')`,
+    },
+    haml: {
+      backgroundImage: `url('http')`,
+    },
+    handlebars: {
+      backgroundImage: `url('http')`,
+    },
+    java: {
+      backgroundImage: `url('http')`,
+    },
+    jar: {
+      backgroundImage: `url('http')`,
+    },
+    jsp: {
+      backgroundImage: `url('http')`,
+    },
+    key: {
+      backgroundImage: `url('http')`,
+    },
+    ls: {
+      backgroundImage: `url('http')`,
+    },
+    liquid: {
+      backgroundImage: `url('http')`,
+    },
+    hxp: {
+      backgroundImage: `url('http')`,
+    },
+    lua: {
+      backgroundImage: `url('http')`,
+    },
+    cr: {
+      backgroundImage: `url('http')`,
+    },
+    ex: {
+      backgroundImage: `url('http')`,
+    },
+    xls: {
+      backgroundImage: `url('http')`,
+    },
+    pp: {
+      backgroundImage: `url('http')`,
+    },
+    docx: {
+      backgroundImage: `url('http')`,
+    },
+    pdf: {
+      backgroundImage: `url('http')`,
+    },
+    re: {
+      backgroundImage: `url('http')`,
+    },
+    res: {
+      backgroundImage: `url('http')`,
+    },
+    ruby: {
+      backgroundImage: `url('http')`,
+    },
+    rust: {
+      backgroundImage: `url('http')`,
+    },
+    sbt: {
+      backgroundImage: `url('http')`,
+    },
+    scala: {
+      backgroundImage: `url('http')`,
+    },
+    fish: {
+      backgroundImage: `url('http')`,
+    },
+    slang: {
+      backgroundImage: `url('http')`,
+    },
+    bash: {
+      backgroundImage: `url('http')`,
+    },
+    solidity: {
+      backgroundImage: `url('http')`,
+    },
+    ai: {
+      backgroundImage: `url('http')`,
+    },
+    readme: {
+      backgroundImage: `url('http')`,
+    },
+    md: {
+      backgroundImage: `url('http')`,
+    },
+    gitignore: {
+      backgroundImage: `url('http')`,
+    },
+
     group: {},
 
     added: {},
@@ -225,8 +434,21 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
       backgroundColor: theme.editor.tab,
       "&:hover": {
         "&>div>svg": {
-          display: "inline-block",
+          visibility: "visible",
         },
+      },
+      "&>span": {
+        width: "16px",
+        height: "16px",
+        marginRight: "4px",
+        backgroundSize: "contain",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      },
+      "&>svg": {
+        width: "16px",
+        height: "16px",
+        marginRight: "4px",
       },
     },
     active: {
@@ -236,18 +458,9 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
         opacity: 0.9,
       },
       "&>div>svg": {
-        display: "block",
+        visibility: "visible",
         opacity: 0.9,
       },
-    },
-    icon: {
-      width: "16px",
-      height: "16px",
-      marginRight: "4px",
-      backgroundImage: `url('/images/language/typescript.svg')`,
-      backgroundSize: "contain",
-      backgroundPosition: "center",
-      backgroundRepeat: "no-repeat",
     },
     text: {
       color: theme.font.low.color,
@@ -261,7 +474,7 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
       zIndex: 999,
       position: "relative",
       "&>svg": {
-        display: "none",
+        visibility: "hidden",
         color: theme.font.high.color,
         opacity: 0.5,
         width: "15px",
@@ -278,6 +491,225 @@ export const tabStyle = makeStyles((theme: IThemeStyle) =>
       "&>div": {
         pointerEvents: "none",
       },
+    },
+
+    default: {},
+
+    cpp: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_cpp2.svg')`,
+    },
+    c: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_c2.svg')`,
+    },
+    typescript: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_typescript.svg')`,
+    },
+    javascript: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_js.svg')`,
+    },
+    go: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_go.svg')`,
+    },
+    python: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_python.svg')`,
+    },
+    cs: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_csharp.svg')`,
+    },
+    json: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_json.svg')`,
+    },
+    jsx: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_reactjs.svg')`,
+    },
+    tsx: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_reactts.svg')`,
+    },
+    image: {
+      backgroundImage: `url('http')`,
+    },
+    svg: {
+      backgroundImage: `url('http')`,
+    },
+    icon: {
+      backgroundImage: `url('http')`,
+    },
+    tsconfig: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_typescript_official.svg')`,
+    },
+    yaml: {
+      backgroundImage: `url('http')`,
+    },
+    xml: {
+      backgroundImage: `url('http')`,
+    },
+    docker: {
+      backgroundImage: `url('http')`,
+    },
+    jenkins: {
+      backgroundImage: `url('http')`,
+    },
+    vue: {
+      backgroundImage: `url('http')`,
+    },
+    env: {
+      backgroundImage: `url('https://github.com/vscode-icons/vscode-icons/raw/master/icons/file_type_config.svg')`,
+    },
+    html: {
+      backgroundImage: `url('http')`,
+    },
+    css: {
+      backgroundImage: `url('http')`,
+    },
+    scss: {
+      backgroundImage: `url('http')`,
+    },
+    aspx: {
+      backgroundImage: `url('http')`,
+    },
+    ascx: {
+      backgroundImage: `url('http')`,
+    },
+    asm: {
+      backgroundImage: `url('http')`,
+    },
+    cake: {
+      backgroundImage: `url('http')`,
+    },
+    php: {
+      backgroundImage: `url('http')`,
+    },
+    sql: {
+      backgroundImage: `url('http')`,
+    },
+    h: {
+      backgroundImage: `url('http')`,
+    },
+    hpp: {
+      backgroundImage: `url('http')`,
+    },
+    coffee: {
+      backgroundImage: `url('http')`,
+    },
+    d: {
+      backgroundImage: `url('http')`,
+    },
+    r: {
+      backgroundImage: `url('http')`,
+    },
+    t: {
+      backgroundImage: `url('http')`,
+    },
+    dockerCompose: {
+      backgroundImage: `url('http')`,
+    },
+    ejs: {
+      backgroundImage: `url('http')`,
+    },
+    terraform: {
+      backgroundImage: `url('http')`,
+    },
+    fsproj: {
+      backgroundImage: `url('http')`,
+    },
+    graphQL: {
+      backgroundImage: `url('http')`,
+    },
+    gradle: {
+      backgroundImage: `url('http')`,
+    },
+    gulpfile: {
+      backgroundImage: `url('http')`,
+    },
+    haml: {
+      backgroundImage: `url('http')`,
+    },
+    handlebars: {
+      backgroundImage: `url('http')`,
+    },
+    java: {
+      backgroundImage: `url('http')`,
+    },
+    jar: {
+      backgroundImage: `url('http')`,
+    },
+    jsp: {
+      backgroundImage: `url('http')`,
+    },
+    key: {
+      backgroundImage: `url('http')`,
+    },
+    ls: {
+      backgroundImage: `url('http')`,
+    },
+    liquid: {
+      backgroundImage: `url('http')`,
+    },
+    hxp: {
+      backgroundImage: `url('http')`,
+    },
+    lua: {
+      backgroundImage: `url('http')`,
+    },
+    cr: {
+      backgroundImage: `url('http')`,
+    },
+    ex: {
+      backgroundImage: `url('http')`,
+    },
+    xls: {
+      backgroundImage: `url('http')`,
+    },
+    pp: {
+      backgroundImage: `url('http')`,
+    },
+    docx: {
+      backgroundImage: `url('http')`,
+    },
+    pdf: {
+      backgroundImage: `url('http')`,
+    },
+    re: {
+      backgroundImage: `url('http')`,
+    },
+    res: {
+      backgroundImage: `url('http')`,
+    },
+    ruby: {
+      backgroundImage: `url('http')`,
+    },
+    rust: {
+      backgroundImage: `url('http')`,
+    },
+    sbt: {
+      backgroundImage: `url('http')`,
+    },
+    scala: {
+      backgroundImage: `url('http')`,
+    },
+    fish: {
+      backgroundImage: `url('http')`,
+    },
+    slang: {
+      backgroundImage: `url('http')`,
+    },
+    bash: {
+      backgroundImage: `url('http')`,
+    },
+    solidity: {
+      backgroundImage: `url('http')`,
+    },
+    ai: {
+      backgroundImage: `url('http')`,
+    },
+    readme: {
+      backgroundImage: `url('http')`,
+    },
+    md: {
+      backgroundImage: `url('http')`,
+    },
+    gitignore: {
+      backgroundImage: `url('http')`,
     },
   })
 );
