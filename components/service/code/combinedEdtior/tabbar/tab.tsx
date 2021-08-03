@@ -103,6 +103,8 @@ export function Tab({
   function handleDropTab(event: React.DragEvent<HTMLElement>) {
     event.preventDefault();
 
+    if (drag.path === "default") return;
+
     if (
       findTabByPathInCode(code.root, codeId, drag.path) ===
       Number(event.currentTarget.id.split("-")[1])
@@ -136,6 +138,7 @@ export function Tab({
               extension: getExtension(drag.path),
               langauge: getLanguage(getExtension(drag.path)),
               tabId: code.tabCount,
+              content: "",
             }
           );
         }
@@ -161,6 +164,7 @@ export function Tab({
           extension: getExtension(drag.path),
           langauge: getLanguage(getExtension(drag.path)),
           tabId: code.tabCount,
+          content: "",
         }
       );
     })();

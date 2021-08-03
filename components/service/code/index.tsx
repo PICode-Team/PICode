@@ -292,6 +292,12 @@ export default function Code(ctx: any): JSX.Element {
               });
               break;
             case "changeCode":
+              const value = getTabInCode(
+                code.root,
+                findCurrentFocus(code.codeOrderStack)
+              );
+
+              if (value !== undefined) getCode(projectName, value.path);
               break;
             case "moveFileOrDir":
             case "createDir":

@@ -59,6 +59,8 @@ export function Tabbar({
     event.preventDefault();
     event.stopPropagation();
 
+    if (drag.path === "default") return;
+
     if (tabList.length === 1 && tabOrderStack[0] === drag.tabId) {
       return;
     }
@@ -79,6 +81,7 @@ export function Tabbar({
             extension: getExtension(drag.path),
             langauge: getLanguage(getExtension(drag.path)),
             tabId: existingTabId,
+            content: "",
           });
         } else {
           return addTab(code.root, codeId, {
@@ -86,6 +89,7 @@ export function Tabbar({
             extension: getExtension(drag.path),
             langauge: getLanguage(getExtension(drag.path)),
             tabId: code.tabCount,
+            content: "",
           });
         }
       }
@@ -97,6 +101,7 @@ export function Tabbar({
           extension: getExtension(drag.path),
           langauge: getLanguage(getExtension(drag.path)),
           tabId: existingTabId,
+          content: "",
         });
       }
       return addTab(tempRoot, codeId, {
@@ -104,6 +109,7 @@ export function Tabbar({
         extension: getExtension(drag.path),
         langauge: getLanguage(getExtension(drag.path)),
         tabId: code.tabCount,
+        content: "",
       });
     })();
 
