@@ -12,7 +12,15 @@ import {
   Close,
 } from "@material-ui/icons";
 import CustomButton from "../../items/input/button";
+import moment from "moment";
 import CustomTextField from "../../items/input/textfield";
+
+function getTime(
+  time: Date | string | undefined = undefined,
+  format: string = "YYYY-MM-DD HH:mm:ss"
+) {
+  return moment(time).format(format);
+}
 
 interface TChat {
   user: string;
@@ -37,6 +45,26 @@ function DayBoundary({ text }: TDayBoundary) {
 
 function MessageBox({ user, message, time }: TChat) {
   const classes = chatStyle();
+  const timeValue = time.split(" ")[1].split(":");
+  const meridiem = Number(timeValue[0]) > 11 ? "PM" : "AM";
+  const hour = (() => {
+    const convertedHour = Number(timeValue[0]);
+
+    if (convertedHour % 12 === 0) {
+      return "12";
+    }
+
+    if (convertedHour < 12) {
+      return timeValue[0];
+    } else {
+      if (convertedHour % 12 < 10) {
+        return `0${convertedHour % 12}`;
+      }
+
+      return `${convertedHour % 12}`;
+    }
+  })();
+  const timeText = `${meridiem} ${hour}:${timeValue[1]} `;
 
   return (
     <div className={classes.messageBox}>
@@ -45,7 +73,7 @@ function MessageBox({ user, message, time }: TChat) {
         <div className={classes.name}>{user}</div>
         <div className={classes.textWrapper}>
           <span className={classes.messageText}>{message}</span>
-          <span className={classes.time}>{time}</span>
+          <span className={classes.time}>{timeText}</span>
         </div>
       </div>
     </div>
@@ -54,6 +82,26 @@ function MessageBox({ user, message, time }: TChat) {
 
 function MessageReverseBox({ message, time }: TChat) {
   const classes = chatStyle();
+  const timeValue = time.split(" ")[1].split(":");
+  const meridiem = Number(timeValue[0]) > 11 ? "PM" : "AM";
+  const hour = (() => {
+    const convertedHour = Number(timeValue[0]);
+
+    if (convertedHour % 12 === 0) {
+      return "12";
+    }
+
+    if (convertedHour < 12) {
+      return timeValue[0];
+    } else {
+      if (convertedHour % 12 < 10) {
+        return `0${convertedHour % 12}`;
+      }
+
+      return `${convertedHour % 12}`;
+    }
+  })();
+  const timeText = `${meridiem} ${hour}:${timeValue[1]} `;
 
   return (
     <div
@@ -65,26 +113,46 @@ function MessageReverseBox({ message, time }: TChat) {
         style={{ display: "flex", flexDirection: "row-reverse" }}
       >
         <div className={classes.messageText}>{message}</div>
-        <span className={classes.time}>{time}</span>
+        <span className={classes.time}>{timeText}</span>
       </div>
     </div>
   );
 }
 
+type TUser = {
+  [key in string]: boolean;
+};
+
 function CreateChannel({
   modal,
+  userId,
   setModal,
   createChannel,
 }: {
   modal: boolean;
+  userId: string;
   setModal: React.Dispatch<React.SetStateAction<boolean>>;
-  createChannel: (chatName: string) => void;
+  createChannel: (
+    chatName: string,
+    description?: string,
+    participant?: string[]
+  ) => void;
 }) {
   const classes = createChannelStyle();
   const [name, setName] = useState<string>("");
   const nameRef = useRef<HTMLInputElement>(null);
   const [description, setDescription] = useState<string>("");
+  const [users, setUsers] = useState<TUser>({});
   const descriptionRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const userList = ["1", "2", "3"].reduce((a: TUser, c: string) => {
+      if (c === userId) return a;
+      return { ...a, [c]: false };
+    }, {});
+
+    // setUsers(userList)
+  }, []);
 
   return (
     <React.Fragment>
@@ -110,27 +178,51 @@ function CreateChannel({
         <div className={classes.modalBody}>
           <input
             type="text"
+            placeholder="Channel Name"
             ref={nameRef}
             value={name}
+            className={classes.input}
             onChange={(event: any) => {
               setName(event.currentTarget.value);
             }}
           />
           <input
             type="text"
+            placeholder="Description"
             ref={descriptionRef}
             value={description}
+            className={classes.input}
             onChange={(event: any) => {
               setDescription(event.currentTarget.value);
             }}
           />
+          <div className={classes.participantWrapper}>
+            {Object.keys(users).map((v, i) => (
+              <div className={classes.participant} key={`checkbox-${i}`}>
+                <input
+                  type="checkbox"
+                  name={v}
+                  id={v}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    setUsers({
+                      ...users,
+                      [event.target.name]: event.target.checked,
+                    });
+                  }}
+                />
+                <label htmlFor={v}>{v}</label>
+              </div>
+            ))}
+          </div>
         </div>
         <div className={classes.modalFooter}>
           <CustomButton
             text="CREATE"
             width="76px"
             onClick={() => {
-              createChannel(name);
+              const participant = Object.keys(users).filter((v) => users[v]);
+
+              createChannel(name, description, participant);
               setName("");
               setDescription("");
               setModal(false);
@@ -156,17 +248,16 @@ export default function Chat(ctx: any) {
   const [target, setTarget] = useState<string>("");
   const [channelList, setChannelList] = useState<string[]>([]);
   const [directList, setDirectList] = useState<string[]>([]);
-  const ws = useRef<WebSocket | null>(null);
   const messageRef = useRef<HTMLInputElement>(null);
 
   function sendMessage(target: string, msg: string) {
-    if (ws.current) {
-      ws.current.send(
+    if (ctx.ws.current) {
+      ctx.ws.current.send(
         JSON.stringify({
           category: "chat",
           type: "sendMessage",
           data: {
-            target: "target",
+            target: target,
             msg: msg,
           },
         })
@@ -188,8 +279,8 @@ export default function Chat(ctx: any) {
   }
 
   function getChat() {
-    if (ws.current) {
-      ws.current.send(
+    if (ctx.ws.current) {
+      ctx.ws.current.send(
         JSON.stringify({
           category: "chat",
           type: "getChat",
@@ -199,8 +290,8 @@ export default function Chat(ctx: any) {
   }
 
   function getChatLog(target: string, page: string) {
-    if (ws.current) {
-      ws.current.send(
+    if (ctx.ws.current) {
+      ctx.ws.current.send(
         JSON.stringify({
           category: "chat",
           type: "getChatLog",
@@ -214,8 +305,8 @@ export default function Chat(ctx: any) {
   }
 
   function getChatLogList(target: string) {
-    if (ws.current) {
-      ws.current.send(
+    if (ctx.ws.current) {
+      ctx.ws.current.send(
         JSON.stringify({
           category: "chat",
           type: "getChatLogList",
@@ -227,15 +318,20 @@ export default function Chat(ctx: any) {
     }
   }
 
-  function createChannel(chatName: string) {
-    if (ws.current) {
-      ws.current.send(
+  function createChannel(
+    chatName: string,
+    description?: string,
+    participant?: string[]
+  ) {
+    if (ctx.ws.current) {
+      ctx.ws.current.send(
         JSON.stringify({
           category: "chat",
           type: "createChannel",
           data: {
-            target: `#${chatName}`,
-            chatName: "???",
+            target: chatName,
+            description: description,
+            chatParticipant: [ctx.session.userId, ...(participant ?? [])],
           },
         })
       );
@@ -243,99 +339,83 @@ export default function Chat(ctx: any) {
   }
 
   useEffect(() => {
+    setMessages([]);
+
     if (target !== "") {
       getChatLogList(target);
     }
   }, [target]);
 
-  // useEffect(() => {
-
-  // }, [])
+  useEffect(() => {}, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const target = document.getElementById("contentBox");
       target?.scrollTo(0, target.clientHeight);
     }
-  }, []);
+  }, [messages]);
 
   useEffect(() => {
-    ws.current = new WebSocket(
-      `ws://127.0.0.1:8000/?userId=${ctx.session.userId}`
-    );
+    if (ctx.ws === null) return;
 
-    if (ws.current) {
-      ws.current!.onopen = (event: any) => {
-        ws.current!.send(
-          JSON.stringify({
-            category: "connect",
-          })
-        );
+    if (ctx.ws.current) {
+      if (channelList.length === 0 && directList.length === 0) getChat();
 
-        getChat();
+      ctx.ws.current.onmessage = (msg: any) => {
+        const message = JSON.parse(msg.data);
+
+        if (message.category === "chat") {
+          switch (message.type) {
+            case "createChannel":
+              getChat();
+              break;
+            case "getChat":
+              const channelList: string[] = [];
+              const directList: string[] = [];
+
+              message.data.forEach((v: any) => {
+                if (v.chatName.slice(0, 1) === "#") {
+                  channelList.push(v.chatName);
+                } else {
+                  directList.push(v.chatName);
+                }
+              });
+
+              setChannelList(channelList);
+              setDirectList(directList);
+              break;
+
+            case "getChatLog":
+              const messageList: TChat[] = [];
+              message.data.forEach((v: any) => {
+                messageList.push({
+                  user: v.sender,
+                  message: v.message,
+                  time: v.time,
+                });
+              });
+              setMessages([...messages, ...messageList]);
+              break;
+            case "getChatLogList":
+              message.data.forEach((v: string) => {
+                getChatLog(target, v);
+              });
+              break;
+            case "sendMessage":
+              setMessages([
+                ...messages,
+                {
+                  user: message.data.sender,
+                  message: message.data.message,
+                  time: getTime(),
+                },
+              ]);
+              break;
+          }
+        }
       };
     }
-
-    ws.current.onmessage = (msg) => {
-      const message = JSON.parse(msg.data);
-
-      if (message.category === "chat") {
-        switch (message.type) {
-          case "createChannel":
-            getChat();
-            break;
-          case "getChat":
-            const channelList: string[] = [];
-            const directList: string[] = [];
-
-            message.data.forEach((v: any) => {
-              if (v.chatName.slice(0, 1) === "#") {
-                channelList.push(v.chatName);
-              } else {
-                directList.push(v.chatName);
-              }
-            });
-
-            setChannelList(channelList);
-            setDirectList(directList);
-            break;
-
-          case "getChatLog":
-            const messageList: TChat[] = [];
-            message.data.forEach((v: any) => {
-              messageList.push({
-                user: v.data.sender,
-                message: v.data.message,
-                time: "",
-              });
-            });
-            // setMessages([...messages, ...messageList]);
-            break;
-          case "getChatLogList":
-            message.data.forEach((v: string) => {
-              // getChatLog(target, v);
-            });
-            break;
-          case "sendMessage":
-            setMessages([
-              ...messages,
-              {
-                user: message.data.sender,
-                message: message.data.message,
-                time: "",
-              },
-            ]);
-            break;
-        }
-      }
-    };
-
-    return () => {
-      if (ws.current) {
-        ws.current.close();
-      }
-    };
-  }, []);
+  }, [ctx.ws.current, messages]);
 
   useEffect(() => {
     document.addEventListener("keypress", enterEvent);
@@ -458,9 +538,9 @@ export default function Chat(ctx: any) {
           <div className={classes.contentBox} id="contentBox">
             <div className={classes.content}>
               {messages.map((v, i) => {
-                if (v.time === "~~") {
-                  return <DayBoundary text={v.time} key={`dayboundary-${i}`} />;
-                }
+                // if (v.time === "~~") {
+                //   return <DayBoundary text={v.time} key={`dayboundary-${i}`} />;
+                // }
                 if (v.user === ctx.session.userId) {
                   return <MessageReverseBox {...v} key={`messagebox-${i}`} />;
                 } else {
@@ -492,6 +572,7 @@ export default function Chat(ctx: any) {
       )}
       <CreateChannel
         modal={modal}
+        userId={ctx.session.userId}
         setModal={setModal}
         createChannel={createChannel}
       />
