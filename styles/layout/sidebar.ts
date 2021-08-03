@@ -14,7 +14,6 @@ export const sidebarStyle = makeStyles((theme: IThemeStyle) =>
     sideBar: {
       width: "200px",
       height: "calc(100% - 64px)",
-      transition: "width ease-in 0.4s",
     },
     toggle: {
       width: "64px",
@@ -48,7 +47,6 @@ export const rowStyle = makeStyles((theme: IThemeStyle) =>
       cursor: "pointer",
       fontSize: theme.font.low.size,
       color: theme.font.medium.color,
-      transition: "width ease-in 0.4s",
       "&>svg": {
         position: "absolute",
         left: 20,
