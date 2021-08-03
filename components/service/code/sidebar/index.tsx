@@ -1,7 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { AddCircleRounded, ArrowForwardIos, List } from "@material-ui/icons";
 import React, { useEffect, useRef, useState } from "react";
 import { TDragState } from "../../../../modules/drag";
 import { sidebarStyle } from "../../../../styles/service/code/code";
+import WebAssetIcon from '@material-ui/icons/WebAsset';
 import {
   addCode,
   addCreateInput,
@@ -18,6 +20,7 @@ import {
   reorderTab,
 } from "../functions";
 import { TEditorRoot } from "../types";
+import { IconButton } from "@material-ui/core";
 
 interface TFile {
   path: string;
@@ -362,9 +365,13 @@ export function Sidebar({
   functions,
   code,
   drag,
+  open,
+  setOpen
 }: {
   fileStructure: TFile;
   projectName: string;
+  open: number;
+  setOpen: React.Dispatch<React.SetStateAction<number>>;
   code: TEditorRoot;
   drag: TDragState;
   functions: {
@@ -562,6 +569,14 @@ export function Sidebar({
       >
         <ArrowForwardIos />
         {projectName}
+        <IconButton onClick={(e) => {
+          e.stopPropagation()
+          setOpen(open + 1)
+        }} style={{
+          position: "absolute", right: 0, padding: "0px", transform: "rotate(-90deg)",
+        }}>
+          <WebAssetIcon style={{ width: "20px", height: "20px" }} />
+        </IconButton>
       </div>
       <div
         className={classes.fileWrapper}

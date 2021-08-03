@@ -162,6 +162,7 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
         },
         fileRow: {
             display: "flex",
+            position: "relative",
             lineHeight: "30px",
             height: "30px",
             cursor: "pointer",
@@ -173,6 +174,17 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
         fileEdit: {
             height: "22px",
             width: "100%",
+            position: "relative",
+        },
+        buttonColor: {
+            color: theme.font.low.color,
+        },
+        iconButton: {
+            position: "absolute",
+            right: 0,
+            padding: 0,
+            height: "30px",
+            paddingRight: "12px",
         },
     })
 );

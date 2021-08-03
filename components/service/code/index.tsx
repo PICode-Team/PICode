@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from "react";
 import { codeStyle } from "../../../styles/service/code/code";
 import { Sidebar } from "./sidebar";
@@ -15,6 +16,8 @@ import {
   insertCodeContent,
   reorderFileStructure,
 } from "./functions";
+import TerminalContent from "./terminal";
+import { debounce } from "lodash";
 
 function buildCodeLayout(
   codeList: TCode[],
@@ -152,7 +155,10 @@ export default function Code(ctx: any): JSX.Element {
     path: "none",
     children: undefined,
   });
+  const [height, setHeight] = useState<number>(300);
   const [projectName, setProjectName] = useState<string>("");
+  const [openTerminalCount, setOpenTerminalCount] = useState<number>(0);
+
   function loadProject(projectName: string) {
     if (ctx.ws.current && ctx.ws.current.readyState === WebSocket.OPEN) {
       ctx.ws.current.send(
@@ -390,6 +396,8 @@ export default function Code(ctx: any): JSX.Element {
         fileStructure={fileStructure}
         projectName={projectName}
         code={code}
+        open={openTerminalCount}
+        setOpen={setOpenTerminalCount}
         drag={drag}
         functions={{
           moveFileOrDir: moveFileOrDir,
@@ -403,13 +411,22 @@ export default function Code(ctx: any): JSX.Element {
         }}
       />
       <div className={classes.content} id="content">
-        <EditorWrapper
-          codeRoot={codeRoot}
+        <div style={{ width: "100%", height: openTerminalCount > 0 ? `calc(100% - ${height}px)` : "100%" }}>
+          <EditorWrapper
+            codeRoot={codeRoot}
+            projectName={projectName}
+            getCode={getCode}
+            changeCode={changeCode}
+          />
+        </div>
+        {openTerminalCount > 0 && <TerminalContent
+          setOpenContent={setOpenTerminalCount}
+          terminalCount={openTerminalCount}
+          height={height}
+          setHeight={setHeight}
           projectName={projectName}
-          getCode={getCode}
-          changeCode={changeCode}
-        />
+          ctx={ctx} />}
       </div>
-    </div>
+    </div >
   );
 }

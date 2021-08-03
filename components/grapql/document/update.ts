@@ -9,16 +9,18 @@ interface INoteContent {
 
 export default function QueryUpdate(
     documentId: string,
+    path: string,
     content: INoteContent[]
 ) {
     let UPDATEQUERY = gql`
         mutation {
             updateDocument(
                 documentId: "${documentId}"
+                path:"${path}"
                 content: "${content}"
             )
         }
     `;
 
-    const [updateData] = useMutation(UPDATEQUERY);
+    return UPDATEQUERY;
 }
