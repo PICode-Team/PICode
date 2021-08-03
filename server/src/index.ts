@@ -8,67 +8,71 @@ import next from "next";
 import envConfig from "./config/env";
 import expressWs from "express-ws";
 import { webSocketInit } from "./module/socket/socket";
-import DataChatManager from "./module/data/chatManager";
+import cluster from "cluster";
+import DataTerminalManager from "./module/data/terminalManager";
 
 async function main() {
-  const dev = envConfig.NODE_ENV !== "production";
-  const onlyServer = (envConfig.MODE ?? "full") === "server";
-  const PORT = envConfig.PORT ?? 4000;
+    const dev = envConfig.NODE_ENV !== "production";
+    const onlyServer = (envConfig.MODE ?? "full") === "server";
+    const PORT = envConfig.PORT ?? 4000;
 
-  const server = express();
-  server.set("trust proxy", 1);
+    const server = express();
+    server.set("trust proxy", 1);
 
-  server.use(setting);
-  server.use(logging);
-  server.use("/api", route);
-  server.use("/api/temp", express.static("./static"));
-  graphQLServer.applyMiddleware({
-    app: server,
-    path: "/graphql",
-    cors: false,
-  });
-
-  webSocketInit(expressWs(server).app);
-
-  if (!onlyServer) {
-    const app = next({ dev });
-    const handle = app.getRequestHandler();
-
-    await app.prepare();
-
-    server.get("*", (req, res) => {
-      return handle(req, res);
+    server.use(setting);
+    server.use(logging);
+    server.use("/api", route);
+    server.use("/api/temp", express.static("./static"));
+    graphQLServer.applyMiddleware({
+        app: server,
+        path: "/graphql",
+        cors: false,
     });
-  }
 
-  server.listen(PORT, () => {
-    DataChatManager.run();
-    console.log(
-      `██████╗░██╗  ░█████╗░░█████╗░██████╗░███████╗  ░██████╗███████╗██████╗░██╗░░░██╗███████╗██████╗░`
-    );
-    console.log(
-      `██╔══██╗██║  ██╔══██╗██╔══██╗██╔══██╗██╔════╝  ██╔════╝██╔════╝██╔══██╗██║░░░██║██╔════╝██╔══██╗`
-    );
-    console.log(
-      `██████╔╝██║  ██║░░╚═╝██║░░██║██║░░██║█████╗░░  ╚█████╗░█████╗░░██████╔╝╚██╗░██╔╝█████╗░░██████╔╝`
-    );
-    console.log(
-      `██╔═══╝░██║  ██║░░██╗██║░░██║██║░░██║██╔══╝░░  ░╚═══██╗██╔══╝░░██╔══██╗░╚████╔╝░██╔══╝░░██╔══██╗`
-    );
-    console.log(
-      `██║░░░░░██║  ╚█████╔╝╚█████╔╝██████╔╝███████╗  ██████╔╝███████╗██║░░██║░░╚██╔╝░░███████╗██║░░██║`
-    );
-    console.log(
-      `╚═╝░░░░░╚═╝  ░╚════╝░░╚════╝░╚═════╝░╚══════╝  ╚═════╝░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░╚══════╝╚═╝░░╚═╝`
-    );
-    log.info(`Start PICode server - 0.0.0.0:${PORT}`);
-  });
+    webSocketInit(expressWs(server).app);
+
+    if (!onlyServer) {
+        const app = next({ dev });
+        const handle = app.getRequestHandler();
+
+        await app.prepare();
+
+        server.get("*", (req, res) => {
+            return handle(req, res);
+        });
+    }
+
+    server.listen(PORT, () => {
+        console.log(
+            `██████╗░██╗  ░█████╗░░█████╗░██████╗░███████╗  ░██████╗███████╗██████╗░██╗░░░██╗███████╗██████╗░`
+        );
+        console.log(
+            `██╔══██╗██║  ██╔══██╗██╔══██╗██╔══██╗██╔════╝  ██╔════╝██╔════╝██╔══██╗██║░░░██║██╔════╝██╔══██╗`
+        );
+        console.log(
+            `██████╔╝██║  ██║░░╚═╝██║░░██║██║░░██║█████╗░░  ╚█████╗░█████╗░░██████╔╝╚██╗░██╔╝█████╗░░██████╔╝`
+        );
+        console.log(
+            `██╔═══╝░██║  ██║░░██╗██║░░██║██║░░██║██╔══╝░░  ░╚═══██╗██╔══╝░░██╔══██╗░╚████╔╝░██╔══╝░░██╔══██╗`
+        );
+        console.log(
+            `██║░░░░░██║  ╚█████╔╝╚█████╔╝██████╔╝███████╗  ██████╔╝███████╗██║░░██║░░╚██╔╝░░███████╗██║░░██║`
+        );
+        console.log(
+            `╚═╝░░░░░╚═╝  ░╚════╝░░╚════╝░╚═════╝░╚══════╝  ╚═════╝░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░╚══════╝╚═╝░░╚═╝`
+        );
+        log.info(`Start PICode server - 0.0.0.0:${PORT}`);
+    });
 }
 
-main();
+if (cluster.isMaster) {
+    main();
+} else if (cluster.isWorker) {
+    DataTerminalManager.setUpTerminal();
+}
 
 process.on("SIGINT", () => {
-  console.log();
-  log.info(`Quit PICode Sever`);
-  process.exit();
+    console.log();
+    log.info(`Quit PICode Sever`);
+    process.exit();
 });
