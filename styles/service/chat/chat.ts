@@ -397,12 +397,13 @@ export const createChannelStyle = makeStyles((theme: IThemeStyle) =>
     input: {
       backgroundColor: "#3b4a4f",
       color: "#ffffff",
-      width: "240px",
+      width: "100%",
       outline: "none",
       border: "none",
-      height: "30px",
+      height: "40px",
       marginBottom: "12px",
       padding: "8px",
+      fontSize: "15px",
     },
     participantWrapper: {},
     participant: {

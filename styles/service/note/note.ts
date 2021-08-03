@@ -166,9 +166,18 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
       height: "30px",
       cursor: "pointer",
       alignItems: "center",
+      justifyContent: "space-between",
+      paddingRight: "16px",
       "&:hover": {
         color: theme.font.low.color,
-        background: theme.backgroundColor.step4,
+        background: theme.hover,
+        "&>button>svg": {
+          opacity: 1,
+        },
+      },
+      "&>svg": {
+        width: "19px",
+        height: "19px",
       },
     },
     fileEdit: {
@@ -179,8 +188,15 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
     delete: {
       background: "none",
       border: "none",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
       "&>svg": {
         color: "#EDEDED",
+        width: "19px",
+        height: "19px",
+        opacity: 0,
       },
     },
   })

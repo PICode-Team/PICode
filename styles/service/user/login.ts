@@ -61,3 +61,84 @@ export const loginStyle = makeStyles((theme: IThemeStyle) =>
     },
   })
 );
+
+export const newLoginStyle = makeStyles((theme: IThemeStyle) =>
+  createStyles({
+    login: {
+      width: "100%",
+      height: "100%",
+      backgroundColor: theme.backgroundColor.step0,
+    },
+    container: {
+      maxWidth: "450px",
+      width: "100%",
+      height: "100%",
+      margin: "0 auto",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    wrapper: {
+      width: "100%",
+      padding: "45px",
+      backgroundColor: theme.backgroundColor.step1,
+      borderRadius: "4px",
+    },
+    title: {
+      color: theme.font.high.color,
+      fontSize: "32px",
+      textAlign: "center",
+      marginBottom: "26px",
+      fontWeight: "bold",
+    },
+    input: {
+      marginBottom: "20px",
+      "&>input": {
+        width: "100%",
+        height: "40px",
+        backgroundColor: theme.backgroundColor.step2,
+        color: theme.font.high.color,
+        border: "none",
+        outline: "none",
+        borderRadius: "3px",
+        padding: "0px 12px",
+        fontSize: "15px",
+      },
+    },
+    button: {
+      width: "100%",
+      marginBottom: "20px",
+      "&>button": {
+        width: "100%",
+        height: "40px",
+        backgroundColor: theme.backgroundColor.step3,
+        color: theme.font.high.color,
+        border: "none",
+        outline: "none",
+        fontSize: "15px",
+        cursor: "pointer",
+        borderRadius: "3px",
+        transition: "ease-in 0.2s background-color",
+        "&:hover": {
+          backgroundColor: theme.backgroundColor.step4,
+        },
+      },
+    },
+    a: {
+      textAlign: "center",
+      fontSize: theme.font.small.size,
+      width: "100%",
+      color: theme.font.high.color,
+      marginBottom: "1px",
+      "&:hover": {
+        textDecoration: "underline",
+      },
+    },
+
+    themeChangeButton: {
+      position: "absolute",
+      right: "20px",
+      top: "20px",
+    },
+  })
+);

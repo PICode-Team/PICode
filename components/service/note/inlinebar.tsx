@@ -143,7 +143,6 @@ export default function TestNote(ctx: any) {
             {v.isFolder ? (
               <ExpandMoreRoundedIcon
                 style={{
-                  height: "30px",
                   transition: "all 0.3s",
                   transform: `${
                     v.open === undefined || !v.open
@@ -153,7 +152,7 @@ export default function TestNote(ctx: any) {
                 }}
               />
             ) : (
-              <DescriptionIcon style={{ height: "30px" }} />
+              <DescriptionIcon />
             )}
             <div style={{ display: "flex", lineHeight: "30px" }}>{v.title}</div>
             <button
