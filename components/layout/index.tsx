@@ -84,7 +84,8 @@ export function Layout(ctx: any) {
       if (
         ctx.path === "/code" ||
         ctx.path === "/note" ||
-        ctx.path === "/chat"
+        ctx.path === "/chat" ||
+        ctx.path === "/"
       ) {
         setUserMouse({
           x: e.clientX,
@@ -109,7 +110,8 @@ export function Layout(ctx: any) {
       if (
         ctx.path === "/code" ||
         ctx.path === "/note" ||
-        ctx.path === "/chat"
+        ctx.path === "/chat" ||
+        ctx.path === "/"
       ) {
         payload.userMouse = userMouse;
       }
@@ -143,7 +145,12 @@ export function Layout(ctx: any) {
           path={ctx.path}
         />
       )}
-      <Messenger />
+      <Messenger
+        ws={
+          ws.current !== null && ws.current!.readyState === WebSocket.OPEN && ws
+        }
+        userId={ctx.session.userId}
+      />
     </div>
   );
 }
