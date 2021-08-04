@@ -15,6 +15,8 @@ import QueryCreate from "../../grapql/document/create";
 import QueryDelete from "../../grapql/document/delete";
 import QueryUpdate from "../../grapql/document/update";
 import { Delete } from "@material-ui/icons";
+import NoteContext from "./context";
+import NoteSidebar from "./sidebar";
 
 export interface INoteContent {
     text: string;
@@ -29,7 +31,7 @@ interface IPosition {
     target: number;
 }
 
-interface IFileView {
+export interface IFileView {
     title: string;
     createTime: string;
     type?: string[];
@@ -58,9 +60,12 @@ export default function TestNote(ctx: any) {
     const [dragEnd, setDragEnd] = React.useState<boolean>(false);
     const [fileView, setFileView] = React.useState<IFileView[]>();
     const [selectFile, setSelectFile] = React.useState<IFileView>();
-    const [selectFolder, setSelectFolder] = React.useState<string[]>([]);
     const [addFile, setAddFile] = React.useState<boolean>(false);
     const [tmpFileName, setTmpFileName] = React.useState<string>("");
+    const [openContext, setOpenContext] = React.useState<boolean>(false);
+    const [contextPosition, setConextPosition] = React.useState<{ x: number, y: number, target: string, path: string }>({
+        x: 0, y: 0, target: "", path: ""
+    });
 
     let tmpPosition: any = [];
 
@@ -126,100 +131,6 @@ export default function TestNote(ctx: any) {
             });
     }, []);
 
-    const findNode = (data: IFileView[] | undefined, title: string) => {
-        if (data === undefined) return;
-        for (let i in data) {
-            if (data[i].title === title) {
-                if (data[i].open) {
-                    data[i].open = false;
-                } else {
-                    data[i].open = true;
-                }
-                break;
-            } else {
-                if (data[i].children !== undefined) {
-                    findNode(data[i].children, title);
-                }
-            }
-        }
-    };
-
-    const makeFileView: any = (data: IFileView[], num: number) => {
-        return data.map((v: IFileView, idx: number) => {
-            let dividePath = v.path.split("/")
-            let name = dividePath[dividePath.length - 1]
-            return (
-                <>
-                    <div
-                        className={classes.fileRow}
-                        key={idx}
-                        style={{ paddingLeft: `${16 * num}px` }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            if (v.isFolder) {
-                                let tmpFolderView = cloneDeep(fileView);
-                                findNode(tmpFolderView, v.title);
-                                setFileView(tmpFolderView);
-                            } else {
-                                let tmpFile = {
-                                    title: name,
-                                    creator: v.creator,
-                                    createTime: v.createTime,
-                                    documentId: v.documentId,
-                                    path: v.path
-                                }
-                                setSelectFile(tmpFile);
-                                if (v.content) {
-                                    let tmpTest = [{ text: v.content }];
-                                    setTest(tmpTest);
-                                } else {
-                                    setTest([]);
-                                }
-                            }
-                        }}
-                    >
-                        {v.isFolder ? (
-                            <ExpandMoreRoundedIcon
-                                style={{
-                                    height: "30px",
-                                    transition: "all 0.3s",
-                                    transform: `${v.open === undefined || !v.open
-                                        ? "rotate(-90deg)"
-                                        : "rotate(0deg)"
-                                        }`,
-                                }}
-                            />
-                        ) : (
-                            <DescriptionIcon style={{ height: "30px" }} />
-                        )}
-                        <div style={{ display: "flex", lineHeight: "30px" }}>{name}</div>
-                        <IconButton
-                            style={{ position: "absolute", right: 0, padding: 0, height: "30px", paddingRight: "12px" }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                client.mutate({
-                                    mutation: QueryDelete(v.documentId),
-                                });
-                                client
-                                    .query({
-                                        query: GetQuery(),
-                                        fetchPolicy: "network-only",
-                                    })
-                                    .then((res) => {
-                                        setFileView(res.data.getDocument);
-                                    });
-                            }}>
-                            <Delete className={classes.buttonColor} />
-                        </IconButton>
-                    </div>
-                    {v.open &&
-                        v.children !== undefined &&
-                        makeFileView(v.children, num + 1)}
-                </>
-            );
-        });
-    };
-
     useEffect(() => {
         if (tmpFileName === "") return;
         if (fileView === undefined) return;
@@ -235,7 +146,7 @@ export default function TestNote(ctx: any) {
     }, [fileView]);
 
     return (
-        <div className={classes.root}>
+        <div className={classes.root} onClick={() => setOpenContext(false)}>
             <div className={classes.fileView}>
                 <div className={classes.fileEdit}>
                     <IconButton style={{ position: "absolute", right: 0, padding: 0, paddingRight: "12px" }} onClick={() => {
@@ -244,54 +155,17 @@ export default function TestNote(ctx: any) {
                         <AddIcon className={classes.buttonColor} />
                     </IconButton>
                 </div>
-                {fileView && makeFileView(fileView, 1)}
-                {addFile && <div className={classes.fileRow} style={{ paddingLeft: "16px" }}>
-                    <input placeholder={"untitled"}
-                        autoFocus
-                        onBlur={(e) => {
-                            setAddFile(false)
-                            if (e.target.value === "") return;
-                            setTmpFileName(e.target.value)
-                            client.mutate({
-                                mutation: QueryCreate(`/${e.target.value}`, ctx.session.userName, ""),
-                            });
-                            client
-                                .query({
-                                    query: GetQuery(),
-                                    fetchPolicy: "network-only",
-                                })
-                                .then((res) => {
-                                    setFileView(res.data.getDocument);
-                                });
-                        }}
-                        onKeyDown={(e: any) => {
-                            if (e.code === "Enter") {
-                                setAddFile(false);
-                                setTmpFileName(e.target.value)
-                                client.mutate({
-                                    mutation: QueryCreate(`/${e.target.value}`, ctx.session.userName, ""),
-                                });
-                                client
-                                    .query({
-                                        query: GetQuery(),
-                                        fetchPolicy: "network-only",
-                                    })
-                                    .then((res) => {
-                                        setFileView(res.data.getDocument);
-                                    });
-
-                            }
-                        }}
-                    />
-                    <IconButton
-                        style={{ position: "absolute", right: 0, padding: 0, height: "30px", paddingRight: "12px" }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setAddFile(false)
-                        }}>
-                        <Delete className={classes.buttonColor} />
-                    </IconButton>
-                </div>}
+                {fileView && <NoteSidebar
+                    fileView={fileView}
+                    setFileView={setFileView}
+                    classes={classes}
+                    setTest={setTest}
+                    setAddFile={setAddFile}
+                    addFile={addFile}
+                    setSelectFile={setSelectFile}
+                    setOpenContext={setOpenContext}
+                    setContextPosition={setConextPosition}
+                />}
             </div>
             {selectFile !== undefined && (
                 <div id="writeSomeThing" className={classes.content}>
@@ -612,6 +486,14 @@ export default function TestNote(ctx: any) {
                     </div>
                 </div>
             )}
+            {openContext && <NoteContext
+                classes={classes}
+                contextPosition={contextPosition}
+                client={client}
+                setOpenContext={setOpenContext}
+                setFileView={setFileView}
+                setSelectFile={setSelectFile}
+            />}
         </div>
     );
 }

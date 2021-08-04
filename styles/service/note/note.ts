@@ -186,5 +186,27 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
             height: "30px",
             paddingRight: "12px",
         },
+        contextWrapper: {
+            position: "absolute",
+            width: "150px",
+            height: "200px",
+            background: theme.backgroundColor.step3,
+            color: theme.font.high.color,
+            padding: "10px 0px",
+            boxShadow: "2px 1px 10px 2px rgba(0, 0, 0, 0.2)",
+        },
+        contextRow: {
+            width: "100%",
+            height: "26px",
+            padding: "3px 10px",
+            lineHeight: "20px",
+            fontSize: "14px",
+            display: "flex",
+            justifyContent: "space-between",
+            cursor: "pointer",
+            "&:hover": {
+                background: theme.backgroundColor.step4,
+            },
+        },
     })
 );
