@@ -333,6 +333,48 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       justifyContent: "center",
       backgroundColor: theme.backgroundColor.step0,
     },
+
+    newMessage: {
+      color: theme.font.high.color,
+      width: "calc(100% - 292px)",
+      height: "30px",
+      position: "absolute",
+      top: "0px",
+      display: "flex",
+      alignItems: "center",
+      pointerEvents: "none",
+      justifyContent: "center",
+      "&>div": {
+        backgroundColor: theme.backgroundColor.step1,
+        width: "130px",
+        height: "30px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: "15px",
+        cursor: "pointer",
+        opacity: 0,
+        pointerEvents: "none",
+        transition: "ease-in 0.4s opacity",
+        "&:after": {
+          content: "''",
+          position: "absolute",
+          top: "100%",
+          left: "50%",
+          marginLeft: "-6px",
+          marginBottom: "-6px",
+          border: "6px solid transparent",
+          borderTopColor: theme.backgroundColor.step1,
+        },
+      },
+    },
+    visible: {
+      pointerEvents: "auto !important" as any,
+      "&>div": {
+        opacity: "1 !important",
+        pointerEvents: "auto !important" as any,
+      },
+    },
   })
 );
 
@@ -397,12 +439,13 @@ export const createChannelStyle = makeStyles((theme: IThemeStyle) =>
     input: {
       backgroundColor: "#3b4a4f",
       color: "#ffffff",
-      width: "240px",
+      width: "100%",
       outline: "none",
       border: "none",
-      height: "30px",
+      height: "40px",
       marginBottom: "12px",
       padding: "8px",
+      fontSize: "15px",
     },
     participantWrapper: {},
     participant: {

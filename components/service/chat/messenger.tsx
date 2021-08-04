@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { messengerStyle } from "../../../styles/service/chat/messenger";
 import {
   ChatBubbleOutline,
@@ -10,26 +10,67 @@ import {
   AttachFile,
   FilterNone,
 } from "@material-ui/icons";
+import moment from "moment";
 
-function KMessageBox({ sender, text, time }: TMessage) {
+function KMessageBox({ user, message, time }: TChat) {
   const classes = messengerStyle();
+  const timeValue = time.split(" ")[1].split(":");
+  const meridiem = Number(timeValue[0]) > 11 ? "PM" : "AM";
+  const hour = (() => {
+    const convertedHour = Number(timeValue[0]);
+
+    if (convertedHour % 12 === 0) {
+      return "12";
+    }
+
+    if (convertedHour < 12) {
+      return timeValue[0];
+    } else {
+      if (convertedHour % 12 < 10) {
+        return `0${convertedHour % 12}`;
+      }
+
+      return `${convertedHour % 12}`;
+    }
+  })();
+  const timeText = `${meridiem} ${hour}:${timeValue[1]} `;
 
   return (
     <div className={classes.messageBox}>
       <div className={classes.user}></div>
       <div>
-        <div className={classes.userName}>{sender}</div>
+        <div className={classes.userName}>{user}</div>
         <div className={classes.textWrapper}>
-          <span className={classes.messageText}>{text}</span>
-          <span className={classes.time}>{time}</span>
+          <span className={classes.messageText}>{message}</span>
+          <span className={classes.time}>{timeText}</span>
         </div>
       </div>
     </div>
   );
 }
 
-function KMessageReverseBox({ text, time }: TMessage) {
+function KMessageReverseBox({ message, time }: TChat) {
   const classes = messengerStyle();
+  const timeValue = time.split(" ")[1].split(":");
+  const meridiem = Number(timeValue[0]) > 11 ? "PM" : "AM";
+  const hour = (() => {
+    const convertedHour = Number(timeValue[0]);
+
+    if (convertedHour % 12 === 0) {
+      return "12";
+    }
+
+    if (convertedHour < 12) {
+      return timeValue[0];
+    } else {
+      if (convertedHour % 12 < 10) {
+        return `0${convertedHour % 12}`;
+      }
+
+      return `${convertedHour % 12}`;
+    }
+  })();
+  const timeText = `${meridiem} ${hour}:${timeValue[1]} `;
 
   return (
     <div
@@ -40,8 +81,8 @@ function KMessageReverseBox({ text, time }: TMessage) {
         className={classes.textWrapper}
         style={{ display: "flex", flexDirection: "row-reverse" }}
       >
-        <div className={classes.messageText}>{text}</div>
-        <span className={classes.time}>{time}</span>
+        <div className={classes.messageText}>{message}</div>
+        <span className={classes.time}>{timeText}</span>
       </div>
     </div>
   );
@@ -53,27 +94,15 @@ interface TRoom {
 
 function Home({
   setOpen,
-  setRoom,
+  setTarget,
+  targetList,
+  classes,
 }: {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setRoom: React.Dispatch<React.SetStateAction<string>>;
+  setTarget: React.Dispatch<React.SetStateAction<string>>;
+  targetList: string[];
+  classes: any;
 }) {
-  const classes = messengerStyle();
-  const [roomList, setRoomList] = useState<TRoom[]>([]);
-
-  useEffect(() => {
-    setRoomList([
-      { room: "1" },
-      { room: "2" },
-      { room: "3" },
-      { room: "4" },
-      { room: "5" },
-      { room: "6" },
-      { room: "7" },
-      { room: "8" },
-    ]);
-  }, []);
-
   return (
     <div className={classes.messenger}>
       <div className={classes.wrapper}>
@@ -103,8 +132,13 @@ function Home({
           </div>
         </div>
         <div className={classes.homeBody}>
-          {roomList.map((v, i) => (
-            <Row key={`messenger-row-${i}`} room={v.room} setRoom={setRoom} />
+          {targetList.map((v, i) => (
+            <Row
+              key={`messenger-row-${i}`}
+              target={v}
+              setTarget={setTarget}
+              classes={classes}
+            />
           ))}
         </div>
         <div className={classes.homeFooter}></div>
@@ -113,13 +147,13 @@ function Home({
   );
 }
 
-function DayBoundary({ time }: { time: string }) {
+function DayBoundary({ text }: { text: string }) {
   const classes = messengerStyle();
 
   return (
     <div className={classes.timeWrapper}>
       <div className={classes.dayBoundary}></div>
-      <div className={classes.timeTicket}>어제</div>
+      <div className={classes.timeTicket}>{text}</div>
     </div>
   );
 }
@@ -131,80 +165,51 @@ interface TMessage {
 }
 
 function Room({
-  room,
   setOpen,
-  setRoom,
+  sendMessage,
+  target,
+  messages,
+  newMessage,
+  classes,
+  setTarget,
+  userId,
 }: {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  room: string;
-  setRoom: React.Dispatch<React.SetStateAction<string>>;
+  sendMessage: (target: string, msg: string) => void;
+  target: string;
+  messages: TChat[];
+  newMessage: boolean;
+  classes: any;
+  setTarget: React.Dispatch<React.SetStateAction<string>>;
+  userId: string;
 }) {
-  const classes = messengerStyle();
   const [messageList, setMessageList] = useState<TMessage[]>([]);
+  const messageRef = useRef<HTMLInputElement>(null);
+  const endRef = useRef<HTMLInputElement>(null);
+
+  function enterEvent(event: KeyboardEvent) {
+    if (event.key === "Enter") {
+      if (
+        messageRef.current &&
+        target !== "" &&
+        messageRef.current.value !== ""
+      ) {
+        sendMessage(target, messageRef.current.value);
+        messageRef.current.value = "";
+        endRef.current!.scrollIntoView();
+      }
+    }
+  }
 
   useEffect(() => {
-    setMessageList([
-      {
-        sender: "me",
-        text: "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc",
-        time: "AM 11:51",
-      },
-      {
-        sender: "test",
-        text: "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc",
-        time: "AM 11:51",
-      },
-      {
-        sender: "me",
-        text: "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc",
-        time: "AM 11:51",
-      },
-      {
-        sender: "test",
-        text: "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc",
-        time: "AM 11:51",
-      },
-      {
-        sender: "me",
-        text: "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc",
-        time: "AM 11:51",
-      },
-      {
-        sender: "test",
-        text: "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc",
-        time: "AM 11:51",
-      },
-      {
-        sender: "me",
-        text: "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc",
-        time: "AM 11:51",
-      },
-      {
-        sender: "test",
-        text: "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc",
-        time: "AM 11:51",
-      },
-      {
-        sender: "me",
-        text: "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc",
-        time: "AM 11:51",
-      },
-      {
-        sender: "test",
-        text: "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc",
-        time: "AM 11:51",
-      },
-      {
-        sender: "me",
-        text: "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc",
-        time: "AM 11:51",
-      },
-      {
-        sender: "test",
-        text: "gna. Sed consequat, leo eget bibendum sodales, augue velit cursusnunc",
-        time: "AM 11:51",
-      },
-    ]);
+    document.addEventListener("keypress", enterEvent);
+    return () => {
+      document.removeEventListener("keypress", enterEvent);
+    };
+  }, [target]);
+
+  useEffect(() => {
+    setMessageList([]);
   }, []);
 
   return (
@@ -214,18 +219,23 @@ function Room({
           <div
             className={classes.back}
             onClick={() => {
-              setRoom("");
+              setTarget("");
             }}
           >
             <NavigateBefore />
           </div>
           <div className={classes.opponent}>
-            <div className={classes.name}>{room}</div>
+            <div className={classes.name}>{target}</div>
             <div className={classes.online}>
               <FiberManualRecord /> 현재 활동중
             </div>
           </div>
-          <div className={classes.expand}>
+          <div
+            className={classes.expand}
+            onClick={() => {
+              window.location.href = "/chat";
+            }}
+          >
             <FilterNone />
           </div>
           <div
@@ -239,16 +249,8 @@ function Room({
         </div>
         <div className={classes.body}>
           <div className={classes.content}>
-            {messageList.map((v, i) => {
-              if (v.time === "") {
-                return <DayBoundary time={v.time} />;
-              }
-              if (v.sender === "me") {
-                return <KMessageReverseBox {...v} key={`messenger-${i}`} />;
-              } else {
-                return <KMessageBox {...v} key={`messenger-${i}`} />;
-              }
-            })}
+            {renderMessage(messages, classes, userId)}
+            <div ref={endRef}></div>
           </div>
         </div>
         <div className={classes.footer}>
@@ -262,8 +264,22 @@ function Room({
             className={classes.input}
             type="text"
             placeholder="메시지를 입력해주세요"
+            ref={messageRef}
           />
-          <div className={classes.send}>
+          <div
+            className={classes.send}
+            onClick={() => {
+              if (
+                messageRef.current &&
+                target !== "" &&
+                messageRef.current.value !== ""
+              ) {
+                sendMessage(target, messageRef.current.value);
+                messageRef.current.value = "";
+                endRef.current!.scrollIntoView();
+              }
+            }}
+          >
             <Send />
           </div>
         </div>
@@ -272,27 +288,64 @@ function Room({
   );
 }
 
+function renderMessage(messages: TChat[], classes: any, userId: string) {
+  const value = [];
+
+  for (let i = 0; i < messages.length; i++) {
+    const dayCheck =
+      i === 0 ||
+      messages[i - 1].time.split(" ")[0] !== messages[i].time.split(" ")[0];
+    if (messages[i].user === userId) {
+      value.push(
+        <React.Fragment>
+          {dayCheck && <DayBoundary text={messages[i].time.split(" ")[0]} />}
+          <KMessageReverseBox {...messages[i]} key={`messagebox-${i}`} />
+        </React.Fragment>
+      );
+    } else {
+      value.push(
+        <React.Fragment>
+          {dayCheck && <DayBoundary text={messages[i].time.split(" ")[0]} />}
+          <KMessageBox {...messages[i]} key={`messagebox-${i}`} />
+        </React.Fragment>
+      );
+    }
+  }
+
+  return (
+    <React.Fragment>
+      {value.map((v, i) => (
+        <React.Fragment key={`message-wrapper-${i}`}>{v}</React.Fragment>
+      ))}
+    </React.Fragment>
+  );
+}
+
 function Row({
-  room,
-  setRoom,
+  target,
+  setTarget,
+  classes,
 }: {
-  room: string;
-  setRoom: React.Dispatch<React.SetStateAction<string>>;
+  target: string;
+  setTarget: React.Dispatch<React.SetStateAction<string>>;
+  classes: any;
 }) {
-  const classes = messengerStyle();
+  if (target === undefined) return <React.Fragment></React.Fragment>;
 
   return (
     <div
       className={classes.row}
       onClick={() => {
-        setRoom(room);
+        setTarget(target);
       }}
     >
       <div className={classes.users}></div>
       <div className={classes.titleWrapper}>
         <div className={classes.title}>
-          <div className={classes.titleText}>test title text</div>
-          <div className={classes.participant}>4</div>
+          <div className={classes.titleText}>{target}</div>
+          <div className={classes.participant}>
+            {target.slice(0, 1) === "#" && 4}
+          </div>
           <div className={classes.etc}></div>
         </div>
         <div className={classes.thumbnail}>
@@ -301,33 +354,204 @@ function Row({
       </div>
       <div className={classes.chatInfo}>
         <div className={classes.lastTime}>AM 12:32</div>
-        <div className={classes.count}>231</div>
+        {/*<div className={classes.count}>231</div>*/}
       </div>
     </div>
   );
 }
 
-export default function Messenger() {
+interface TChat {
+  user: string;
+  time: string;
+  message: string;
+}
+
+function getTime(
+  time: Date | string | undefined = undefined,
+  format: string = "YYYY-MM-DD HH:mm:ss"
+) {
+  return moment(time).format(format);
+}
+
+export default function Messenger({ ws, userId }: { ws: any; userId: string }) {
   const classes = messengerStyle();
   const [open, setOpen] = useState<boolean>(false);
   const [room, setRoom] = useState<string>("");
-  const [load, setLoad] = useState<boolean>(false);
+  const [target, setTarget] = useState<string>("");
+  const [targetList, setTargetList] = useState<string[]>([]);
+  const [messages, setMessages] = useState<TChat[]>([]);
+  const [newMessage, setNewMessage] = useState<boolean>(false);
+
+  if (
+    typeof window !== "undefined" &&
+    window.location.href.indexOf("chat") !== -1
+  )
+    return <React.Fragment />;
+
+  function sendMessage(target: string, msg: string) {
+    if (ws.current) {
+      ws.current.send(
+        JSON.stringify({
+          category: "chat",
+          type: "sendMessage",
+          data: {
+            target: target,
+            msg: msg,
+          },
+        })
+      );
+    }
+  }
+
+  function getChat() {
+    if (ws.current) {
+      ws.current.send(
+        JSON.stringify({
+          category: "chat",
+          type: "getChat",
+        })
+      );
+    }
+  }
+
+  function getChatLog(target: string, page: string) {
+    if (ws.current) {
+      ws.current.send(
+        JSON.stringify({
+          category: "chat",
+          type: "getChatLog",
+          data: {
+            target: target,
+            page: page,
+          },
+        })
+      );
+    }
+  }
+
+  function getChatLogList(target: string) {
+    if (ws.current) {
+      ws.current.send(
+        JSON.stringify({
+          category: "chat",
+          type: "getChatLogList",
+          data: {
+            target: target,
+          },
+        })
+      );
+    }
+  }
+
+  function createChannel(
+    chatName: string,
+    description?: string,
+    participant?: string[]
+  ) {
+    if (ws.current) {
+      ws.current.send(
+        JSON.stringify({
+          category: "chat",
+          type: "createChannel",
+          data: {
+            target: chatName,
+            description: description,
+            chatParticipant: [userId, ...(participant ?? [])],
+          },
+        })
+      );
+    }
+  }
 
   useEffect(() => {
-    setLoad(true);
-  }, []);
+    if (ws === null) return;
 
-  if (!load) return <React.Fragment />;
+    if (ws.current) {
+      if (targetList.length === 0) getChat();
 
-  if (window.location.href.indexOf("chat") !== -1) return <React.Fragment />;
+      ws.current.onmessage = (msg: any) => {
+        const message = JSON.parse(msg.data);
+
+        if (message.category === "chat") {
+          switch (message.type) {
+            case "createChannel":
+              getChat();
+              break;
+            case "getChat":
+              const valueList: string[] = [];
+              message.data.map((v: any, i: number) => {
+                valueList.push(v.chatName);
+              });
+              setTargetList(valueList);
+              break;
+            case "getChatLog":
+              const messageList: TChat[] = [];
+              message.data.forEach((v: any) => {
+                messageList.push({
+                  user: v.sender,
+                  message: v.message,
+                  time: v.time,
+                });
+              });
+              setMessages([...messages, ...messageList]);
+              break;
+            case "getChatLogList":
+              message.data.forEach((v: string) => {
+                getChatLog(target, v);
+              });
+              break;
+            case "sendMessage":
+              if (message.data.sender !== userId) {
+                setNewMessage(true);
+                setTimeout(() => {
+                  setNewMessage(false);
+                }, 3000);
+              }
+
+              setMessages([
+                ...messages,
+                {
+                  user: message.data.sender,
+                  message: message.data.message,
+                  time: getTime(),
+                },
+              ]);
+              break;
+          }
+        }
+      };
+    }
+  }, [ws.current, messages]);
+
+  useEffect(() => {
+    setMessages([]);
+
+    if (target !== "") {
+      getChatLogList(target);
+    }
+  }, [target]);
 
   if (open) {
     return (
       <React.Fragment>
-        {room === "" ? (
-          <Home setOpen={setOpen} setRoom={setRoom}></Home>
+        {target === "" ? (
+          <Home
+            setOpen={setOpen}
+            targetList={targetList}
+            setTarget={setTarget}
+            classes={classes}
+          ></Home>
         ) : (
-          <Room setOpen={setOpen} room={room} setRoom={setRoom}></Room>
+          <Room
+            setOpen={setOpen}
+            userId={userId}
+            sendMessage={sendMessage}
+            target={target}
+            messages={messages}
+            newMessage={newMessage}
+            classes={classes}
+            setTarget={setTarget}
+          ></Room>
         )}
       </React.Fragment>
     );

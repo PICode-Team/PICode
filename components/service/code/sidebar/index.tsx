@@ -165,6 +165,9 @@ function makeFileStructure(
   function handleDropFile(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
     event.stopPropagation();
+
+    if (drag.path === "default") return;
+
     const lastPath = drag.path.split("\\");
 
     if (document.getElementsByClassName(classes.drag).length > 0)

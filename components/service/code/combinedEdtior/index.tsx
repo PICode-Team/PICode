@@ -197,6 +197,9 @@ export function CombinedEditor({
 
   function handleDropToEditor(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
+
+    if (drag.path === "default") return;
+
     const dragOverlayDiv = document.getElementById(`drag-overlay-${codeId}`);
     dragOverlayDiv?.parentNode?.removeChild(dragOverlayDiv);
 

@@ -8,7 +8,6 @@ export const noteStyle = makeStyles((theme: IThemeStyle) =>
             width: "100%",
             height: "100%",
             position: "relative",
-
             display: "flex",
             background: theme.backgroundColor.step1,
         },
