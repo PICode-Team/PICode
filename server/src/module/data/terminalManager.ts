@@ -1,102 +1,101 @@
 import { TCommandData, UUIDToWorker } from "../../types/module/data/terminal.types";
-import cluster from "cluster";
+import cluster, { Worker } from "cluster";
 import { getSocket, makePacket } from "../socket/manager";
 import os from "os";
 import log from "../log";
 import DataProjectManager from "./projectManager";
-import path from "path";
+
+var ptyProcess: any;
+const terminalInfo: UUIDToWorker = {};
 
 export default class DataTerminalManager {
-    static terminalInfo: UUIDToWorker = {};
-    static ptyProcess: any;
     static projectPath: string;
-    static rows: number;
-    static messageHandleFunc: { [key in string]: (command?: string) => void } = {
-        command: (command) => DataTerminalManager.ptyProcess.write(`${command}\r`),
-        exit: () => process.exit(0),
-    };
 
     static getUserTerminal(uuid: string) {
-        return this.terminalInfo[uuid];
+        return terminalInfo[uuid];
     }
 
-    static createTerminal(userId: string, uuid: string, projectName: string, size: { cols: number; rows: number }) {
+    static createTerminal(userId: string, uuid: string) {
+        const worker = cluster.fork();
         try {
-            const worker = cluster.fork();
-            this.terminalInfo[uuid] = {
+            terminalInfo[uuid] = {
                 socket: getSocket(userId),
                 worker: worker,
             };
-            worker.send({ type: "setup", setupData: { userId: userId, projectName: projectName, size: size } } as TCommandData);
-            worker.on("message", (message) => {
-                const sendData = JSON.stringify(makePacket("terminal", "commandTerminal", { message: message }));
-                getSocket(userId).send(sendData);
-            });
         } catch (e) {
             log.error(e.stack);
-            return false;
+            return undefined;
         }
-        return true;
+        return worker;
+    }
+
+    static listenToTerminalWorker(userId: string, uuid: string, projectId: string, worker: Worker, size: { cols: number; rows: number }) {
+        worker.send({ type: "setup", setupData: { projectId: projectId, size: size } } as TCommandData);
+        worker.on("message", (message: TCommandData) => {
+            switch (message.type) {
+                case "command": {
+                    const sendData = JSON.stringify(makePacket("terminal", "commandTerminal", { message: message.command, uuid: uuid }));
+                    getSocket(userId).send(sendData);
+                    break;
+                }
+                case "exit": {
+                    const sendData = JSON.stringify(makePacket("terminal", "deleteTerminal", { uuid: uuid }));
+                    getSocket(userId).send(sendData);
+                    delete terminalInfo[uuid];
+                    break;
+                }
+            }
+        });
     }
 
     static setUpTerminal() {
-        if (cluster.isWorker) {
-            const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
-            const pty = require("node-pty");
+        process.on("message", (message: TCommandData) => {
+            const workerFunc: { [key in string]: (message: TCommandData) => void } = {
+                command: this.workerCommand,
+                exit: this.workerExit,
+                setup: this.workerSetUp,
+            };
+            workerFunc[message.type](message);
+        });
+    }
 
-            process.on("message", (message: TCommandData) => {
-                switch (message.type) {
-                    case "command": {
-                        DataTerminalManager.ptyProcess.write(`${message.command}\r`);
-                        break;
-                    }
-                    case "exit": {
-                        (<any>process).send({ type: "exit" } as TCommandData);
-                        process.exit(0);
-                        break;
-                    }
-                    case "setup": {
-                        if (message.setupData !== undefined) {
-                            const projectId = DataProjectManager.isValidAuth(message.setupData?.userId, message.setupData?.projectName, true)
-                                ? DataProjectManager.getProjectId(message.setupData?.userId, message.setupData?.projectName)
-                                : undefined;
+    static workerCommand(message: TCommandData) {
+        message.command === "exit" ? DataTerminalManager.workerExit() : ptyProcess.write(`${message.command}\r`);
+    }
 
-                            this.projectPath = projectId !== undefined ? path.resolve(DataProjectManager.getProjectWorkPath(projectId)) : (process.env.HOME as string);
-                            this.rows = message.setupData.size.cols ?? 80;
-                            this.ptyProcess = pty.spawn(shell, [], {
-                                name: "xterm-color",
-                                cols: this.rows,
-                                rows: message.setupData.size.rows ?? 30,
-                                cwd: this.projectPath,
-                            });
+    static workerExit() {
+        (<any>process).send({ type: "exit" } as TCommandData);
+        process.exit(0);
+    }
 
-                            this.ptyProcess.on("data", function (data: any) {
-                                (<any>process).send(`${data}`);
-                            });
-                        } else {
-                            (<any>process).send(`no projectName or userId from message`);
-                            process.exit(0);
-                        }
-                        break;
-                    }
-                    default: {
-                        log.error(`terminal message type is not command | exit`);
-                        break;
-                    }
-                }
-            });
+    static workerSetUp(message: TCommandData) {
+        const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
+        const pty = require("node-pty");
+        if (message.setupData === undefined) {
+            (<any>process).send({ type: "setup", command: `no setupData from message` } as TCommandData);
+            process.exit(0);
         }
+        ptyProcess = pty.spawn(shell, [], {
+            name: "xterm-color",
+            cols: message.setupData.size.cols ?? 150,
+            rows: message.setupData.size.rows ?? 100,
+            cwd: DataProjectManager.getProjectWorkPath(message.setupData.projectId),
+        });
+
+        ptyProcess.on("data", function (data: any) {
+            (<any>process).send({ type: "command", command: data } as TCommandData);
+        });
     }
 
     static commandToTerminal(terminal: { command?: string; id: string }) {
         const terminalInfo = DataTerminalManager.getUserTerminal(terminal.id);
-        terminalInfo.worker.send({ type: "command", msg: terminal.command } as TCommandData);
+        terminalInfo.worker.send({ type: "command", command: terminal.command } as TCommandData);
         return terminalInfo;
     }
 
     static deleteTerminal(terminal: { command?: string; id: string }) {
         const terminalInfo = DataTerminalManager.getUserTerminal(terminal.id);
-        terminalInfo.worker.send({ type: "exit", msg: terminal.command } as TCommandData);
+        terminalInfo.worker.send({ type: "exit", command: terminal.command } as TCommandData);
         return terminalInfo;
     }
 }
