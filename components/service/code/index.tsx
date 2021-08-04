@@ -17,7 +17,7 @@ import {
   reorderFileStructure,
 } from "./functions";
 import TerminalContent from "./terminal";
-import { debounce } from "lodash";
+import { cloneDeep, debounce } from "lodash";
 
 function buildCodeLayout(
   codeList: TCode[],
@@ -157,7 +157,9 @@ export default function Code(ctx: any): JSX.Element {
   });
   const [height, setHeight] = useState<number>(300);
   const [projectName, setProjectName] = useState<string>("");
+  const [terminalUuid, setTerminalUuid] = useState<string[]>([]);
   const [openTerminalCount, setOpenTerminalCount] = useState<number>(0);
+  const [terminalContent, setTerminalContent] = useState<{ [key: string]: string[] }>({});
 
   function loadProject(projectName: string) {
     if (ctx.ws.current && ctx.ws.current.readyState === WebSocket.OPEN) {
@@ -272,6 +274,20 @@ export default function Code(ctx: any): JSX.Element {
   }
 
   useEffect(() => {
+    if (ctx.ws.current === undefined || openTerminalCount === 0) return;
+    ctx.ws.current.send(
+      JSON.stringify({
+        category: "terminal",
+        type: "createTerminal",
+        data: {
+          projectName: projectName,
+          size: { cols: 790, rows: 300 }
+        }
+      })
+    );
+  }, [openTerminalCount])
+
+  useEffect(() => {
     if (ctx.ws === null) return;
     setProjectName(window?.location.href.split("?projectName=")[1] ?? "");
 
@@ -305,6 +321,38 @@ export default function Code(ctx: any): JSX.Element {
               break;
             default:
               break;
+          }
+        } else if (message.category === "terminal") {
+          switch (message.type) {
+            case "createTerminal": {
+              let tmp = terminalUuid
+              tmp.push(message.data.uuid)
+              setTerminalUuid(tmp)
+              break;
+            }
+            case "commandTerminal": {
+              let tmpContent = cloneDeep(terminalContent);
+              if (tmpContent[message.data.uuid as string] === undefined) {
+                let tmp = [message.data.message.command]
+                setTerminalContent({ ...terminalContent, tmp })
+              } else {
+                let tmp = tmpContent[message.data.uuid];
+                tmp.push(message.data.message.command)
+                setTerminalContent({ ...terminalContent, tmp })
+              }
+              break;
+            }
+            case "deleteTerminal": {
+              let tmp = [];
+              for (let i of terminalUuid) {
+                if (i !== message.data.uuid) {
+                  tmp.push(i)
+                }
+              }
+              setOpenTerminalCount(tmp.length)
+              setTerminalUuid(tmp)
+              break;
+            }
           }
         }
       });
@@ -422,10 +470,12 @@ export default function Code(ctx: any): JSX.Element {
         {openTerminalCount > 0 && <TerminalContent
           setOpenContent={setOpenTerminalCount}
           terminalCount={openTerminalCount}
+          content={terminalContent}
           height={height}
+          uuid={terminalUuid}
           setHeight={setHeight}
           projectName={projectName}
-          ctx={ctx} />}
+          ws={ctx.ws} />}
       </div>
     </div >
   );

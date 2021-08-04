@@ -7,18 +7,26 @@ import { throttle } from "lodash";
 function Terminal(props: any): JSX.Element {
 
   return <div
-    contentEditable={true}
-    style={{ height: "300px", width: `${props.width}`, display: "inline-block", overflow: "scroll", outline: "none" }}
-    onKeyDown={(event) => {
-      if (event.key === "Backspace") {
-        if (event.currentTarget.textContent === `${props.projectName}@${props.ctx.session.userId}>`) {
-          event.preventDefault();
+    contentEditable={false}
+    draggable={false}
+    style={{ height: "300px", width: `${props.width}`, display: "inline-block", overflow: "scroll", outline: "none" }}>
+    {props.content[props.id]?.map((v: string) => <Ansi key={v}>{v}</Ansi>)}
+    <span contentEditable={true} draggable={true} style={{ outline: "none", fontFamily: "monospace", fontSize: "14px" }}
+      onKeyDown={(e: any) => {
+        if (e.key === "Enter") {
+          props.ws.current.send(JSON.stringify({
+            category: "terminal",
+            type: "commandTerminal",
+            data: {
+              command: e.target.innerText,
+              id: props.id
+            }
+          }))
+          e.target.innerText = ""
         }
-      }
-    }}>
-    <span contentEditable={false} draggable={false}>
-      {`${props.projectName}@${props.ctx.session.userId}>`}
-    </span>
+      }}
+    />
+
   </div >;
 }
 
@@ -34,7 +42,7 @@ export default function TerminalContent(props: any): JSX.Element {
 
   let terminalContent = [];
   for (let i = 0; i < props.terminalCount; i++) {
-    terminalContent.push(<Terminal {...props} width={`${100 / props.terminalCount}%`} />)
+    terminalContent.push(<Terminal {...props} id={props.uuid[i]} width={`${100 / props.terminalCount}%`} />)
   }
   return <div className={classes.terminal} style={{ height: `${props.height}px` }}>
     <div draggable={false} className={classes.resizerBar} />
