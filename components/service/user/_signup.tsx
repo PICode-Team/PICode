@@ -79,19 +79,45 @@ export default function SignUp() {
           <div className={classes.wrapper}>
             <div className={classes.title}>Sign Up</div>
             <div className={classes.input}>
-              <input type="text" placeholder="name" />
+              <input
+                type="text"
+                placeholder="name"
+                onChange={(e: any) => setUserName(e.target.value)}
+              />
             </div>
             <div className={classes.input}>
-              <input type="text" placeholder="id" />
+              <input
+                type="text"
+                placeholder="id"
+                onChange={(e: any) => handleEmail(e)}
+              />
             </div>
             <div className={classes.input}>
-              <input type="password" placeholder="password" />
+              <input
+                type="password"
+                placeholder="password"
+                onChange={(e: any) => setPasswd(e.target.value)}
+              />
             </div>
             <div className={classes.input}>
-              <input type="password" placeholder="confirm password" />
+              <input
+                type="password"
+                placeholder="confirm password"
+                onChange={(e: any) => setConfirmPw(e.target.value)}
+              />
             </div>
             <div className={classes.button}>
-              <button>Sign Up</button>
+              <button
+                onClick={() => {
+                  if (userId === "") return;
+                  if (userName === "") return;
+                  if (passwd === "" || confirmPw !== passwd) return;
+                  if (confirmPw === "") return;
+                  submitSignUp();
+                }}
+              >
+                Sign Up
+              </button>
             </div>
             <div className={classes.a}>
               <a href="/">Do you have an account?</a>
