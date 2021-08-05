@@ -1,4 +1,4 @@
-import { Worker } from "cluster";
+import { Worker } from "worker_threads";
 
 export interface terminal {
     socket: WebSocket;
@@ -13,7 +13,7 @@ export interface TCommandData {
     type: "command" | "exit" | "setup";
     command?: string;
     setupData?: {
-        projectId: string;
+        projectPath: string;
         size: { cols: number; rows: number };
     };
 }

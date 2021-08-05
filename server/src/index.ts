@@ -8,8 +8,6 @@ import next from "next";
 import envConfig from "./config/env";
 import expressWs from "express-ws";
 import { webSocketInit } from "./module/socket/socket";
-import cluster from "cluster";
-import DataTerminalManager from "./module/data/terminalManager";
 
 async function main() {
     const dev = envConfig.NODE_ENV !== "production";
@@ -49,11 +47,7 @@ async function main() {
     });
 }
 
-if (cluster.isMaster) {
-    main();
-} else if (cluster.isWorker) {
-    DataTerminalManager.setUpTerminal();
-}
+main();
 
 process.on("SIGINT", () => {
     console.log();
