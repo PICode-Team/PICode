@@ -1,30 +1,36 @@
 import { TSocketPacket } from "../../types/module/socket.types";
 import { v4 as uuidv4 } from "uuid";
 import log from "../log";
+import { Worker } from "cluster";
 import { getSocket, makePacket } from "./manager";
 import DataTerminalManager from "../data/terminalManager";
-import { TCommandData } from "../../types/module/data/terminal.types";
+import DataProjectManager from "../data/projectManager";
 
 function createTerminal(userId: string, { projectName, size }: { projectName: string; size: { cols: number; rows: number } }) {
     const uuid = uuidv4();
-
-    const createTerminalResult = DataTerminalManager.createTerminal(userId, uuid, projectName, size);
-    const metaData = createTerminalResult ? { uuid: uuid } : { message: "fail to create terminal" };
-    getSocket(userId)?.send(JSON.stringify(makePacket("terminal", "createTerminal", metaData)));
+    const terminalWorker = DataTerminalManager.createTerminal(userId, uuid);
+    const projectId = DataProjectManager.getProjectId(userId, projectName);
+    if (terminalWorker === undefined || projectId === undefined) {
+        getSocket(userId)?.send(JSON.stringify(makePacket("terminal", "createTerminal", { message: "fail to create terminal" })));
+    } else {
+        DataTerminalManager.listenToTerminalWorker(userId, uuid, projectId as string, terminalWorker as Worker, size);
+        getSocket(userId)?.send(JSON.stringify(makePacket("terminal", "createTerminal", { uuid: uuid })));
+    }
 }
 
 function commandTerminal(terminal: { command?: string; id: string }) {
-    const terminalInfo = DataTerminalManager.getUserTerminal(terminal.id);
-    terminalInfo.worker.send({ type: "command", command: terminal.command } as TCommandData);
+    try {
+        DataTerminalManager.commandToTerminal(terminal);
+    } catch (e) {
+        DataTerminalManager.getUserTerminal(terminal.id).socket.send(JSON.stringify(makePacket("terminal", "commandTerminal", { message: "fail to command terminal" })));
+    }
 }
 
 function deleteTerminal(terminal: { command?: string; id: string }) {
     try {
-        const terminalInfo = DataTerminalManager.getUserTerminal(terminal.id);
-        terminalInfo.worker.send({ type: "exit", command: terminal.command } as TCommandData);
-        delete DataTerminalManager.terminalInfo[terminal.id];
+        DataTerminalManager.deleteTerminal(terminal);
     } catch (e) {
-        log.error(e.stack);
+        DataTerminalManager.getUserTerminal(terminal.id).socket.send(JSON.stringify(makePacket("terminal", "deleteTerminal", { message: "fail to delete terminal" })));
     }
 }
 

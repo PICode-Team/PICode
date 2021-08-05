@@ -13,8 +13,7 @@ export interface TCommandData {
     type: "command" | "exit" | "setup";
     command?: string;
     setupData?: {
-        userId: string;
-        projectName: string;
+        projectId: string;
         size: { cols: number; rows: number };
     };
 }
