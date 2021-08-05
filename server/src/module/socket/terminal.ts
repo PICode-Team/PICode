@@ -1,7 +1,6 @@
 import { TSocketPacket } from "../../types/module/socket.types";
 import { v4 as uuidv4 } from "uuid";
 import log from "../log";
-import { Worker } from "cluster";
 import { getSocket, makePacket } from "./manager";
 import DataTerminalManager from "../data/terminalManager";
 import DataProjectManager from "../data/projectManager";
@@ -13,7 +12,7 @@ function createTerminal(userId: string, { projectName, size }: { projectName: st
     if (terminalWorker === undefined || projectId === undefined) {
         getSocket(userId)?.send(JSON.stringify(makePacket("terminal", "createTerminal", { message: "fail to create terminal" })));
     } else {
-        DataTerminalManager.listenToTerminalWorker(userId, uuid, projectId as string, terminalWorker as Worker, size);
+        DataTerminalManager.listenToTerminalWorker(userId, uuid, projectId as string, terminalWorker, size);
         getSocket(userId)?.send(JSON.stringify(makePacket("terminal", "createTerminal", { uuid: uuid })));
     }
 }
