@@ -1,7 +1,7 @@
 import { DataDirectoryPath } from "../../types/module/data/data.types";
 import { TUserData } from "../../types/module/data/user.types";
 import { getJsonData, isExists, removeData, setJsonData } from "./fileManager";
-
+import { readdirSync } from "fs";
 
 export default class DataUserManager {
     static getUserDataPath(userId: string, type: '' | 'userInfo.json' = '') {
@@ -20,6 +20,10 @@ export default class DataUserManager {
         return getJsonData(
             this.getUserDataPath(userId, 'userInfo.json')
         ) as TUserData
+    }
+
+    static getUserList() {
+        return readdirSync(`${DataDirectoryPath}/user`, {withFileTypes: true}).filter(v=>v.isDirectory()).map(v=>v.name)
     }
 
     static create(userInfo: TUserData) {
