@@ -2,7 +2,7 @@ export type TSocketInfo = {
     [key in string]: WebSocket;
 };
 
-export type TSocketCategory = "chat" | "connect" | "code" | "work" | "terminal" | 'user'
+export type TSocketCategory = "chat" | "connect" | "code" | "work" | "terminal" | "user" | "issue" | "kanban";
 
 export interface TSocketPacket {
     category: TSocketCategory;

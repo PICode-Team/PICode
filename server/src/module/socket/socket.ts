@@ -6,14 +6,18 @@ import chat from "./chat";
 import code from "./code";
 import work from "./work";
 import terminal from "./terminal";
-import user from './user'
+import user from "./user";
+import issue from "./issue";
+import kanban from "./kanban";
 
 const SocketFuncs = {
     chat,
     code,
     work,
     terminal,
-    user
+    user,
+    issue,
+    kanban,
 };
 
 export function webSocketInit(server: expressWs.Application) {
