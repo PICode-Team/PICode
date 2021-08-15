@@ -6,8 +6,9 @@ import { v4 as uuidv4 } from "uuid";
 import log from "../log";
 
 export default class DataIssueManager {
-    static getIssueListPath(kanbanUUID: string, type: "issueList.json" | "" = "") {
-        return type !== "" ? `${DataDirectoryPath}/issues/${kanbanUUID}/${type}` : `${DataDirectoryPath}/issues/${kanbanUUID}`;
+    static getIssueListPath(kanbanUUID?: string, type: "issueList.json" | "" = "") {
+        const issueListPath = kanbanUUID ? `${DataDirectoryPath}/issues/${kanbanUUID}` : `${DataDirectoryPath}/issues`;
+        return type !== "" ? `${issueListPath}/${type}` : issueListPath;
     }
 
     static getIssueInfoPath(kanbanUUID: string, issueUUID: string, type: "issueInfo.json" | "" = "") {
@@ -23,7 +24,7 @@ export default class DataIssueManager {
     }
 
     static getIssueInfo(kanbanUUID: string, issueUUID: string) {
-        if (!isExists(this.getIssueInfoPath(kanbanUUID, issueUUID, "issueInfo.json"))) {
+        if (!isExists(this.getIssueInfoPath(kanbanUUID, issueUUID))) {
             return undefined;
         }
 
@@ -31,12 +32,12 @@ export default class DataIssueManager {
     }
 
     static setIssueListInfo(kanbanUUID: string, issueUUID: string, issueListData: TIssueListData) {
-        if (!isExists(this.getIssueListPath(kanbanUUID)) || this.getIssueListInfo(kanbanUUID) === undefined) {
+        if (!isExists(this.getIssueListPath(kanbanUUID))) {
             return false;
         }
-        const newIssueListData = this.getIssueListInfo(kanbanUUID) as TIssueListJsonData;
+        const newIssueListData = this.getIssueListInfo(kanbanUUID) ? (this.getIssueListInfo(kanbanUUID) as TIssueListJsonData) : ({} as TIssueListJsonData);
         newIssueListData[issueUUID] = issueListData;
-        return setJsonData(this.getIssueListPath(kanbanUUID, "issueList.json"), issueListData);
+        return setJsonData(this.getIssueListPath(kanbanUUID, "issueList.json"), newIssueListData);
     }
 
     static setIssueInfo(kanbanUUID: string, issueUUID: string, issueData: TIssueData) {
@@ -47,30 +48,59 @@ export default class DataIssueManager {
         return setJsonData(this.getIssueInfoPath(kanbanUUID, issueUUID, "issueInfo.json"), issueData);
     }
 
-    static isCreatorOrAssigner(userId: string, kanbanUUID: string, issueUUID: string) {
-        const issueListInfo = this.getIssueListInfo(kanbanUUID);
-        return issueListInfo !== undefined ? issueListInfo[issueUUID].assigner === userId || issueListInfo[issueUUID].creator === userId : false;
+    static getIssueNumber(kanbanUUID: string) {
+        return this.getIssueListInfo(kanbanUUID) !== undefined ? Object.keys(this.getIssueListInfo(kanbanUUID) as TIssueListJsonData).length + 1 : 1;
     }
 
-    static get(kanbanUUID: string, issueUUID?: string) {
+    static getList(kanbanUUID?: string, options?: TIssueListData) {
         if (!fs.existsSync(this.getIssueListPath(kanbanUUID))) {
             fs.mkdirSync(this.getIssueListPath(kanbanUUID), { recursive: true });
         }
-        return issueUUID ? this.getIssueInfo(kanbanUUID, issueUUID) : this.getIssueListInfo(kanbanUUID);
+        const issueList: TIssueListData[] = [];
+        fs.readdirSync(this.getIssueListPath())
+            .filter((kanban) => {
+                return kanbanUUID === undefined || kanban === kanbanUUID;
+            })
+            .map((kanban) => {
+                issueList.push(...Object.values(this.getIssueListInfo(kanban) as TIssueListJsonData));
+            });
+        return issueList.filter((issueData) => {
+            return (
+                (options?.column === undefined || issueData.column === options.column) &&
+                (options?.label === undefined || issueData.label === options.label) &&
+                (options?.assigner === undefined || issueData.assigner === options.assigner) &&
+                (options?.creator === undefined || issueData.creator === options.creator) &&
+                (options?.title === undefined || issueData.title === options.title)
+            );
+        });
     }
 
-    static create(kanbanUUID: string, { issueId, title, creator, assigner, label, column, content, projectName, milestone }: TIssueData) {
+    static getInfo(kanbanUUID: string, issueUUID: string) {
+        if (!fs.existsSync(this.getIssueListPath(kanbanUUID))) {
+            fs.mkdirSync(this.getIssueListPath(kanbanUUID), { recursive: true });
+        }
+        this.getIssueInfo(kanbanUUID, issueUUID);
+    }
+
+    static create(kanbanUUID: string, { title, creator, assigner, label, column, content, projectName, milestone }: TIssueData) {
         const issueUUID = uuidv4();
-        const issueListData = { issueUUID, issueId, title, creator, assigner, label, column } as TIssueListData;
+        const issueNumber = this.getIssueNumber(kanbanUUID);
+        const issueListData = { uuid: issueUUID, issueId: issueNumber, title, creator, assigner, label, column } as TIssueListData;
         if (!this.setIssueListInfo(kanbanUUID, issueUUID, issueListData)) {
             log.error(`[dataIssueManager] create -> fail to setIssueListInfo`);
             return undefined;
         }
+
+        if (!fs.existsSync(this.getIssueInfoPath(kanbanUUID, issueUUID))) {
+            fs.mkdirSync(this.getIssueInfoPath(kanbanUUID, issueUUID), { recursive: true });
+        }
+
         const issueData = { ...issueListData, content, projectName, milestone } as TIssueData;
         if (!this.setIssueInfo(kanbanUUID, issueUUID, issueData)) {
             log.error(`[dataIssueManager] create -> fail to setIssueInfo`);
             return undefined;
         }
+        log.info(`issue created: issueUUID ${issueData.uuid}`);
         return issueUUID;
     }
 
@@ -95,6 +125,7 @@ export default class DataIssueManager {
             log.error(`[dataIssueManager] update -> fail to setIssueInfo`);
             return false;
         }
+        log.info(`issue updated: ${issueData}`);
         return true;
     }
 

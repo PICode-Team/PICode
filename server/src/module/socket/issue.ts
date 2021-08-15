@@ -1,5 +1,5 @@
 import { ResponseCode } from "../../constants/response";
-import { TIssueData } from "../../types/module/data/issue.types";
+import { TIssueData, TIssueListData } from "../../types/module/data/issue.types";
 import { TSocketPacket } from "../../types/module/socket.types";
 import DataIssueManager from "../data/issueManager";
 import { getSocket, makePacket } from "./manager";
@@ -15,8 +15,8 @@ const issueLoadFuncs: {
     deleteIssue: deleteIssue,
 };
 
-function getIssues(userId: string, { kanbanUUID, issueUUID }: { kanbanUUID: string; issueUUID?: string }) {
-    const metaData = DataIssueManager.get(kanbanUUID, issueUUID);
+function getIssues(userId: string, { kanbanUUID, issueUUID, options }: { kanbanUUID: string; issueUUID?: string; options?: TIssueListData }) {
+    const metaData = issueUUID !== undefined ? DataIssueManager.getInfo(kanbanUUID, issueUUID) : DataIssueManager.getList(kanbanUUID, options);
     const sendData = makePacket("issue", "getIssues", metaData ? { code: ResponseCode.ok, issues: metaData } : { code: ResponseCode.internalError });
     getSocket(userId).send(JSON.stringify(sendData));
 }

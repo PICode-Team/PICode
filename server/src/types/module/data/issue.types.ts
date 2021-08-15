@@ -18,5 +18,6 @@ export type TIssueListData = TIssueUpdateData & {
 export type TIssueData = TIssueListData & {
     content?: string;
     projectName: string;
+    kanban: string;
     milestone: string;
 };
