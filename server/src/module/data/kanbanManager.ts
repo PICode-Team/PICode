@@ -43,10 +43,10 @@ export default class DataKanbanManager {
         }
         if (type == "doneIssue") {
             if (incOrDec == "increase") {
-                this.update(kanbanUUID, { totalIssue: (kanbanData.doneIssue as number) + 1 });
+                this.update(kanbanUUID, { doneIssue: (kanbanData.doneIssue as number) + 1 });
             }
             if (incOrDec == "decrease") {
-                this.update(kanbanUUID, { totalIssue: (kanbanData.doneIssue as number) - 1 });
+                this.update(kanbanUUID, { doneIssue: (kanbanData.doneIssue as number) - 1 });
             }
         }
     }
@@ -61,8 +61,9 @@ export default class DataKanbanManager {
         const kanbanList: TkanbanData[] = [];
         fs.readdirSync(this.getKanbanPath())
             .filter((kanban) => {
-                const kanbanData = this.getKanbanInfo(kanban);
+                const kanbanData = kanban !== "milestoneListInfo.json" ? this.getKanbanInfo(kanban) : undefined;
                 return (
+                    kanban !== "milestoneListInfo.json" &&
                     (options.uuid === undefined || options.uuid === kanbanData?.uuid) &&
                     (options.column === undefined || (options.column as string) in (kanbanData?.columns as string[])) &&
                     (options.projectName === undefined || options.projectName === kanbanData?.projectName) &&

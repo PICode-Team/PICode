@@ -102,6 +102,9 @@ export default class DataIssueManager {
             return undefined;
         }
         DataKanbanManager.updateIssueCount(kanbanUUID, "totalIssue", "increase");
+        if (column === "Done") {
+            DataKanbanManager.updateIssueCount(kanbanUUID, "doneIssue", "increase");
+        }
 
         log.info(`issue created: issueUUID ${issueData.uuid}`);
         return issueUUID;
@@ -113,7 +116,7 @@ export default class DataIssueManager {
             log.error(`[dataIssueManager] update -> uuid or issueListJsonData is undefined`);
             return false;
         }
-
+        const beforeColumn = (issueListJsonData[uuid] as TIssueListData).column;
         const issueListData = { ...issueListJsonData[uuid], uuid, issueId, title, creator, assigner, label, column } as TIssueListData;
 
         if (!this.setIssueListInfo(kanbanUUID, uuid, issueListData)) {
@@ -128,6 +131,12 @@ export default class DataIssueManager {
         if (!this.setIssueInfo(kanbanUUID, uuid, { ...issueData, title, creator, assigner, label, column, content, milestone } as TIssueData)) {
             log.error(`[dataIssueManager] update -> fail to setIssueInfo`);
             return false;
+        }
+        if (beforeColumn === "Done" && column !== undefined && column !== "Done") {
+            DataKanbanManager.updateIssueCount(kanbanUUID, "doneIssue", "decrease");
+        }
+        if (beforeColumn !== "Done" && column === "Done") {
+            DataKanbanManager.updateIssueCount(kanbanUUID, "doneIssue", "increase");
         }
         log.info(`issue updated: ${issueData}`);
         return true;
