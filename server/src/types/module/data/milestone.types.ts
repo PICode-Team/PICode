@@ -6,6 +6,8 @@ export interface TMilestoneData {
     endDate: string;
 }
 
+export type TMilestoneCreateData = TMilestoneData & { kanban?: string };
+
 export type TMilestoneJsonData = {
     [key in string]: TMilestoneData;
 };

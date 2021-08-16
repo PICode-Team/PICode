@@ -4,14 +4,14 @@ import { TSocketPacket } from "../../types/module/socket.types";
 import DataKanbanManager from "../data/kanbanManager";
 import { getSocket, makePacket } from "./manager";
 
-const kanbanLoadFuncs: { [key in string]: ((userId: string, kanbanData: TkanbanData) => void) | ((userId: string, kanbanUUID: string) => void) } = {
-    getKanban: getKanban,
-    createKanban: createKanban,
-    updateKanban: updateKanban,
-    deleteKanban: deleteKanban,
+const kanbanLoadFuncs: { [key in string]: (userId: string, kanbanData: any) => void } = {
+    getKanban,
+    createKanban,
+    updateKanban,
+    deleteKanban,
 };
 
-function getKanban(userId: string, options: TkanbanData) {
+function getKanban(userId: string, options: Partial<TkanbanData>) {
     const kanbanData = DataKanbanManager.get(options);
     const sendData = JSON.stringify(makePacket("kanban", "getKanban", { code: ResponseCode.ok, kanbans: kanbanData }));
     getSocket(userId).send(sendData);
@@ -30,8 +30,8 @@ function updateKanban(userId: string, kanbanData: TkanbanData) {
     getSocket(userId).send(sendData);
 }
 
-function deleteKanban(userId: string, kanbanUUID: string) {
-    const sendData = JSON.stringify(makePacket("kanban", "deleteKanban", DataKanbanManager.delete(kanbanUUID) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError }));
+function deleteKanban(userId: string, kanbanUUID: Pick<TkanbanData, "uuid">) {
+    const sendData = JSON.stringify(makePacket("kanban", "deleteKanban", DataKanbanManager.delete(kanbanUUID.uuid) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError }));
     getSocket(userId).send(sendData);
 }
 

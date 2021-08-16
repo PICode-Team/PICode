@@ -4,6 +4,7 @@ import { isExists, getJsonData, setJsonData } from "./fileManager";
 import { TIssueData, TIssueListData, TIssueListJsonData } from "../../types/module/data/issue.types";
 import { v4 as uuidv4 } from "uuid";
 import log from "../log";
+import DataKanbanManager from "./kanbanManager";
 
 export default class DataIssueManager {
     static getIssueListPath(kanbanUUID?: string, type: "issueList.json" | "" = "") {
@@ -52,7 +53,7 @@ export default class DataIssueManager {
         return this.getIssueListInfo(kanbanUUID) !== undefined ? Object.keys(this.getIssueListInfo(kanbanUUID) as TIssueListJsonData).length + 1 : 1;
     }
 
-    static getList(kanbanUUID?: string, options?: TIssueListData) {
+    static getList(kanbanUUID?: string, options?: Partial<TIssueListData>) {
         if (!fs.existsSync(this.getIssueListPath(kanbanUUID))) {
             fs.mkdirSync(this.getIssueListPath(kanbanUUID), { recursive: true });
         }
@@ -79,10 +80,10 @@ export default class DataIssueManager {
         if (!fs.existsSync(this.getIssueListPath(kanbanUUID))) {
             fs.mkdirSync(this.getIssueListPath(kanbanUUID), { recursive: true });
         }
-        this.getIssueInfo(kanbanUUID, issueUUID);
+        return this.getIssueInfo(kanbanUUID, issueUUID);
     }
 
-    static create(kanbanUUID: string, { title, creator, assigner, label, column, content, projectName, milestone }: TIssueData) {
+    static create(kanbanUUID: string, { title, creator, assigner, label, column, content, milestone }: TIssueData) {
         const issueUUID = uuidv4();
         const issueNumber = this.getIssueNumber(kanbanUUID);
         const issueListData = { uuid: issueUUID, issueId: issueNumber, title, creator, assigner, label, column } as TIssueListData;
@@ -95,23 +96,26 @@ export default class DataIssueManager {
             fs.mkdirSync(this.getIssueInfoPath(kanbanUUID, issueUUID), { recursive: true });
         }
 
-        const issueData = { ...issueListData, content, projectName, milestone } as TIssueData;
+        const issueData = { ...issueListData, content, milestone } as TIssueData;
         if (!this.setIssueInfo(kanbanUUID, issueUUID, issueData)) {
             log.error(`[dataIssueManager] create -> fail to setIssueInfo`);
             return undefined;
         }
+        DataKanbanManager.updateIssueCount(kanbanUUID, "totalIssue", "increase");
+
         log.info(`issue created: issueUUID ${issueData.uuid}`);
         return issueUUID;
     }
 
-    static update(kanbanUUID: string, { uuid, issueId, title, creator, assigner, label, column, content, projectName, milestone }: TIssueData) {
+    static update(kanbanUUID: string, { uuid, issueId, title, creator, assigner, label, column, content, milestone }: Partial<TIssueData>) {
         const issueListJsonData = this.getIssueListInfo(kanbanUUID);
         if (uuid === undefined || issueListJsonData === undefined) {
             log.error(`[dataIssueManager] update -> uuid or issueListJsonData is undefined`);
             return false;
         }
 
-        const issueListData = { ...issueListJsonData[uuid], uuid, issueId, title, creator, assigner, label, column };
+        const issueListData = { ...issueListJsonData[uuid], uuid, issueId, title, creator, assigner, label, column } as TIssueListData;
+
         if (!this.setIssueListInfo(kanbanUUID, uuid, issueListData)) {
             log.error(`[dataIssueManager] update -> fail to setIssueListInfo`);
             return false;
@@ -121,7 +125,7 @@ export default class DataIssueManager {
             log.error(`[dataIssueManager] update -> issueData is undefined`);
             return false;
         }
-        if (!this.setIssueInfo(kanbanUUID, uuid, { ...issueData, title, creator, assigner, label, column, content, projectName, milestone })) {
+        if (!this.setIssueInfo(kanbanUUID, uuid, { ...issueData, title, creator, assigner, label, column, content, milestone } as TIssueData)) {
             log.error(`[dataIssueManager] update -> fail to setIssueInfo`);
             return false;
         }
@@ -136,6 +140,7 @@ export default class DataIssueManager {
         }
         delete issueListJsonData[issueUUID];
         fs.rmdirSync(this.getIssueInfoPath(kanbanUUID, issueUUID), { recursive: true });
+        DataKanbanManager.updateIssueCount(kanbanUUID, "totalIssue", "decrease");
         return true;
     }
 }
