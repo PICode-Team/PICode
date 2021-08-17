@@ -98,7 +98,7 @@ export default class DataKanbanManager {
             log.error(`[DataKanbanManager] update -> could not setKanbanInfo`);
             return false;
         }
-        log.info(`kanbandata updated: ${JSON.stringify(kanbanData)}`);
+        log.info(`kanbandata updated: ${JSON.stringify({ ...this.getKanbanInfo(kanbanUUID), ...kanbanData })}`);
         return true;
     }
     static delete(kanbanUUID: string) {

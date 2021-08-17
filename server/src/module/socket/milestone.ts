@@ -1,5 +1,5 @@
 import { ResponseCode } from "../../constants/response";
-import { TMilestoneCreateData, TMilestoneData } from "../../types/module/data/milestone.types";
+import { TMilestoneCreateData, TMilestoneData, TMilestoneUpdateData } from "../../types/module/data/milestone.types";
 import { TSocketPacket } from "../../types/module/socket.types";
 import DataMilestoneManager from "../data/milestoneManager";
 import { getSocket, makePacket } from "./manager";
@@ -21,7 +21,7 @@ function createMilestone(userId: string, milestoneData: TMilestoneCreateData) {
     const sendData = JSON.stringify(makePacket("milestone", "createMilestone", milestoneUUID ? { code: ResponseCode.ok, uuid: milestoneUUID } : { code: ResponseCode.internalError }));
     getSocket(userId).send(sendData);
 }
-function updateMilestone(userId: string, { milestoneUUID, milestoneData }: { milestoneUUID: string; milestoneData: TMilestoneData }) {
+function updateMilestone(userId: string, { milestoneUUID, milestoneData }: { milestoneUUID: string; milestoneData: TMilestoneUpdateData }) {
     const sendData = JSON.stringify(
         makePacket("milestone", "updateMilestone", DataMilestoneManager.update(milestoneUUID, milestoneData) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError })
     );

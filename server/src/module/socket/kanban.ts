@@ -1,5 +1,5 @@
 import { ResponseCode } from "../../constants/response";
-import { TkanbanData } from "../../types/module/data/kanban.types";
+import { TkanbanCreateData, TkanbanData } from "../../types/module/data/kanban.types";
 import { TSocketPacket } from "../../types/module/socket.types";
 import DataKanbanManager from "../data/kanbanManager";
 import { getSocket, makePacket } from "./manager";
@@ -17,13 +17,13 @@ function getKanban(userId: string, options: Partial<TkanbanData>) {
     getSocket(userId).send(sendData);
 }
 
-function createKanban(userId: string, kanbanData: TkanbanData) {
+function createKanban(userId: string, kanbanData: TkanbanCreateData) {
     const kanbanUUID = DataKanbanManager.create(kanbanData);
     const sendData = JSON.stringify(makePacket("kanban", "createKanban", kanbanUUID ? { code: ResponseCode.ok, uuid: kanbanUUID } : { code: ResponseCode.internalError }));
     getSocket(userId).send(sendData);
 }
 
-function updateKanban(userId: string, kanbanData: TkanbanData) {
+function updateKanban(userId: string, kanbanData: Partial<TkanbanData>) {
     const sendData = JSON.stringify(
         makePacket("kanban", "updateKanban", DataKanbanManager.update(kanbanData.uuid as string, kanbanData) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError })
     );

@@ -64,7 +64,7 @@ export default class DataMilestoneManager {
             delete milestoneData.kanban;
         }
 
-        const newMilestoneData = { ...(this.getMilestoneInfo() as TMilestoneJsonData), ...milestoneData } as TMilestoneData;
+        const newMilestoneData = { ...(this.getMilestoneInfo(milestoneUUID) as TMilestoneData), ...milestoneData } as TMilestoneData;
         if (!this.setMilestoneInfo(milestoneUUID, newMilestoneData)) {
             log.error(`[DataMilestoneManager] update -> fail to setMilestoneInfo`);
             return false;
@@ -75,9 +75,15 @@ export default class DataMilestoneManager {
     }
 
     static delete(milestoneUUID: string) {
+        if (milestoneUUID === undefined) {
+            log.error(`[DataMilestoneManager] delete -> milestoneUUID is undefined`);
+            return false;
+        }
         const milestoneListData = this.getMilestoneInfo() as TMilestoneJsonData;
+        if (!Object.keys(milestoneListData).includes(milestoneUUID)) {
+            log.error(`[DataMilestoneManager] delete -> milestoneUUID is not in ListData`);
+        }
         delete milestoneListData[milestoneUUID];
-
         const kanbanUUID = fs.readdirSync(DataKanbanManager.getKanbanPath()).find((kanban) => {
             kanban !== "milestoneListInfo.json" && DataKanbanManager.getKanbanInfo(kanban)?.milestone === milestoneUUID;
         });
@@ -87,6 +93,11 @@ export default class DataMilestoneManager {
             DataKanbanManager.setKanbanInfo(kanbanUUID, kanbanData);
         }
 
-        return setJsonData(this.getMilestonePath("milestoneListInfo.json"), milestoneListData) ? true : false;
+        if (!setJsonData(this.getMilestonePath("milestoneListInfo.json"), milestoneListData)) {
+            log.error(`[DataMilestoneManager] update -> fail to setMilestoneInfo`);
+            return false;
+        }
+        log.info(`milestoneData deleted: ${JSON.stringify(milestoneUUID)}`);
+        return true;
     }
 }
