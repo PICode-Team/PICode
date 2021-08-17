@@ -5,35 +5,33 @@ import DataIssueManager from "../data/issueManager";
 import { getSocket, makePacket } from "./manager";
 
 const issueLoadFuncs: {
-    [key in string]:
-        | ((userId: string, { kanbanUUID, issueUUID }: { kanbanUUID: string; issueUUID: string }) => void)
-        | ((userId: string, { kanbanUUID, issueData }: { kanbanUUID: string; issueData: TIssueData }) => void);
+    [key in string]: (userId: string, issueData: any) => void;
 } = {
-    getIssues: getIssues,
-    createIssue: createIssue,
-    updateIssue: updateIssue,
-    deleteIssue: deleteIssue,
+    getIssue,
+    createIssue,
+    updateIssue,
+    deleteIssue,
 };
 
-function getIssues(userId: string, { kanbanUUID, issueUUID, options }: { kanbanUUID: string; issueUUID?: string; options?: TIssueListData }) {
-    const metaData = issueUUID !== undefined ? DataIssueManager.getInfo(kanbanUUID, issueUUID) : DataIssueManager.getList(kanbanUUID, options);
-    const sendData = makePacket("issue", "getIssues", metaData ? { code: ResponseCode.ok, issues: metaData } : { code: ResponseCode.internalError });
+function getIssue(userId: string, { kanbanUUID, options }: { kanbanUUID: string; options?: Partial<TIssueListData> }) {
+    const metaData = options?.uuid !== undefined ? DataIssueManager.getInfo(kanbanUUID, options.uuid) : DataIssueManager.getList(kanbanUUID, options);
+    const sendData = makePacket("issue", "getIssue", metaData ? { code: ResponseCode.ok, issues: metaData } : { code: ResponseCode.internalError });
     getSocket(userId).send(JSON.stringify(sendData));
 }
 
 function createIssue(userId: string, { kanbanUUID, issueData }: { kanbanUUID: string; issueData: TIssueData }) {
     const issueUUID = DataIssueManager.create(kanbanUUID, issueData);
-    const sendData = makePacket("issue", "createIssues", issueUUID ? { code: ResponseCode.ok, uuid: issueUUID } : { code: ResponseCode.internalError });
+    const sendData = makePacket("issue", "createIssue", issueUUID ? { code: ResponseCode.ok, uuid: issueUUID } : { code: ResponseCode.internalError });
     getSocket(userId).send(JSON.stringify(sendData));
 }
 
-function updateIssue(userId: string, { kanbanUUID, issueData }: { kanbanUUID: string; issueData: TIssueData }) {
-    const sendData = makePacket("issue", "updateIssues", DataIssueManager.update(kanbanUUID, issueData) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError });
+function updateIssue(userId: string, { kanbanUUID, issueData }: { kanbanUUID: string; issueData: Partial<TIssueData> }) {
+    const sendData = makePacket("issue", "updateIssue", DataIssueManager.update(kanbanUUID, issueData) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError });
     getSocket(userId).send(JSON.stringify(sendData));
 }
 
 function deleteIssue(userId: string, { kanbanUUID, issueUUID }: { kanbanUUID: string; issueUUID: string }) {
-    const sendData = makePacket("issue", "deleteIssues", DataIssueManager.delete(kanbanUUID, issueUUID) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError });
+    const sendData = makePacket("issue", "deleteIssue", DataIssueManager.delete(kanbanUUID, issueUUID) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError });
     getSocket(userId).send(JSON.stringify(sendData));
 }
 

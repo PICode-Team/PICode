@@ -9,6 +9,7 @@ import terminal from "./terminal";
 import user from "./user";
 import issue from "./issue";
 import kanban from "./kanban";
+import milestone from "./milestone";
 
 const SocketFuncs = {
     chat,
@@ -18,6 +19,7 @@ const SocketFuncs = {
     user,
     issue,
     kanban,
+    milestone,
 };
 
 export function webSocketInit(server: expressWs.Application) {
