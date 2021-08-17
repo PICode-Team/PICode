@@ -102,14 +102,27 @@ export default function TestNote(ctx: any) {
         client.mutate({
             mutation: QueryUpdate(selectFile?.documentId, tmpPath, content)
         })
-
         client
             .query({
                 query: GetQuery(),
                 fetchPolicy: "network-only",
             })
             .then((res) => {
-                setFileView(res.data.getDocument);
+                let tmpResult = [];
+                for (let i of res.data.getDocument) {
+                    let node = fileView?.find((v) => v.documentId === i.documentId)
+                    if (node !== undefined) {
+                        if (node.open) {
+                            let tmpNode = node;
+                            tmpNode.content = i.content;
+                            tmpNode.path = i.path;
+                            tmpResult.push(tmpNode)
+                        } else {
+                            tmpResult.push(i)
+                        }
+                    }
+                }
+                setFileView(tmpResult);
             });
 
 
@@ -146,7 +159,12 @@ export default function TestNote(ctx: any) {
     }, [fileView]);
 
     return (
-        <div className={classes.root} onClick={() => setOpenContext(false)}>
+        <div className={classes.root} onClick={() => {
+            setOpenContext(false)
+            setConextPosition({
+                x: 0, y: 0, target: "", path: ""
+            })
+        }}>
             <div className={classes.fileView}>
                 <div className={classes.fileEdit}>
                     <IconButton style={{ position: "absolute", right: 0, padding: 0, paddingRight: "12px" }} onClick={() => {
@@ -164,7 +182,11 @@ export default function TestNote(ctx: any) {
                     addFile={addFile}
                     setSelectFile={setSelectFile}
                     setOpenContext={setOpenContext}
+                    selectFile={selectFile}
+                    contextPosition={contextPosition}
                     setContextPosition={setConextPosition}
+                    ctx={ctx}
+                    client={client}
                 />}
             </div>
             {selectFile !== undefined && (
@@ -493,6 +515,8 @@ export default function TestNote(ctx: any) {
                 setOpenContext={setOpenContext}
                 setFileView={setFileView}
                 setSelectFile={setSelectFile}
+                fileView={fileView}
+                setAddFile={setAddFile}
             />}
         </div>
     );

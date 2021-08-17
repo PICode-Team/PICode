@@ -132,6 +132,8 @@ export function Layout(ctx: any) {
         <Sidebar {...ctx} />
 
         {React.cloneElement(ctx.children, {
+          path: ctx.path,
+          session: ctx.session,
           ws:
             ws.current !== null &&
             ws.current!.readyState === WebSocket.OPEN &&

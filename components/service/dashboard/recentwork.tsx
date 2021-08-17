@@ -110,17 +110,28 @@ export default function RecentWork() {
             }
 
             tmpContent.push(
-                <div style={{ padding: "0px 20px", height: "100%", cursor: "pointer" }}
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        window.location.href = `/code?projectName=${i.projectName}`
-                    }}>
+                <div style={{ padding: "0px 20px", height: "100%" }}>
                     <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }} className={classes.carouselContent}>
                         <div style={{ padding: "30px" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                <div style={{ cursor: "pointer" }} onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    window.location.href = `/manage?projectName=${i.projectName}`
+                                }}>
+                                    To Issue
+                                </div>
+                                <div style={{ cursor: "pointer" }} onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    window.location.href = `/code?projectName=${i.projectName}`
+                                }}>
+                                    To Cord
+                                </div>
+                            </div>
                             {i.projectThumbnail === undefined ?
-                                <img alt="logo" style={{ maxWidth: "256px", paddingBottom: "20px", maxHeight: "256px" }} src={`/images/picode-7.svg`} />
-                                : <img alt="logo" style={{ maxWidth: "256px", paddingBottom: "20px", maxHeight: "256px" }} src={`/api/temp/${i.projectThumbnail}`} />
+                                <img alt="logo" style={{ maxWidth: "128px", paddingBottom: "20px", maxHeight: "128px" }} src={`/images/picode-7.svg`} />
+                                : <img alt="logo" style={{ maxWidth: "128px", paddingBottom: "20px", maxHeight: "128px" }} src={`/api/temp/${i.projectThumbnail}`} />
                             }
                             <div style={{ display: "block" }}>
                                 <span className={classes.tableContent}>Project Name : </span>

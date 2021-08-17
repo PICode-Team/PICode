@@ -10,7 +10,7 @@ interface INoteContent {
 export default function QueryUpdate(
     documentId: string,
     path: string,
-    content: INoteContent[]
+    content?: INoteContent[]
 ) {
     let UPDATEQUERY = gql`
         mutation {
@@ -22,5 +22,15 @@ export default function QueryUpdate(
         }
     `;
 
+    if (content === undefined) {
+        UPDATEQUERY = gql`
+        mutation {
+            updateDocument(
+                documentId: "${documentId}"
+                path:"${path}"
+            )
+        }
+    `;
+    }
     return UPDATEQUERY;
 }

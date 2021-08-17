@@ -13,7 +13,9 @@ interface INoteContextProps {
     client: any,
     setOpenContext: React.Dispatch<React.SetStateAction<boolean>>,
     setFileView: React.Dispatch<React.SetStateAction<IFileView[] | undefined>>,
-    setSelectFile: React.Dispatch<React.SetStateAction<IFileView | undefined>>
+    setSelectFile: React.Dispatch<React.SetStateAction<IFileView | undefined>>,
+    fileView: IFileView[] | undefined,
+    setAddFile: React.Dispatch<React.SetStateAction<boolean>>,
 }
 
 export default function NoteContext({
@@ -22,7 +24,9 @@ export default function NoteContext({
     client,
     setOpenContext,
     setFileView,
-    setSelectFile }: INoteContextProps) {
+    setSelectFile,
+    fileView,
+    setAddFile }: INoteContextProps) {
     return <div
         onClick={(e) => {
             e.stopPropagation();
@@ -36,7 +40,12 @@ export default function NoteContext({
         }}
     >
         <div
-            className={classes.contextRow}>
+            className={classes.contextRow}
+            onClick={() => {
+                setAddFile(true)
+                setOpenContext(false)
+            }}
+        >
             <span>New File</span> <AddIcon style={{ height: "20px" }} />
         </div>
         <div
@@ -44,9 +53,17 @@ export default function NoteContext({
             onClick={(e) => {
                 e.stopPropagation();
                 setOpenContext(false)
-                client.mutate({
-                    mutation: QueryDelete(contextPosition.target),
-                });
+                if (fileView === undefined) return;
+                let node = fileView.find((v) => v.documentId === contextPosition.target)
+                if (node !== undefined) {
+                    for (let i of fileView) {
+                        if (i.path.includes(node.path)) {
+                            client.mutate({
+                                mutation: QueryDelete(i.documentId),
+                            });
+                        }
+                    }
+                }
                 client
                     .query({
                         query: GetQuery(),
@@ -60,5 +77,5 @@ export default function NoteContext({
         >
             <span>Delete</span> <Delete style={{ height: "20px" }} />
         </div>
-    </div>
+    </div >
 }

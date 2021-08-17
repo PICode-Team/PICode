@@ -471,7 +471,6 @@ export default function Messenger({ ws, userId }: { ws: any; userId: string }) {
 
       ws.current.onmessage = (msg: any) => {
         const message = JSON.parse(msg.data);
-
         if (message.category === "chat") {
           switch (message.type) {
             case "createChannel":

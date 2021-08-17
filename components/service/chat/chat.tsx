@@ -379,7 +379,6 @@ export default function Chat(ctx: any) {
 
       ctx.ws.current.onmessage = (msg: any) => {
         const message = JSON.parse(msg.data);
-
         if (message.category === "chat") {
           switch (message.type) {
             case "createChannel":
@@ -574,9 +573,8 @@ export default function Chat(ctx: any) {
               style={{
                 top: `${(Number(messageRef.current?.offsetTop) ?? 0) - 44}px`,
               }}
-              className={`${classes.newMessage} ${
-                newMessage && classes.visible
-              }`}
+              className={`${classes.newMessage} ${newMessage && classes.visible
+                }`}
               onClick={() => {
                 endRef.current?.scrollIntoView({ behavior: "smooth" });
               }}

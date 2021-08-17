@@ -160,6 +160,7 @@ export default function Code(ctx: any): JSX.Element {
   const [terminalUuid, setTerminalUuid] = useState<string[]>([]);
   const [openTerminalCount, setOpenTerminalCount] = useState<number>(0);
   const [terminalContent, setTerminalContent] = useState<{ [key: string]: string[] }>({});
+  const [render, setRender] = useState<string[]>([]);
 
   function loadProject(projectName: string) {
     if (ctx.ws.current && ctx.ws.current.readyState === WebSocket.OPEN) {
@@ -331,28 +332,35 @@ export default function Code(ctx: any): JSX.Element {
         } else if (message.category === "terminal") {
           switch (message.type) {
             case "createTerminal": {
-              let tmp = terminalUuid
+              let tmp = []
+              let tmpTerminal = cloneDeep(terminalUuid)
+              for (let i of tmpTerminal) {
+                tmp.push(i)
+              }
               tmp.push(message.data.uuid)
               setTerminalUuid(tmp)
               break;
             }
             case "commandTerminal": {
-              let tmpContent = cloneDeep(terminalContent);
+              let tmpContent = terminalContent;
               if (tmpContent[message.data.uuid as string] === undefined) {
-                let tmp = [message.data.message.command]
-                setTerminalContent({ ...terminalContent, tmp })
+                tmpContent[message.data.uuid as string] = [message.data.message]
+                setTerminalContent(tmpContent)
               } else {
-                let tmp = tmpContent[message.data.uuid];
-                tmp.push(message.data.message.command)
-                setTerminalContent({ ...terminalContent, tmp })
+                tmpContent[message.data.uuid as string].push(message.data.message)
+                setTerminalContent(tmpContent)
+                setRender([message.data.message])
               }
               break;
             }
             case "deleteTerminal": {
               let tmp = [];
-              for (let i of terminalUuid) {
+              let tmpTerminal = cloneDeep(terminalUuid)
+              for (let i of tmpTerminal) {
                 if (i !== message.data.uuid) {
                   tmp.push(i)
+                } else {
+                  delete terminalContent[message.data.uuid as string]
                 }
               }
               setOpenTerminalCount(tmp.length)
@@ -399,6 +407,42 @@ export default function Code(ctx: any): JSX.Element {
               break;
             default:
               break;
+          }
+        } else if (message.category === "terminal") {
+          switch (message.type) {
+            case "createTerminal": {
+              let tmp = []
+              let tmpTerminal = cloneDeep(terminalUuid)
+              for (let i of tmpTerminal) {
+                tmp.push(i)
+              }
+              tmp.push(message.data.uuid)
+              setTerminalUuid(tmp)
+              break;
+            }
+            case "commandTerminal": {
+              let tmpContent = terminalContent;
+              if (tmpContent[message.data.uuid as string] === undefined) {
+                tmpContent[message.data.uuid as string] = [message.data.message]
+
+                setTerminalContent(tmpContent)
+              } else {
+                tmpContent[message.data.uuid as string].push(message.data.message)
+                setTerminalContent(tmpContent)
+              }
+              break;
+            }
+            case "deleteTerminal": {
+              let tmp = [];
+              for (let i of terminalUuid) {
+                if (i !== message.data.uuid) {
+                  tmp.push(i)
+                }
+              }
+              setOpenTerminalCount(tmp.length)
+              setTerminalUuid(tmp)
+              break;
+            }
           }
         }
       });

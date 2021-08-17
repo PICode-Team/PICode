@@ -5,7 +5,6 @@ import { terminalStyle } from "../../../../styles/service/code/code";
 import { throttle } from "lodash";
 
 function Terminal(props: any): JSX.Element {
-
   return <div
     contentEditable={false}
     draggable={false}
@@ -14,6 +13,7 @@ function Terminal(props: any): JSX.Element {
     <span contentEditable={true} draggable={true} style={{ outline: "none", fontFamily: "monospace", fontSize: "14px" }}
       onKeyDown={(e: any) => {
         if (e.key === "Enter") {
+          e.preventDefault();
           props.ws.current.send(JSON.stringify({
             category: "terminal",
             type: "commandTerminal",
