@@ -9,6 +9,8 @@ import terminal from "./terminal";
 import user from "./user";
 import issue from "./issue";
 import kanban from "./kanban";
+import alarm from './alarm'
+import milestone from './milestone'
 
 const SocketFuncs = {
     chat,
@@ -18,15 +20,17 @@ const SocketFuncs = {
     user,
     issue,
     kanban,
+    alarm,
+    milestone
 };
 
 export function webSocketInit(server: expressWs.Application) {
     server.ws("/", (ws, req) => {
-        if (req?.query?.userId === undefined) {
+        if (req.query?.userId === undefined) {
             return ws.close();
         }
 
-        const userId = req?.query?.userId as string;
+        const userId = req.query?.userId as string;
         ws.on("message", (msg) => {
             if (req.query.userId === undefined) {
                 return;
