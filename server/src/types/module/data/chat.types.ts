@@ -9,5 +9,13 @@ export interface TChatChannelData {
 
 export type TChatType = 'channel' | 'direct'
 
-export interface TChatLogDataParam { sender: string, chatName: string, message: string, time?: string }
+export interface TChatLogDataParam { 
+    sender: string,
+    chatName: string, 
+    message: string, 
+    time?: string
+    threadList?: TChatLogData[],
+    chatId?: string
+}
+
 export type TChatLogData = Required<Omit<TChatLogDataParam, 'chatName'>>

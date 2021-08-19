@@ -32,6 +32,6 @@ function deleteMilestone(userId: string, mileStoneData: Pick<TMilestoneData, "uu
     getSocket(userId).send(sendData);
 }
 
-export default function issue(userId: string, packet: TSocketPacket) {
+export default function milestone(userId: string, packet: TSocketPacket) {
     milestoneLoadFuncs[packet.type](userId, packet.data);
 }

@@ -8,6 +8,7 @@ import next from "next";
 import envConfig from "./config/env";
 import expressWs from "express-ws";
 import { webSocketInit } from "./module/socket/socket";
+import IntervalManager from "./lib/interval";
 
 async function main() {
     const dev = envConfig.NODE_ENV !== "production";
@@ -41,6 +42,7 @@ async function main() {
     }
 
     server.listen(PORT, () => {
+        IntervalManager.run();
         console.log(
             `██████╗░██╗  ░█████╗░░█████╗░██████╗░███████╗  ░██████╗███████╗██████╗░██╗░░░██╗███████╗██████╗░`
         );
