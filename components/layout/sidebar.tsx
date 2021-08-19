@@ -4,6 +4,7 @@ import { rowStyle, sidebarStyle } from "../../styles/layout/sidebar";
 import { sidebarData } from "./data";
 import { RadioButtonUnchecked, MenuRounded } from "@material-ui/icons";
 
+
 function checkTogglePath(path: string): boolean {
   if (path === "/") return false;
   return true;
@@ -53,6 +54,6 @@ export function Sidebar() {
       >
         <MenuRounded />
       </div>
-    </div>
+    </div >
   );
 }

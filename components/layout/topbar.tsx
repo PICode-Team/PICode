@@ -8,9 +8,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { toDark, toWhite } from "../../modules/theme";
 import { TopbarStyle } from "../../styles/layout/topbar";
 import AccountCircleRoundedIcon from "@material-ui/icons/AccountCircleRounded";
+import NotificationsIcon from '@material-ui/icons/Notifications';
 import UserInfo from "./item/tooltip";
 import { useEffect } from "react";
 import { ISocket } from ".";
+import AlertDialog from "./item/alert";
 
 interface IUserWorkInfo {
   userId: string;
@@ -22,6 +24,7 @@ export function Topbar(ctx: any) {
   const dispatch = useDispatch();
   const classes = TopbarStyle();
   const [open, setOpen] = React.useState<boolean>(false);
+  const [openAlert, setOpenAlert] = React.useState<boolean>(false);
   const [data, setData] = React.useState<{
     userId: string;
     userName: string;
@@ -124,6 +127,16 @@ export function Topbar(ctx: any) {
             <Brightness4Icon />
           </IconButton>
         </div>
+        <div className={classes.themeButton}>
+          <IconButton
+            style={{ color: theme === "dark" ? "#fff" : "#121212" }}
+            onClick={() => {
+              setOpenAlert(!openAlert);
+            }}
+          >
+            <NotificationsIcon />
+          </IconButton>
+        </div>
         <div className={classes.loginUserInfo}>
           {ctx.loginUser !== undefined &&
             ctx.loginUser.length > 1 &&
@@ -133,6 +146,10 @@ export function Topbar(ctx: any) {
       {open === true && (
         <UserInfo open={open} setOpen={setOpen} data={data} theme={theme} />
       )}
+      {openAlert && (
+        <AlertDialog />
+      )}
+      {console.log(openAlert)}
     </React.Fragment>
   );
 }
