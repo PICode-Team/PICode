@@ -8,11 +8,10 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import React from "react";
 import { useRouter } from 'next/router';
 
-export default function MakeIssue(props: any) {
+export default function MakeKanban(props: any) {
     const [title, setTitle] = React.useState<string>("");
-    const [assigner, setAssigner] = React.useState<string>("");
     const [column, setColumn] = React.useState<string>("");
-    const [content, setContent] = React.useState<string>("");
+    const [projectName, setProjectName] = React.useState<string>("");
     const [milestone, setMilestone] = React.useState<string>("");
     const router = useRouter();
 
@@ -25,25 +24,7 @@ export default function MakeIssue(props: any) {
                         To subscribe to this website, please enter your email address here. We will send updates
                         occasionally.
                     </DialogContentText>
-                    title
-                    <br />
                     <input placeholder={title} onChange={(e) => setTitle(e.target.value)} />
-                    <br />
-                    assigner
-                    <br />
-                    <input placeholder={assigner} onChange={(e) => setAssigner(e.target.value)} />
-                    <br />
-                    state
-                    <br />
-                    <input placeholder={column} onChange={(e) => setColumn(e.target.value)} />
-                    <br />
-                    content
-                    <br />
-                    <input placeholder={content} multiple onChange={(e) => setContent(e.target.value)} />
-                    <br />
-                    milestone
-                    <br />
-                    <input placeholder={milestone} onChange={(e) => setMilestone(e.target.value)} />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => props.setOpen(false)} color="primary">
@@ -51,24 +32,17 @@ export default function MakeIssue(props: any) {
                     </Button>
                     <Button onClick={() => {
                         let payload = {
-                            issueData: {
-                                title: title,
-                                kanban: props.kanban,
-                                assigner: "test",
-                                column: column,
-                                content: content,
-                            }
+                            title: title,
+                            projectName: router.query.projectName,
                         }
-                        console.log(payload)
                         props.ws.send(JSON.stringify({
-                            category: "issue",
-                            type: "createIssue",
+                            category: "kanban",
+                            type: "createKanban",
                             data: payload,
                         }))
                         props.setOpen(false)
-                        // window.location.reload()
                     }} color="primary">
-                        Submit
+                        Subscribe
                     </Button>
                 </DialogActions>
             </Dialog>

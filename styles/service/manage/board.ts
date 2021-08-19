@@ -27,7 +27,6 @@ export const boardStyle = makeStyles((theme: IThemeStyle) =>
             alignItems: "center",
             padding: "5px",
             cursor: "pointer",
-            borderRadius: "5px",
             lineHeight: "30px",
             background: theme.backgroundColor.step1,
         },
@@ -38,24 +37,23 @@ export const boardStyle = makeStyles((theme: IThemeStyle) =>
         content: {
             width: "calc(100% - 80px)",
             height: "calc(100% - 70px)",
-            padding: "10px",
             margin: "0px 40px",
             background: theme.backgroundColor.step1,
+            color: theme.font.high.color,
         },
         kanbanItem: {
             width: "100%",
-            height: "80px",
-            padding: "10px",
-            "&:hover": {
-                background: theme.backgroundColor.step3,
-                cursor: "pointer",
-            },
+            height: "50px",
         },
         kanbanItemContent: {
             width: "100%",
             height: "100%",
-            background: theme.backgroundColor.step2,
-            color: theme.font.high.color,
+            color: theme.font.low.color,
+            borderBottom: `1px solid ${theme.backgroundColor.step3}`,
+            "&:hover": {
+                background: theme.backgroundColor.step3,
+                cursor: "pointer",
+            },
         },
     })
 );

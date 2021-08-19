@@ -4,8 +4,7 @@ import { useRouter } from "next/router";
 import React from "react";
 import { manageStyle } from "../../../styles/service/manage";
 import Board from "./board";
-import Issue from "./issue";
-import MakeIssue from "./makeissue";
+import Milestone from "./milestone";
 
 export default function Manage(ctx: any) {
     const classes = manageStyle();
@@ -21,7 +20,7 @@ export default function Manage(ctx: any) {
             case "Board":
                 return <Board ctx={ctx} setCreate={setCreate} kanban={kanban} />
             default:
-                return <></>
+                return <Milestone ctx={ctx} setCreate={setCreate} milestone={milestone} />
         }
     }
 
@@ -33,15 +32,15 @@ export default function Manage(ctx: any) {
                     switch (content.type) {
                         case "getKanban":
                             setKanban(content.data.kanbans)
+                            break;
                         default:
-                            console.log(1)
                     }
                 } else if (content.category === "milestone") {
                     switch (content.type) {
-                        case "getMilestones":
-                            setMilestone(content.data.milestone)
+                        case "getMilestone":
+                            setMilestone(content.data)
+                            break;
                         default:
-                            console.log(1)
                     }
                 }
             })
@@ -57,7 +56,7 @@ export default function Manage(ctx: any) {
             ctx.ws.current.send(
                 JSON.stringify({
                     category: "milestone",
-                    type: "getMilestones",
+                    type: "getMilestone",
                     data: {}
                 })
             )
@@ -65,13 +64,9 @@ export default function Manage(ctx: any) {
         }
     }, [ctx.ws])
 
-    React.useEffect(() => {
-    }, [])
-
-
     return <div style={{ width: "100%", height: "100%" }}>
         <div className={classes.title}>
-            {router.query.projectName}'s Issue
+            Project/{router.query.projectName} Manage
         </div>
         <div className={classes.content}>
             <div className={classes.projectContent}>
