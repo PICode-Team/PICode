@@ -3,9 +3,9 @@ import DataChatManager from "../data/chatManager";
 import { getSocket, makePacket } from "./manager";
 
 
-function sendMessage(sender: string, target: string, message: string) {
+function sendMessage(sender: string, target: string, { message, parentChatId }: { message: string, parentChatId?: string}) {
     const sendData = JSON.stringify(makePacket('chat', 'sendMessage', { message, sender }))
-    DataChatManager.saveChat(sender, target, message)
+    DataChatManager.saveChat(sender, target, message, parentChatId)
 
     if (sender !== target) {
         getSocket(sender)?.send(sendData)
@@ -14,12 +14,11 @@ function sendMessage(sender: string, target: string, message: string) {
     getSocket(target)?.send(sendData)
 }
 
-function createChannel(creator: string, chatName: string, data: {}) {
-    console.log(data)
+function createChannel(creator: string, chatName: string, data: { description?: string }) {
     DataChatManager.createChannel({
         userId: creator,
         chatName,
-        description: '',
+        description: data?.description ?? '',
         chatParticipant: [creator]
     })
 }
@@ -45,7 +44,7 @@ export default function chat(userId: string, packet: TSocketPacket) {
 
     switch (packet.type) {
         case 'sendMessage': {
-            sendMessage(userId, packet.data.target, packet.data.msg)
+            sendMessage(userId, packet.data.target, packet.data)
             break
         }
         case 'createChannel': {
@@ -61,7 +60,7 @@ export default function chat(userId: string, packet: TSocketPacket) {
             break
         }
         case 'getChatLogList': {
-            getChatLogList(userId, packet.data.taret)
+            getChatLogList(userId, packet.data.target)
             break
         }
     }

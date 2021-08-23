@@ -3,36 +3,50 @@ import fs from 'fs'
 import { TChatChannelData, TChatLogData, TChatLogDataParam, TChatType } from "../../types/module/data/chat.types";
 import { getJsonData, setJsonData } from "./fileManager";
 import { getTime } from "../datetime";
-
+import { v4 as uuidv4 } from 'uuid';
 
 const ChatQueue: TChatLogDataParam[] = []
 
 export default class DataChatManager {
     static async run() {
         setInterval(() => {
-            const time = getTime()
             const originData = ChatQueue.shift()
 
             if (originData === undefined) {
                 return
             }
+            const time = getTime()
+            const parentChatTime = originData.chatId?.split('-')?.slice(0, 3)?.join('-')
 
-            const chatObject = { ...originData, time } as Required<TChatLogDataParam>
-            const chatLogFileName = getTime(time, 'YYYY-MM-DD HH')
+            const chatLogFileName = parentChatTime ?? getTime(time, 'YY-MM-DD')
+            const chatObject = { ...originData, time, threadList: [] } as Required<TChatLogDataParam>
             const chatDir = `${this.getChatDataPath()}/${this.getDirName(chatObject.sender!, chatObject.chatName!)}/log`
             const chatLogFilePath = `${chatDir}/${chatLogFileName}`
+
+            chatObject.chatId = `${chatLogFileName}-${uuidv4()}`
 
             if (!fs.existsSync(chatDir)) {
                 fs.mkdirSync(chatDir, { recursive: true })
             }
 
             const chatLogData: TChatLogData[] = (() => {
-                const saveObject = { ...chatObject, chatName: undefined }
+                const saveObject: TChatLogData = { ...{ ...chatObject, chatName: undefined } }
                 if (!fs.existsSync(chatLogFilePath)) {
                     return [saveObject]
-                } else {
-                    return [...getJsonData(chatLogFilePath), saveObject]
                 }
+
+                const originChatData = getJsonData(chatLogFilePath) as TChatLogData[]
+                if (originData.chatId === undefined) {
+                    return [...originChatData, saveObject]
+                }
+
+                const parentChat = originChatData.find(v => v.chatId === originData.chatId)
+
+                if (parentChat === undefined) {
+                    return originChatData
+                }
+                parentChat.threadList.push(saveObject)
+                return originChatData
             })()
 
             setJsonData(chatLogFilePath, chatLogData)
@@ -73,8 +87,8 @@ export default class DataChatManager {
 
     }
 
-    static saveChat(sender: string, chatName: string, message: string) {
-        ChatQueue.push({ sender, chatName, message })
+    static saveChat(sender: string, chatName: string, message: string, chatId?: string) {
+        ChatQueue.push({ sender, chatName, message, chatId })
     }
 
     static getChatLogList(userId: string, chatName: string) {
