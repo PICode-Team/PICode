@@ -3,6 +3,7 @@ export type TUploadManager = {
 };
 
 export type TUploadMimeType =
+    | "image/svg+xml"
     | "image/png"
     | "image/png"
     | "image/jpeg"

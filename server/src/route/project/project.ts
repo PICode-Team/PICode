@@ -15,7 +15,7 @@ router.get("/", sessionRouter, (req, res) => {
     return res.json({ code: ResponseCode.ok, projectList: projectDataList });
 });
 
-router.post("/", (req, res) => {
+router.post("/", sessionRouter, (req, res) => {
     const userId = req.session.userId as string;
     const projectInfo = req.body?.projectInfo;
     const dockerInfo = req.body?.dockerInfo;
@@ -30,7 +30,7 @@ router.post("/", (req, res) => {
     return res.json({ code: ResponseCode.ok });
 });
 
-router.put("/", (req, res) => {
+router.put("/", sessionRouter, (req, res) => {
     const userId = req.session.userId as string;
     const projectName = req.body?.projectName as string;
     const projectInfo = req.body?.projectInfo as TProjectUpdateData;
@@ -48,7 +48,7 @@ router.put("/", (req, res) => {
     return res.json({ code: ResponseCode.ok });
 });
 
-router.delete("/", (req, res) => {
+router.delete("/", sessionRouter, (req, res) => {
     const userId = req.session.userId as string;
     const projectName = req.query?.projectName as string;
 

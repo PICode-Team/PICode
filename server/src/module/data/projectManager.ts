@@ -150,7 +150,7 @@ export default class DataProjectManager {
                         ...DataProjectManager.getProjectInfo(projectId),
                         projectLanguage: fileToSize,
                     } as TProjectUpdateData);
-                    delete DataUploadManager.UploadFileManager[uploadFileId];
+                    DataUploadManager.deleteUploadFileInfo(uploadFileId);
                 }
             },
         })
@@ -209,36 +209,35 @@ export default class DataProjectManager {
         if (this.getProjectId(userId, projectName) !== undefined) {
             return false;
         }
-
+        const func: {
+            [key in string]: (projectId: string, source: any) => boolean;
+        } = {
+            gitUrl: this.gitCloneFromURL,
+            upload: this.createProjectFromFile,
+            nothing: this.createEmptyProject,
+        };
         try {
+            DataUploadManager.loadUploadFileInfo();
             const projectId = uuidv4();
-            const func: {
-                [key in string]: (projectId: string, source: any) => boolean;
-            } = {
-                gitUrl: this.gitCloneFromURL,
-                upload: this.createProjectFromFile,
-                nothing: this.createEmptyProject,
-            };
+
             if (!func[source.type](projectId, source)) {
                 return false;
             }
 
-            if (!fs.existsSync(this.getProjectDataPath(projectId))) {
-                fs.mkdirSync(this.getProjectDataPath(projectId), {
-                    recursive: true,
-                });
-            }
+            fs.mkdirSync(this.getProjectDataPath(projectId), { recursive: true });
+
             if (projectThumbnail !== undefined) {
-                const extension = DataUploadManager.UploadFileManager[projectThumbnail].originalname.split(".").pop();
                 if (!fs.existsSync(StaticDirectoryPath)) {
                     fs.mkdirSync(StaticDirectoryPath, {
                         recursive: true,
                     });
                 }
+                const extension = DataUploadManager.UploadFileManager[projectThumbnail].originalname.split(".").pop();
                 if (!handle(`${UploadDirectoryPath}/${projectThumbnail}`, `${StaticDirectoryPath}/${projectThumbnail}.${extension}`)) {
                     return false;
                 }
                 projectThumbnail = `${projectThumbnail}.${extension}`;
+                DataUploadManager.deleteUploadFileInfo(projectThumbnail);
             }
             this.setProjectInfo(projectId, {
                 projectId: projectId,
@@ -257,6 +256,7 @@ export default class DataProjectManager {
     }
 
     static update(userId: string, projectName: string, participantIncluded: boolean, projectInfo: TProjectUpdateData, dockerInfo: TDockerUpdateData): boolean {
+        DataUploadManager.loadUploadFileInfo();
         const projectId = this.getProjectId(userId, projectName);
         if (projectId === undefined) {
             return false;
@@ -269,8 +269,16 @@ export default class DataProjectManager {
             if (projectData === undefined) {
                 return false;
             }
-            if (projectInfo.projectThumbnail !== undefined) {
-                fs.unlinkSync(`${this.getProjectDataPath(projectId)}/${projectData.projectThumbnail}`);
+            if (projectInfo.projectThumbnail !== undefined && path.parse(projectData.projectThumbnail as string).name !== projectInfo.projectThumbnail) {
+                const extension = DataUploadManager.UploadFileManager[projectInfo.projectThumbnail].originalname.split(".").pop();
+                if (!handle(`${UploadDirectoryPath}/${projectInfo.projectThumbnail}`, `${StaticDirectoryPath}/${projectInfo.projectThumbnail}.${extension}`)) {
+                    return false;
+                }
+                if (projectData.projectThumbnail !== undefined) {
+                    fs.unlinkSync(`${StaticDirectoryPath}/${projectData.projectThumbnail}`);
+                }
+                projectData.projectThumbnail = `${projectInfo.projectThumbnail}.${extension}`;
+                DataUploadManager.deleteUploadFileInfo(projectInfo.projectThumbnail);
             }
             if (
                 !this.setProjectInfo(projectId, {

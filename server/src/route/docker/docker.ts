@@ -7,11 +7,7 @@ const router = express.Router();
 
 router.get("/", sessionRouter, (req, res) => {
     const userId = req.session.userId as string;
-    const projectName = req.body?.projectName;
-
-    if (projectName === undefined) {
-        return res.json({ code: ResponseCode.missingParameter });
-    }
+    const projectName = req.query?.projectName as string;
 
     const dockerInfo = DataDockerManager.get(userId, projectName);
     return res.json(dockerInfo !== undefined ? { code: ResponseCode.ok, dockerInfo: dockerInfo } : { code: ResponseCode.internalError });

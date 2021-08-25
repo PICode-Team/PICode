@@ -237,12 +237,18 @@ export default class DataDockerManager {
             log.error(`[DataDockerManager] manage -> fail to getDockerInfo`);
             return false;
         }
-        this.commandDockerSync(`docker stop ${dockerInfo.containerName}`);
         this.commandDockerAsync(
-            `docker rm ${dockerInfo.containerName}`,
-            () => removeData(DataProjectManager.getProjectDataPath(projectId)),
+            `docker stop ${dockerInfo.containerName}`,
+            () => {
+                this.commandDockerAsync(
+                    `docker rm ${dockerInfo.containerName}`,
+                    () => removeData(DataProjectManager.getProjectDataPath(projectId)),
+                    (error) => log.error(error)
+                );
+            },
             (error) => log.error(error)
         );
+
         return true;
     }
 }
