@@ -15,12 +15,13 @@ router.get("/", sessionRouter, (req, res) => {
     return res.json({ code: ResponseCode.ok, projectList: projectDataList });
 });
 
-router.post("/", (req, res) => {
+router.post("/", sessionRouter, (req, res) => {
     const userId = req.session.userId as string;
     const projectInfo = req.body?.projectInfo;
+    const dockerInfo = req.body?.dockerInfo;
     const source = req.body?.source ?? {};
 
-    if (!DataProjectManager.create(userId, projectInfo, source)) {
+    if (!DataProjectManager.create(userId, projectInfo, dockerInfo, source)) {
         return res.json({ code: ResponseCode.confilct });
     }
 
@@ -29,16 +30,16 @@ router.post("/", (req, res) => {
     return res.json({ code: ResponseCode.ok });
 });
 
-router.put("/", (req, res) => {
+router.put("/", sessionRouter, (req, res) => {
     const userId = req.session.userId as string;
     const projectName = req.body?.projectName as string;
     const projectInfo = req.body?.projectInfo as TProjectUpdateData;
-
+    const dockerInfo = req.body?.dockerInfo;
     if (projectName === undefined) {
         return res.json({ code: ResponseCode.missingParameter });
     }
 
-    if (!DataProjectManager.update(userId, projectName, false, projectInfo)) {
+    if (!DataProjectManager.update(userId, projectName, false, projectInfo, dockerInfo)) {
         return res.json({ code: ResponseCode.invaildRequest });
     }
 
@@ -47,7 +48,7 @@ router.put("/", (req, res) => {
     return res.json({ code: ResponseCode.ok });
 });
 
-router.delete("/", (req, res) => {
+router.delete("/", sessionRouter, (req, res) => {
     const userId = req.session.userId as string;
     const projectName = req.query?.projectName as string;
 

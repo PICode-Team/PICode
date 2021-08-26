@@ -15,8 +15,8 @@ const upload = multer({
         filename: function (req, file, cb) {
             const fileId = uuidv4();
             req.fileId = fileId;
-            DataUploadManager.UploadFileManager[fileId] = file;
-            DataUploadManager.saveUploadFileInfo();
+            DataUploadManager.loadUploadFileInfo();
+            DataUploadManager.saveUploadFileInfo(fileId, file);
             cb(null, fileId);
         },
     }),
