@@ -1,6 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useRef } from "react";
-import { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   chatStyle,
   createChannelStyle,
@@ -10,113 +8,51 @@ import {
   ArrowDropDown,
   FiberManualRecord,
   Close,
+  Search,
+  Add,
+  Cancel,
+  Clear,
+  FormatBold,
+  FormatItalic,
+  FormatStrikethrough,
+  Code,
+  FormatListNumbered,
+  Link,
+  FormatListBulleted,
+  AttachFile,
+  SentimentSatisfiedOutlined,
+  AlternateEmail,
+  TextFormatOutlined,
+  Send,
 } from "@material-ui/icons";
 import CustomButton from "../../items/input/button";
-import moment from "moment";
-import CustomTextField from "../../items/input/textfield";
 
-function getTime(
-  time: Date | string | undefined = undefined,
-  format: string = "YYYY-MM-DD HH:mm:ss"
-) {
-  return moment(time).format(format);
-}
-
-interface TChat {
+interface IChat {
   user: string;
   time: string;
   message: string;
+  chatId: string;
+  threadList: IChat[];
 }
 
-interface TDayBoundary {
+interface IDayBoundary {
   text: string;
 }
 
-function DayBoundary({ text }: TDayBoundary) {
-  const classes = chatStyle();
-
-  return (
-    <div className={classes.timeWrapper}>
-      <div className={classes.dayBoundary}></div>
-      <div className={classes.timeTicket}>{text}</div>
-    </div>
-  );
+interface IChannel {
+  chatName: string;
+  chatParticipant: string[];
+  creation: string;
+  description: string;
 }
 
-function MessageBox({ user, message, time }: TChat) {
-  const classes = chatStyle();
-  const timeValue = time.split(" ")[1].split(":");
-  const meridiem = Number(timeValue[0]) > 11 ? "PM" : "AM";
-  const hour = (() => {
-    const convertedHour = Number(timeValue[0]);
-
-    if (convertedHour % 12 === 0) {
-      return "12";
-    }
-
-    if (convertedHour < 12) {
-      return timeValue[0];
-    } else {
-      if (convertedHour % 12 < 10) {
-        return `0${convertedHour % 12}`;
-      }
-
-      return `${convertedHour % 12}`;
-    }
-  })();
-  const timeText = `${meridiem} ${hour}:${timeValue[1]} `;
-
-  return (
-    <div className={classes.messageBox}>
-      <div className={classes.user}></div>
-      <div>
-        <div className={classes.name}>{user}</div>
-        <div className={classes.textWrapper}>
-          <span className={classes.messageText}>{message}</span>
-          <span className={classes.time}>{timeText}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MessageReverseBox({ message, time }: TChat) {
-  const classes = chatStyle();
-  const timeValue = time.split(" ")[1].split(":");
-  const meridiem = Number(timeValue[0]) > 11 ? "PM" : "AM";
-  const hour = (() => {
-    const convertedHour = Number(timeValue[0]);
-
-    if (convertedHour % 12 === 0) {
-      return "12";
-    }
-
-    if (convertedHour < 12) {
-      return timeValue[0];
-    } else {
-      if (convertedHour % 12 < 10) {
-        return `0${convertedHour % 12}`;
-      }
-
-      return `${convertedHour % 12}`;
-    }
-  })();
-  const timeText = `${meridiem} ${hour}:${timeValue[1]} `;
-
-  return (
-    <div
-      className={classes.messageBox}
-      style={{ display: "flex", justifyContent: "flex-end" }}
-    >
-      <div
-        className={classes.textWrapper}
-        style={{ display: "flex", flexDirection: "row-reverse" }}
-      >
-        <div className={classes.messageText}>{message}</div>
-        <span className={classes.time}>{timeText}</span>
-      </div>
-    </div>
-  );
+interface IThread {
+  parentUser: string;
+  parentMessage: string;
+  chatName: string;
+  messages: IChat[];
+  parentId: string;
+  parentTime: string;
 }
 
 type TUser = {
@@ -128,7 +64,6 @@ function CreateChannel({
   userId,
   setModal,
   createChannel,
-  direct,
 }: {
   modal: boolean;
   userId: string;
@@ -138,7 +73,6 @@ function CreateChannel({
     description?: string,
     participant?: string[]
   ) => void;
-  direct: boolean;
 }) {
   const classes = createChannelStyle();
   const [name, setName] = useState<string>("");
@@ -168,7 +102,7 @@ function CreateChannel({
       ></div>
       <div className={`${classes.modal} ${!modal && classes.visibility}`}>
         <div className={classes.modalHeader}>
-          <span>{direct ? "Add Colleague" : "Create Channel"}</span>
+          <span>Create Channel</span>
           <div
             onClick={(event: React.MouseEvent<HTMLElement>) => {
               setModal(false);
@@ -224,11 +158,7 @@ function CreateChannel({
             onClick={() => {
               const participant = Object.keys(users).filter((v) => users[v]);
 
-              createChannel(
-                direct ? name : `#${name}`,
-                description,
-                participant
-              );
+              createChannel(`#${name}`, description, participant);
               setName("");
               setDescription("");
               setModal(false);
@@ -240,24 +170,39 @@ function CreateChannel({
   );
 }
 
-export interface TSocketPacket {
-  category: "chat" | "connect";
-  type: string;
-  data: any;
-}
-
 export default function Chat(ctx: any) {
   const classes = chatStyle();
-  const [messages, setMessages] = useState<TChat[]>([]);
+  const [messages, setMessages] = useState<IChat[]>([]);
   const [modal, setModal] = useState<boolean>(false);
   const [typing, setTyping] = useState<string[]>([]);
   const [target, setTarget] = useState<string>("");
-  const [channelList, setChannelList] = useState<string[]>([]);
-  const [directList, setDirectList] = useState<string[]>([]);
+  const [channelList, setChannelList] = useState<IChannel[]>([]);
+  const [newMessage, setNewMessage] = useState<boolean>(false);
+  const [thread, setThread] = useState<IThread | undefined>(undefined);
   const messageRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLInputElement>(null);
-  const [direct, setDirect] = useState<boolean>(false);
-  const [newMessage, setNewMessage] = useState<boolean>(false);
+
+  function enterEvent(event: KeyboardEvent) {
+    if (event.key === "Enter") {
+      if (
+        messageRef.current &&
+        target !== "" &&
+        messageRef.current.value !== ""
+      ) {
+        sendMessage(target, messageRef.current.value);
+        messageRef.current.value = "";
+        endRef.current!.scrollIntoView();
+      }
+    }
+  }
+
+  function handleResize() {
+    if (document.getElementsByClassName(classes.newMessage).length > 0) {
+      (
+        document.getElementsByClassName(classes.newMessage)[0] as HTMLElement
+      ).style.top = `${(Number(messageRef.current?.offsetTop) ?? 0) - 44}px`;
+    }
+  }
 
   function sendMessage(target: string, msg: string) {
     if (ctx.ws.current) {
@@ -271,20 +216,6 @@ export default function Chat(ctx: any) {
           },
         })
       );
-    }
-  }
-
-  function enterEvent(event: KeyboardEvent) {
-    if (event.key === "Enter") {
-      if (
-        messageRef.current &&
-        target !== "" &&
-        messageRef.current.value !== ""
-      ) {
-        sendMessage(target, messageRef.current.value);
-        messageRef.current.value = "";
-        endRef.current!.scrollIntoView();
-      }
     }
   }
 
@@ -348,6 +279,195 @@ export default function Chat(ctx: any) {
     }
   }
 
+  function DayBoundary({ text }: IDayBoundary) {
+    const classes = chatStyle();
+
+    return (
+      <div className={classes.timeWrapper}>
+        <div className={classes.dayBoundary}></div>
+        <div className={classes.timeTicket}>{text}</div>
+      </div>
+    );
+  }
+
+  function MessageBox({ user, message, time, chatId, threadList }: IChat) {
+    const classes = chatStyle();
+    const timeValue = time.split(" ")[1].split(":");
+    const meridiem = Number(timeValue[0]) > 11 ? "PM" : "AM";
+    const hour = (() => {
+      const convertedHour = Number(timeValue[0]);
+
+      if (convertedHour % 12 === 0) {
+        return "12";
+      }
+
+      if (convertedHour < 12) {
+        return timeValue[0];
+      } else {
+        if (convertedHour % 12 < 10) {
+          return `0${convertedHour % 12}`;
+        }
+
+        return `${convertedHour % 12}`;
+      }
+    })();
+    const timeText = `${meridiem} ${hour}:${timeValue[1]} `;
+
+    return (
+      <div className={classes.messageBox}>
+        <div className={classes.thumbnail}></div>
+        <div>
+          <div className={classes.target}>{user}</div>
+          <div className={classes.textWrapper}>
+            <span className={classes.messageText}>{message}</span>
+            <span className={classes.time}>{timeText}</span>
+          </div>
+          {threadList.length > 0 && (
+            <Thread
+              parentUser={user}
+              parentMessage={message}
+              parentId={chatId}
+              particiapnts={[]}
+              messages={threadList}
+              lastTime={threadList.slice(-1)[0].time}
+              parentTime={time}
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  function MessageReverseBox({
+    message,
+    time,
+    chatId,
+    threadList,
+    user,
+  }: IChat) {
+    const classes = chatStyle();
+    const timeValue = time.split(" ")[1].split(":");
+    const meridiem = Number(timeValue[0]) > 11 ? "PM" : "AM";
+    const hour = (() => {
+      const convertedHour = Number(timeValue[0]);
+
+      if (convertedHour % 12 === 0) {
+        return "12";
+      }
+
+      if (convertedHour < 12) {
+        return timeValue[0];
+      } else {
+        if (convertedHour % 12 < 10) {
+          return `0${convertedHour % 12}`;
+        }
+
+        return `${convertedHour % 12}`;
+      }
+    })();
+    const timeText = `${meridiem} ${hour}:${timeValue[1]} `;
+
+    return (
+      <div
+        className={classes.messageBox}
+        style={{ display: "flex", justifyContent: "flex-end" }}
+      >
+        <div
+          className={classes.textWrapper}
+          style={{ display: "flex", flexDirection: "row-reverse" }}
+        >
+          <div className={classes.messageText}>{message}</div>
+          <span className={classes.time}>{timeText}</span>
+        </div>
+        {threadList.length > 0 && (
+          <Thread
+            parentUser={user}
+            parentMessage={message}
+            parentId={chatId}
+            particiapnts={[]}
+            messages={threadList}
+            lastTime={threadList.slice(-1)[0].time}
+            parentTime={time}
+          />
+        )}
+      </div>
+    );
+  }
+
+  function Thread({
+    parentId,
+    particiapnts,
+    messages,
+    lastTime,
+    parentUser,
+    parentMessage,
+    parentTime,
+  }: {
+    parentId: string;
+    particiapnts: string[];
+    messages: IChat[];
+    lastTime: string;
+    parentUser: string;
+    parentMessage: string;
+    parentTime: string;
+  }) {
+    const classes = chatStyle();
+
+    return (
+      <div
+        className={classes.thread}
+        onClick={() => {
+          setThread({
+            parentUser: parentUser,
+            parentMessage: parentMessage,
+            parentTime: parentTime,
+            chatName: target,
+            parentId: parentId,
+            messages: messages,
+          });
+        }}
+      >
+        <div className={classes.threadParticipant}>
+          {particiapnts.map((v, i) => {
+            <div key={`${parentId}-thread-${i}`}></div>;
+          })}
+        </div>
+        <div className={classes.threadCount}>{messages.length} replies</div>
+        <div className={classes.lastThread}>Last reply 2 hours ago</div>
+      </div>
+    );
+  }
+
+  function renderMessage(messages: IChat[], classes: any, userId: string) {
+    const value = [];
+
+    for (let i = 0; i < messages.length; i++) {
+      const dayCheck =
+        i === 0 ||
+        messages[i - 1].time.split(" ")[0] !== messages[i].time.split(" ")[0];
+
+      if (dayCheck === true) {
+        value.push(<DayBoundary text={messages[i].time.split(" ")[0]} />);
+      }
+
+      if (messages[i].user === userId) {
+        value.push(
+          <MessageReverseBox {...messages[i]} key={`messagebox-${i}`} />
+        );
+      } else {
+        value.push(<MessageBox {...messages[i]} key={`messagebox-${i}`} />);
+      }
+    }
+
+    return (
+      <React.Fragment>
+        {value.map((v, i) => (
+          <React.Fragment key={`message-wrapper-${i}`}>{v}</React.Fragment>
+        ))}
+      </React.Fragment>
+    );
+  }
+
   useEffect(() => {
     setMessages([]);
 
@@ -355,14 +475,6 @@ export default function Chat(ctx: any) {
       getChatLogList(target);
     }
   }, [target]);
-
-  function handleResize() {
-    if (document.getElementsByClassName(classes.newMessage).length > 0) {
-      (
-        document.getElementsByClassName(classes.newMessage)[0] as HTMLElement
-      ).style.top = `${(Number(messageRef.current?.offsetTop) ?? 0) - 44}px`;
-    }
-  }
 
   useEffect(() => {
     window.addEventListener("resize", handleResize);
@@ -372,41 +484,45 @@ export default function Chat(ctx: any) {
   }, []);
 
   useEffect(() => {
+    document.addEventListener("keypress", enterEvent);
+    return () => {
+      document.removeEventListener("keypress", enterEvent);
+    };
+  }, [target]);
+
+  useEffect(() => {
     if (ctx.ws === null) return;
 
     if (ctx.ws.current) {
-      if (channelList.length === 0 && directList.length === 0) getChat();
+      if (channelList.length === 0) getChat();
 
       ctx.ws.current.onmessage = (msg: any) => {
         const message = JSON.parse(msg.data);
+
         if (message.category === "chat") {
           switch (message.type) {
             case "createChannel":
               getChat();
               break;
             case "getChat":
-              const channelList: string[] = [];
-              const directList: string[] = [];
+              const channelList: IChannel[] = [];
 
               message.data.forEach((v: any) => {
-                if (v.chatName.slice(0, 1) === "#") {
-                  channelList.push(v.chatName);
-                } else {
-                  directList.push(v.chatName);
-                }
+                channelList.push(v);
               });
 
               setChannelList(channelList);
-              setDirectList(directList);
               break;
 
             case "getChatLog":
-              const messageList: TChat[] = [];
+              const messageList: IChat[] = [];
               message.data.forEach((v: any) => {
                 messageList.push({
                   user: v.sender,
                   message: v.message,
                   time: v.time,
+                  chatId: v.chatId ?? "",
+                  threadList: v.threadList ?? [],
                 });
               });
               setMessages([...messages, ...messageList]);
@@ -429,7 +545,9 @@ export default function Chat(ctx: any) {
                 {
                   user: message.data.sender,
                   message: message.data.message,
-                  time: getTime(),
+                  time: message.data.time,
+                  chatId: message.data.chatId ?? "",
+                  threadList: message.data.threadList ?? [],
                 },
               ]);
               break;
@@ -439,151 +557,93 @@ export default function Chat(ctx: any) {
     }
   }, [ctx.ws.current, messages]);
 
-  useEffect(() => {
-    document.addEventListener("keypress", enterEvent);
-    return () => {
-      document.removeEventListener("keypress", enterEvent);
-    };
-  }, [target]);
-
   return (
     <div className={classes.root}>
       <div className={classes.sidebar}>
-        <div className={classes.title}>projectName</div>
-        <div className={classes.toolWrapper}>
-          <div className={classes.tool}>
-            <RadioButtonUnchecked />
-            Thread
-          </div>
-          <div className={classes.tool}>
-            <RadioButtonUnchecked />
-            Direct Message
-          </div>
-          <div className={classes.tool}>
-            <RadioButtonUnchecked />
-            Mention
-          </div>
-          <div className={classes.tool}>
-            <RadioButtonUnchecked />
-            Connect
-          </div>
-          <div className={classes.tool}>
-            <RadioButtonUnchecked />
-            Etc
+        <div className={classes.sidebarHeader}>
+          <div className={classes.search}>
+            <Search />
+            <input type="text" placeholder="Search User or Channel" />
           </div>
         </div>
-        <div className={classes.channelList}>
-          <div
-            className={classes.channelTitle}
-            onClick={(event: React.MouseEvent<HTMLElement>) => {
-              (event.currentTarget.parentNode as HTMLElement).classList.toggle(
-                classes.open
-              );
-            }}
-          >
-            <ArrowDropDown />
-            <span>Channel</span>
-          </div>
+        <div className={classes.sidebarContent}>
           {channelList.map((v, i) => {
             return (
               <div
-                className={`${classes.channel} ${classes.join}`}
+                className={classes.channel}
                 key={`channel-${i}`}
                 onClick={() => {
-                  setTarget(v);
+                  setTarget(v.chatName);
                 }}
               >
-                <span>
-                  <span className={classes.box}>+</span>
-                  <span>{v.replace("#", "")}</span>
-                </span>
-                <span className={classes.deleteChannel}>X</span>
-              </div>
-            );
-          })}
-
-          <div
-            className={classes.channel}
-            onClick={() => {
-              setModal(true);
-              setDirect(false);
-            }}
-          >
-            <span className={classes.addChannel}>+</span>
-            Add Channel
-          </div>
-        </div>
-        <div className={classes.directList}>
-          <div
-            className={classes.directTitle}
-            onClick={(event: React.MouseEvent<HTMLElement>) => {
-              (event.currentTarget.parentNode as HTMLElement).classList.toggle(
-                classes.open
-              );
-            }}
-          >
-            <ArrowDropDown />
-            <span>Direct Message</span>
-          </div>
-          {directList.map((v, i) => {
-            return (
-              <div
-                className={classes.direct}
-                key={`direct-${i}`}
-                onClick={() => {
-                  setTarget(v);
-                }}
-              >
-                <div className={classes.directUserWrapper}>
-                  <div className={classes.directUser}></div>
-                  <div className={classes.directName}>{v.replace("@", "")}</div>
+                <div className={classes.channelThumbnail}></div>
+                <div className={classes.channelBody}>
+                  <div className={classes.channelInfo}>
+                    <span className={classes.channelName}>{v.chatName}</span>
+                    <span className={classes.channelParticipant}>
+                      {v.chatName.includes("#") &&
+                        `(${v.chatParticipant.join(", ")})`}
+                    </span>
+                  </div>
+                  <div className={classes.lastContent}>
+                    last message bla bla...
+                  </div>
                 </div>
-                <span className={classes.deleteChannel}>X</span>
+                <div className={classes.channelTail}>
+                  <div className={classes.unreadMessage}></div>
+                  <div className={classes.lastTime}>44 minutes</div>
+                </div>
               </div>
             );
           })}
-
           <div
-            className={classes.channel}
+            className={classes.createChannel}
             onClick={() => {
               setModal(true);
-              setDirect(true);
             }}
           >
-            <span className={classes.addChannel}>+</span>
-            Add Colleague
+            <Add />
           </div>
         </div>
       </div>
       {target !== "" ? (
         <div className={classes.contentWrapper}>
-          <div className={classes.header}>
-            <div className={classes.headerInfo}>
-              <div className={classes.headerUser}></div>
-              <div className={classes.headerName}>{target}</div>
+          <div className={classes.contentHeader}>
+            <div className={classes.targetThubnail}></div>
+            <div className={classes.targetInfo}>
+              <div className={classes.targetName}>{target}</div>
+              <div className={classes.targetLast}>44 minutes later</div>
             </div>
-            <div className={classes.participant}></div>
+            <div className={classes.targetParticipant}></div>
           </div>
-          <div className={classes.contentBox} id="contentBox">
-            <div className={classes.content}>
+          <div className={classes.content}>
+            <div className={classes.contentBox}>
               {renderMessage(messages, classes, ctx.session.userId)}
               <div ref={endRef} />
             </div>
-            <div
-              style={{
-                top: `${(Number(messageRef.current?.offsetTop) ?? 0) - 44}px`,
-              }}
-              className={`${classes.newMessage} ${newMessage && classes.visible
-                }`}
-              onClick={() => {
-                endRef.current?.scrollIntoView({ behavior: "smooth" });
-              }}
-            >
-              <div>New Message</div>
-            </div>
           </div>
           <div className={classes.input}>
-            <input type="text" ref={messageRef} />
+            <div className={classes.inputBox}>
+              <input type="text" ref={messageRef} />
+              <div className={classes.interaction}>
+                <div>
+                  <FormatBold />
+                  <FormatItalic />
+                  <FormatStrikethrough style={{ marginRight: "1px" }} />
+                  <Code style={{ marginRight: "4px" }} />
+                  <Link style={{ marginRight: "1px" }} />
+                  <FormatListNumbered style={{ marginRight: "4px" }} />
+                  <FormatListBulleted />
+                </div>
+                <div>
+                  <TextFormatOutlined style={{ marginRight: "1px" }} />
+                  <AlternateEmail style={{ marginRight: "4px" }} />
+                  <SentimentSatisfiedOutlined style={{ marginRight: "4px" }} />
+                  <AttachFile style={{ marginRight: "4px" }} />
+                  <Send />
+                </div>
+              </div>
+            </div>
             {typing.length > 0 && (
               <div className={classes.entering}>
                 <span className={classes.enterIcon}>
@@ -592,7 +652,7 @@ export default function Chat(ctx: any) {
                   <FiberManualRecord />
                 </span>
                 <span className={classes.enterText}>
-                  {`${typing.map((v) => `${v} `)} is typing...`}
+                  {`${typing.map((v) => `${v} `)}is typing...`}
                 </span>
               </div>
             )}
@@ -600,7 +660,79 @@ export default function Chat(ctx: any) {
         </div>
       ) : (
         <div className={classes.emptyWrapper}>
-          <div>Select a target and start the conversation.</div>
+          Select a channel and start the conversation.
+        </div>
+      )}
+      {thread !== undefined && (
+        <div className={classes.activitybar}>
+          <div className={classes.activitybarHeader}>
+            <span>
+              <span className={classes.activitybarTitle}>Thread</span>
+              <span className={classes.activitybarTarget}>#project</span>
+            </span>
+            <span
+              className={classes.activitybarClose}
+              onClick={() => {
+                setThread(undefined);
+              }}
+            >
+              <Clear />
+            </span>
+          </div>
+          <div className={classes.activitybarContent}>
+            <div className={classes.contentBox}>
+              <MessageBox
+                user={thread.parentUser}
+                message={thread.parentMessage}
+                time={thread.parentTime}
+                threadList={[]}
+                chatId=""
+              />
+              {thread.messages.length > 0 && (
+                <DayBoundary text={`${thread.messages.length} replies`} />
+              )}
+              {renderMessage(thread.messages, classes, ctx.session.userId)}
+              <div ref={endRef} />
+            </div>
+            <div className={classes.input}>
+              <div className={classes.inputBox}>
+                <input type="text" ref={messageRef} />
+                <div className={classes.interaction}>
+                  <div>
+                    <FormatBold />
+                    <FormatItalic />
+                    <FormatStrikethrough style={{ marginRight: "1px" }} />
+                    <Code style={{ marginRight: "4px" }} />
+                    <Link style={{ marginRight: "1px" }} />
+                    <FormatListNumbered style={{ marginRight: "4px" }} />
+                    <FormatListBulleted />
+                  </div>
+                  <div>
+                    <TextFormatOutlined style={{ marginRight: "1px" }} />
+                    <AlternateEmail style={{ marginRight: "4px" }} />
+                    <SentimentSatisfiedOutlined
+                      style={{ marginRight: "4px" }}
+                    />
+                    <AttachFile style={{ marginRight: "4px" }} />
+                    <Send />
+                  </div>
+                </div>
+              </div>
+
+              {typing.length > 0 && (
+                <div className={classes.entering}>
+                  <span className={classes.enterIcon}>
+                    <FiberManualRecord />
+                    <FiberManualRecord />
+                    <FiberManualRecord />
+                  </span>
+                  <span className={classes.enterText}>
+                    {`${typing.map((v) => `${v} `)} is typing...`}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
       <CreateChannel
@@ -608,41 +740,7 @@ export default function Chat(ctx: any) {
         userId={ctx.session.userId}
         setModal={setModal}
         createChannel={createChannel}
-        direct={direct}
       />
     </div>
-  );
-}
-
-function renderMessage(messages: TChat[], classes: any, userId: string) {
-  const value = [];
-
-  for (let i = 0; i < messages.length; i++) {
-    const dayCheck =
-      i === 0 ||
-      messages[i - 1].time.split(" ")[0] !== messages[i].time.split(" ")[0];
-    if (messages[i].user === userId) {
-      value.push(
-        <React.Fragment>
-          {dayCheck && <DayBoundary text={messages[i].time.split(" ")[0]} />}
-          <MessageReverseBox {...messages[i]} key={`messagebox-${i}`} />
-        </React.Fragment>
-      );
-    } else {
-      value.push(
-        <React.Fragment>
-          {dayCheck && <DayBoundary text={messages[i].time.split(" ")[0]} />}
-          <MessageBox {...messages[i]} key={`messagebox-${i}`} />
-        </React.Fragment>
-      );
-    }
-  }
-
-  return (
-    <React.Fragment>
-      {value.map((v, i) => (
-        <React.Fragment key={`message-wrapper-${i}`}>{v}</React.Fragment>
-      ))}
-    </React.Fragment>
   );
 }
