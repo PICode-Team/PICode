@@ -4,6 +4,8 @@ import { getJsonData, isExists, setJsonData } from "./fileManager";
 import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import log from "../log";
+import DataAlarmManager from "./alarmManager";
+import DataUserManager from "./userManager";
 
 export default class DataMilestoneManager {
     static getMilestonePath(type: "milestoneListInfo.json" | "" = "") {
@@ -40,7 +42,7 @@ export default class DataMilestoneManager {
               });
     }
 
-    static create(milestoneData: TMilestoneCreateData) {
+    static create(userId: string, milestoneData: TMilestoneCreateData) {
         const milestoneUUID = uuidv4();
         fs.mkdirSync(this.getMilestonePath(), { recursive: true });
         if (!this.setMilestoneInfo(milestoneUUID, { ...milestoneData, uuid: milestoneUUID })) {
@@ -48,10 +50,24 @@ export default class DataMilestoneManager {
             return undefined;
         }
         log.info(`milestoneData created: ${milestoneUUID}`);
+        DataAlarmManager.create(userId, {
+            type: "milestone",
+            location: "",
+            content: `${userId} create ${milestoneData.title} milestone (${milestoneData.startDate}~${milestoneData.endDate})`,
+            checkAlarm: fs
+                .readdirSync(`${DataDirectoryPath}/user`)
+                .map((userId) => {
+                    return DataUserManager.get(userId)?.userId as string;
+                })
+                .reduce((list: { [ket in string]: boolean }, member) => {
+                    list[member] = true;
+                    return list;
+                }, {}),
+        });
         return milestoneUUID;
     }
 
-    static update(milestoneUUID: string, milestoneData: TMilestoneUpdateData) {
+    static update(userId: string, milestoneUUID: string, milestoneData: TMilestoneUpdateData) {
         const newMilestoneData = { ...(this.getMilestoneInfo(milestoneUUID) as TMilestoneData), ...milestoneData } as TMilestoneData;
         if (!this.setMilestoneInfo(milestoneUUID, newMilestoneData)) {
             log.error(`[DataMilestoneManager] update -> fail to setMilestoneInfo`);
@@ -59,15 +75,30 @@ export default class DataMilestoneManager {
         }
 
         log.info(`milestoneData updated: ${JSON.stringify(milestoneData)}`);
+        DataAlarmManager.create(userId, {
+            type: "milestone",
+            location: "",
+            content: `${userId} update ${newMilestoneData.title} milestone (${newMilestoneData.startDate}~${newMilestoneData.endDate})`,
+            checkAlarm: fs
+                .readdirSync(`${DataDirectoryPath}/user`)
+                .map((userId) => {
+                    return DataUserManager.get(userId)?.userId as string;
+                })
+                .reduce((list: { [ket in string]: boolean }, member) => {
+                    list[member] = true;
+                    return list;
+                }, {}),
+        });
         return true;
     }
 
-    static delete(milestoneUUID: string) {
+    static delete(userId: string, milestoneUUID: string) {
         if (milestoneUUID === undefined) {
             log.error(`[DataMilestoneManager] delete -> milestoneUUID is undefined`);
             return false;
         }
         const milestoneListData = this.getMilestoneInfo() as TMilestoneJsonData;
+        const deleteMilestoneTitle = milestoneListData[milestoneUUID].title;
         if (!Object.keys(milestoneListData).includes(milestoneUUID)) {
             log.error(`[DataMilestoneManager] delete -> milestoneUUID is not in ListData`);
         }
@@ -77,6 +108,20 @@ export default class DataMilestoneManager {
             return false;
         }
         log.info(`milestoneData deleted: ${JSON.stringify(milestoneUUID)}`);
+        DataAlarmManager.create(userId, {
+            type: "milestone",
+            location: "",
+            content: `${userId} delete ${deleteMilestoneTitle} milestone`,
+            checkAlarm: fs
+                .readdirSync(`${DataDirectoryPath}/user`)
+                .map((userId) => {
+                    return DataUserManager.get(userId)?.userId as string;
+                })
+                .reduce((list: { [ket in string]: boolean }, member) => {
+                    list[member] = true;
+                    return list;
+                }, {}),
+        });
         return true;
     }
 }

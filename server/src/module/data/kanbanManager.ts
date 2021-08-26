@@ -5,6 +5,7 @@ import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 import log from "../log";
 import DataProjectManager from "./projectManager";
+import DataAlarmManager from "./alarmManager";
 
 export default class DataKanbanManager {
     static isExists(kanbanUUID: string) {
@@ -76,7 +77,7 @@ export default class DataKanbanManager {
             }, []);
     }
 
-    static create(kanbanData: TkanbanCreateData) {
+    static create(userId: string, kanbanData: TkanbanCreateData) {
         const kanbanUUID = uuidv4();
         fs.mkdirSync(this.getKanbanPath(kanbanUUID), { recursive: true });
 
@@ -99,10 +100,22 @@ export default class DataKanbanManager {
         }
         setJsonData(`${this.getKanbanPath(kanbanUUID)}/issueList.json`, {});
         log.info(`kanbandata created: ${kanbanUUID}`);
+        DataAlarmManager.create(userId, {
+            type: "kanban",
+            location: "",
+            content: `${userId} create ${kanbanData.title} kanban at ${kanbanData.projectName}`,
+            checkAlarm: (DataProjectManager.getProjectInfo(DataProjectManager.getProjectId(userId, kanbanData.projectName) as string)?.projectParticipants as string[]).reduce(
+                (list: { [ket in string]: boolean }, member) => {
+                    list[member] = true;
+                    return list;
+                },
+                {}
+            ),
+        });
         return kanbanUUID;
     }
 
-    static update(kanbanUUID: string, kanbanData: Partial<TkanbanData>) {
+    static update(kanbanUUID: string, kanbanData: Partial<TkanbanData>, userId: string = "") {
         if (!isExists(this.getKanbanPath(kanbanUUID))) {
             log.error(`[DataKanbanManager] update -> could not find kanbanPath`);
             return false;
@@ -112,15 +125,43 @@ export default class DataKanbanManager {
             return false;
         }
         log.info(`kanbandata updated: ${JSON.stringify({ ...this.getKanbanInfo(kanbanUUID), ...kanbanData })}`);
+        if (userId !== "") {
+            DataAlarmManager.create(userId, {
+                type: "kanban",
+                location: "",
+                content: `${userId} update ${kanbanData.title ?? this.getKanbanInfo(kanbanUUID)?.title} kanban at ${kanbanData.projectName}`,
+                checkAlarm: (
+                    DataProjectManager.getProjectInfo(DataProjectManager.getProjectId(userId, kanbanData.projectName ?? (this.getKanbanInfo(kanbanUUID)?.projectName as string)) as string)
+                        ?.projectParticipants as string[]
+                ).reduce((list: { [ket in string]: boolean }, member) => {
+                    list[member] = true;
+                    return list;
+                }, {}),
+            });
+        }
         return true;
     }
 
-    static delete(kanbanUUID: string) {
+    static delete(userId: string, kanbanUUID: string) {
         if (kanbanUUID === undefined || !fs.readdirSync(this.getKanbanPath()).includes(kanbanUUID)) {
             log.error(`[DataKanbanManager] delete -> kanban uuid is not in kanbanList`);
             return false;
         }
+        const kanbanData = this.getKanbanInfo(kanbanUUID) as TkanbanData;
         fs.rmdirSync(this.getKanbanPath(kanbanUUID), { recursive: true });
+        log.info(`kanbandata deleted: kanbanUUID: ${kanbanUUID}`);
+        DataAlarmManager.create(userId, {
+            type: "kanban",
+            location: "",
+            content: `${userId} delete ${kanbanData.title} kanban at ${kanbanData.projectName}`,
+            checkAlarm: (DataProjectManager.getProjectInfo(DataProjectManager.getProjectId(userId, kanbanData.projectName) as string)?.projectParticipants as string[]).reduce(
+                (list: { [ket in string]: boolean }, member) => {
+                    list[member] = true;
+                    return list;
+                },
+                {}
+            ),
+        });
         return true;
     }
 }

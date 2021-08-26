@@ -239,15 +239,16 @@ export default class DataProjectManager {
                 projectThumbnail = `${projectThumbnail}.${extension}`;
                 DataUploadManager.deleteUploadFileInfo(projectThumbnail);
             }
+            const participants = projectParticipants ? [...projectParticipants, userId] : [userId];
             this.setProjectInfo(projectId, {
                 projectId: projectId,
                 projectName: projectName,
                 projectDescription: projectDescription,
                 projectThumbnail: projectThumbnail,
                 projectCreator: userId,
-                projectParticipants: projectParticipants ? [...projectParticipants, userId] : [userId],
+                projectParticipants: participants,
             });
-            DataDockerManager.create(dockerInfo, { projectId, projectName });
+            DataDockerManager.create(userId, dockerInfo, { projectId, projectName, projectParticipants: participants });
         } catch (err) {
             log.error(err.stack);
             return false;

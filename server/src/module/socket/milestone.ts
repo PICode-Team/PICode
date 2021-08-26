@@ -17,18 +17,20 @@ function getMilestone(userId: string, options?: Partial<TMilestoneData>) {
     getSocket(userId).send(sendData);
 }
 function createMilestone(userId: string, milestoneData: TMilestoneCreateData) {
-    const milestoneUUID = DataMilestoneManager.create(milestoneData);
+    const milestoneUUID = DataMilestoneManager.create(userId, milestoneData);
     const sendData = JSON.stringify(makePacket("milestone", "createMilestone", milestoneUUID ? { code: ResponseCode.ok, uuid: milestoneUUID } : { code: ResponseCode.internalError }));
     getSocket(userId).send(sendData);
 }
 function updateMilestone(userId: string, { milestoneUUID, milestoneData }: { milestoneUUID: string; milestoneData: TMilestoneUpdateData }) {
     const sendData = JSON.stringify(
-        makePacket("milestone", "updateMilestone", DataMilestoneManager.update(milestoneUUID, milestoneData) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError })
+        makePacket("milestone", "updateMilestone", DataMilestoneManager.update(userId, milestoneUUID, milestoneData) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError })
     );
     getSocket(userId).send(sendData);
 }
 function deleteMilestone(userId: string, mileStoneData: Pick<TMilestoneData, "uuid">) {
-    const sendData = JSON.stringify(makePacket("milestone", "deleteMilestone", DataMilestoneManager.delete(mileStoneData.uuid) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError }));
+    const sendData = JSON.stringify(
+        makePacket("milestone", "deleteMilestone", DataMilestoneManager.delete(userId, mileStoneData.uuid) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError })
+    );
     getSocket(userId).send(sendData);
 }
 
