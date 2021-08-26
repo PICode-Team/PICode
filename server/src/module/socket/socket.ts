@@ -11,6 +11,7 @@ import issue from "./issue";
 import kanban from "./kanban";
 import alarm from './alarm'
 import milestone from './milestone'
+import document from './document'
 
 const SocketFuncs = {
     chat,
@@ -21,7 +22,8 @@ const SocketFuncs = {
     issue,
     kanban,
     alarm,
-    milestone
+    milestone,
+    document,
 };
 
 export function webSocketInit(server: expressWs.Application) {
