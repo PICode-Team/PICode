@@ -18,20 +18,20 @@ function getKanban(userId: string, options: Partial<TkanbanData>) {
 }
 
 function createKanban(userId: string, kanbanData: TkanbanCreateData) {
-    const kanbanUUID = DataKanbanManager.create(kanbanData);
+    const kanbanUUID = DataKanbanManager.create(userId, kanbanData);
     const sendData = JSON.stringify(makePacket("kanban", "createKanban", kanbanUUID ? { code: ResponseCode.ok, uuid: kanbanUUID } : { code: ResponseCode.internalError }));
     getSocket(userId).send(sendData);
 }
 
 function updateKanban(userId: string, kanbanData: Partial<TkanbanData>) {
     const sendData = JSON.stringify(
-        makePacket("kanban", "updateKanban", DataKanbanManager.update(kanbanData.uuid as string, kanbanData) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError })
+        makePacket("kanban", "updateKanban", DataKanbanManager.update(kanbanData.uuid as string, kanbanData, userId) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError })
     );
     getSocket(userId).send(sendData);
 }
 
 function deleteKanban(userId: string, kanbanUUID: Pick<TkanbanData, "uuid">) {
-    const sendData = JSON.stringify(makePacket("kanban", "deleteKanban", DataKanbanManager.delete(kanbanUUID.uuid) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError }));
+    const sendData = JSON.stringify(makePacket("kanban", "deleteKanban", DataKanbanManager.delete(userId, kanbanUUID.uuid) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError }));
     getSocket(userId).send(sendData);
 }
 

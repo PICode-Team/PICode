@@ -5,6 +5,7 @@ import { TIssueData, TIssueListData, TIssueListJsonData } from "../../types/modu
 import { v4 as uuidv4 } from "uuid";
 import log from "../log";
 import DataKanbanManager from "./kanbanManager";
+import DataAlarmManager from "../data/alarmManager";
 
 export default class DataIssueManager {
     static getIssueListPath(kanbanUUID?: string, type: "issueList.json" | "" = "") {
@@ -87,7 +88,7 @@ export default class DataIssueManager {
         return this.getIssueInfo(kanbanUUID, issueUUID);
     }
 
-    static create(kanbanUUID: string, { title, creator, assigner, label, column, content, milestone }: TIssueData) {
+    static create(userId: string, kanbanUUID: string, { title, creator, assigner, label, column, content, milestone }: TIssueData) {
         const issueUUID = uuidv4();
         const issueNumber = this.getIssueNumber(kanbanUUID);
 
@@ -116,10 +117,16 @@ export default class DataIssueManager {
         }
 
         log.info(`issue created: issueUUID ${issueData.uuid}`);
+        DataAlarmManager.create(userId, {
+            type: "issue",
+            location: "",
+            content: `${userId} create ${issueData.title} issue : creator ${issueData.creator}, assigner ${issueData.assigner}`,
+            checkAlarm: { [issueData.creator]: true, [issueData.assigner]: true },
+        });
         return issueUUID;
     }
 
-    static update(kanbanUUID: string, { uuid, issueId, title, creator, assigner, label, column, content, milestone }: Partial<TIssueData>) {
+    static update(userId: string, kanbanUUID: string, { uuid, issueId, title, creator, assigner, label, column, content, milestone }: Partial<TIssueData>) {
         const issueListJsonData = this.getIssueListInfo(kanbanUUID);
         if (uuid === undefined || issueListJsonData === undefined) {
             log.error(`[dataIssueManager] update -> uuid or issueListJsonData is undefined`);
@@ -170,15 +177,23 @@ export default class DataIssueManager {
             DataKanbanManager.updateIssueCount(kanbanUUID, "doneIssue", "increase");
         }
         log.info(`issue updated: ${JSON.stringify(issueData)}`);
+        DataAlarmManager.create(userId, {
+            type: "issue",
+            location: "",
+            content: `${userId} update ${title ?? issueData.title}issue`,
+            checkAlarm: { [creator ?? issueData.creator]: true, [assigner ?? issueData.assigner]: true },
+        });
         return true;
     }
 
-    static delete(kanbanUUID: string, issueUUID: string) {
+    static delete(userId: string, kanbanUUID: string, issueUUID: string) {
         const issueListJsonData = this.getIssueListInfo(kanbanUUID);
         if (issueListJsonData === undefined || issueUUID == undefined) {
             log.error(`[dataIssueManager] delete -> isueListJsonData is undefined`);
             return false;
         }
+
+        const deleteIssueInfo = issueListJsonData[issueUUID];
         if (issueListJsonData[issueUUID].column === "Done") {
             DataKanbanManager.updateIssueCount(kanbanUUID, "doneIssue", "decrease");
         }
@@ -193,7 +208,14 @@ export default class DataIssueManager {
         }
         fs.rmdirSync(this.getIssueInfoPath(kanbanUUID, issueUUID), { recursive: true });
         DataKanbanManager.updateIssueCount(kanbanUUID, "totalIssue", "decrease");
+
         log.info(`issue deleted: ${issueUUID}`);
+        DataAlarmManager.create(userId, {
+            type: "issue",
+            location: "",
+            content: `${userId} delete ${deleteIssueInfo.title} issue`,
+            checkAlarm: { [deleteIssueInfo.creator]: true, [deleteIssueInfo.assigner]: true },
+        });
         return true;
     }
 }

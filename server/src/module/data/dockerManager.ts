@@ -7,6 +7,7 @@ import os from "os";
 import fs from "fs";
 import { getJsonData, isExists, removeData, setJsonData } from "./fileManager";
 import { DataDirectoryPath } from "../../types/module/data/data.types";
+import DataAlarmManager from "./alarmManager";
 
 export default class DataDockerManager {
     static getDockerNetworkPath(type?: "dockerNetworkList.json") {
@@ -119,7 +120,7 @@ export default class DataDockerManager {
             }, []);
     }
 
-    static create(dockerInfo: TDockerCreateData, { projectId, projectName }: { projectId: string; projectName: string }) {
+    static create(userId: string, dockerInfo: TDockerCreateData, { projectId, projectName, projectParticipants }: { projectId: string; projectName: string; projectParticipants: string[] }) {
         const tag = dockerInfo.tag ?? "latest";
         const projectPath = DataProjectManager.getProjectWorkPath(projectId);
         const containerName = dockerInfo.containerName ?? projectName;
@@ -144,6 +145,16 @@ export default class DataDockerManager {
                     status: this.commandDockerSync(`docker inspect --format="{{.State.Status}}" ${containerName}`).replace("/n", "") as "created" | "running" | "exited",
                     bridgeInfo: bridgeInfo,
                 });
+
+                DataAlarmManager.create(userId, {
+                    type: "code & container",
+                    location: "",
+                    content: `${userId} created code & continer : ${projectName}`,
+                    checkAlarm: projectParticipants.reduce((list: { [ket in string]: boolean }, member) => {
+                        list[member] = true;
+                        return list;
+                    }, {}),
+                });
                 log.info(`Create docker container: ${containerId}`);
             },
             (error) => {
@@ -163,13 +174,20 @@ export default class DataDockerManager {
 
         this.commandDockerAsync(
             `docker ${dockerCommand} ${dockerInfo.containerName}`,
-            (result: Buffer) => {
-                if (result.toString().replace("\n", "") === dockerInfo.containerName) {
-                    const state = this.commandDockerSync(`docker inspect --format="{{.State.Status}}" ${dockerInfo.containerName}`) as "created" | "running" | "exited";
-                    this.setDockerInfo(projectId, { ...dockerInfo, status: state })
-                        ? log.info(`Docker ${dockerCommand} ${dockerInfo.containerName}`)
-                        : log.error(`[DataDockerManager] manage -> fail to setDockerInfo`);
-                }
+            () => {
+                const state = this.commandDockerSync(`docker inspect --format="{{.State.Status}}" ${dockerInfo.containerName}`) as "created" | "running" | "exited";
+                this.setDockerInfo(projectId, { ...dockerInfo, status: state })
+                    ? log.info(`Docker ${dockerCommand} ${dockerInfo.containerName}`)
+                    : log.error(`[DataDockerManager] manage -> fail to setDockerInfo`);
+                DataAlarmManager.create(userId, {
+                    type: "code & container",
+                    location: "",
+                    content: `${userId} commands ${dockerCommand} to ${projectName} : ${dockerInfo.containerName}`,
+                    checkAlarm: (DataProjectManager.getProjectInfo(projectId)?.projectParticipants as string[]).reduce((list: { [ket in string]: boolean }, member) => {
+                        list[member] = true;
+                        return list;
+                    }, {}),
+                });
             },
             (error) => {
                 log.error(error);
@@ -226,7 +244,15 @@ export default class DataDockerManager {
             );
             newDockerInfo.containerName = dockerInfo.containerName as string;
         }
-
+        DataAlarmManager.create(userId, {
+            type: "code & container",
+            location: "",
+            content: `${userId} update ${projectName} : ${dockerInfo.containerName} infomation`,
+            checkAlarm: (DataProjectManager.getProjectInfo(projectId)?.projectParticipants as string[]).reduce((list: { [ket in string]: boolean }, member) => {
+                list[member] = true;
+                return list;
+            }, {}),
+        });
         return setJsonData(this.getDockerPath(projectId, "dockerInfo.json"), newDockerInfo) ? true : false;
     }
 
@@ -242,7 +268,18 @@ export default class DataDockerManager {
             () => {
                 this.commandDockerAsync(
                     `docker rm ${dockerInfo.containerName}`,
-                    () => removeData(DataProjectManager.getProjectDataPath(projectId)),
+                    () => {
+                        removeData(DataProjectManager.getProjectDataPath(projectId));
+                        DataAlarmManager.create(userId, {
+                            type: "code & container",
+                            location: "",
+                            content: `${userId} remove ${projectName} : ${dockerInfo.containerName}`,
+                            checkAlarm: (DataProjectManager.getProjectInfo(projectId)?.projectParticipants as string[]).reduce((list: { [ket in string]: boolean }, member) => {
+                                list[member] = true;
+                                return list;
+                            }, {}),
+                        });
+                    },
                     (error) => log.error(error)
                 );
             },
