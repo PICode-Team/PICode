@@ -23,6 +23,17 @@ export default class DataUserManager {
         return getJsonData(this.getUserDataPath(userId, "userInfo.json")) as TUserData;
     }
 
+    static getList(queryUser: string) {
+        return fs
+            .readdirSync(`${DataDirectoryPath}/user`)
+            .filter((user) => {
+                return queryUser === "" || user === queryUser;
+            })
+            .map((user) => {
+                return { ...(getJsonData(this.getUserDataPath(user, "userInfo.json")) as TUserData), passwd: undefined };
+            });
+    }
+
     static getUserList() {
         return readdirSync(`${DataDirectoryPath}/user`, { withFileTypes: true })
             .filter((v) => v.isDirectory())

@@ -8,7 +8,8 @@ const router = express.Router();
 
 router.get("/", sessionRouter, (req, res) => {
     const userId = req.session.userId as string;
-    const userData = DataUserManager.get(userId);
+    const queryUser = req.query?.userId as string | undefined;
+    const userData = queryUser ? DataUserManager.getList(queryUser) : DataUserManager.get(userId);
 
     if (userData === undefined) {
         return res.json({ code: ResponseCode.invaildRequest });
@@ -40,7 +41,7 @@ router.post("/", (req, res) => {
 });
 
 router.put("/", sessionRouter, (req, res) => {
-    const userId = "test123"; //req.session.userId as string;
+    const userId = req.session.userId as string;
     const passwd = req.body?.passwd;
     const userName = req.body?.userName;
     const userThumnail = req.body?.userThumbnail;
