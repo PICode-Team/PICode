@@ -1,12 +1,13 @@
-export type TkanbanData = {
-    uuid: string;
+export type TkanbanCreateData = {
     title: string;
-    column?: string;
-    columns?: string[];
     projectName: string;
-    milestone?: string;
-    totalIssue?: number;
-    doneIssue?: number;
+    columns?: string[];
 };
 
-export type TkanbanCreateData = Pick<TkanbanData, "columns" | "projectName" | "title"> & Pick<Partial<TkanbanData>, "uuid" | "milestone">;
+export type TkanbanData = TkanbanCreateData & {
+    uuid: string;
+    column?: string;
+    totalIssue?: number;
+    doneIssue?: number;
+    nextIssue?: number;
+};

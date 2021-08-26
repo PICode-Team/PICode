@@ -9,6 +9,9 @@ import { zip } from "zip-a-folder";
 import { TFileData, TUploadFileLanguageToSize } from "../../types/module/data/file.types";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
+import { TDockerCreateData, TDockerUpdateData } from "../../types/module/data/docker.types";
+import DataDockerManager from "./dockerManager";
+import { ResponseCode } from "../../constants/response";
 
 export default class DataProjectManager {
     static isExists(projectId: string, projectPath: (projectId: string, type?: undefined) => string) {
@@ -147,7 +150,7 @@ export default class DataProjectManager {
                         ...DataProjectManager.getProjectInfo(projectId),
                         projectLanguage: fileToSize,
                     } as TProjectUpdateData);
-                    delete DataUploadManager.UploadFileManager[uploadFileId];
+                    DataUploadManager.deleteUploadFileInfo(uploadFileId);
                 }
             },
         })
@@ -167,7 +170,7 @@ export default class DataProjectManager {
         return true;
     }
 
-    static get(userId: string, projectName?: string): TProjectData[] {
+    static get(userId: string, projectName?: string) {
         DataUploadManager.loadUploadFileInfo();
         if (!fs.existsSync(this.getProjectDefaultPath())) {
             fs.mkdirSync(this.getProjectDefaultPath(), { recursive: true });
@@ -182,13 +185,14 @@ export default class DataProjectManager {
                 );
             })
             .map((projectId) => {
-                return this.getProjectInfo(projectId) as TProjectData;
+                return { ...(this.getProjectInfo(projectId) as TProjectData), ...DataDockerManager.getDockerInfo(projectId) };
             });
     }
 
     static create(
         userId: string,
         { projectName, projectDescription, projectThumbnail, projectParticipants }: TprojectCreateData,
+        dockerInfo: TDockerCreateData,
         source: {
             type: "gitUrl" | "upload" | "nothing";
             gitUrl?: string;
@@ -205,36 +209,35 @@ export default class DataProjectManager {
         if (this.getProjectId(userId, projectName) !== undefined) {
             return false;
         }
-
+        const func: {
+            [key in string]: (projectId: string, source: any) => boolean;
+        } = {
+            gitUrl: this.gitCloneFromURL,
+            upload: this.createProjectFromFile,
+            nothing: this.createEmptyProject,
+        };
         try {
+            DataUploadManager.loadUploadFileInfo();
             const projectId = uuidv4();
-            const func: {
-                [key in string]: (projectId: string, source: any) => boolean;
-            } = {
-                gitUrl: this.gitCloneFromURL,
-                upload: this.createProjectFromFile,
-                nothing: this.createEmptyProject,
-            };
+
             if (!func[source.type](projectId, source)) {
                 return false;
             }
 
-            if (!fs.existsSync(this.getProjectDataPath(projectId))) {
-                fs.mkdirSync(this.getProjectDataPath(projectId), {
-                    recursive: true,
-                });
-            }
+            fs.mkdirSync(this.getProjectDataPath(projectId), { recursive: true });
+
             if (projectThumbnail !== undefined) {
-                const extension = DataUploadManager.UploadFileManager[projectThumbnail].originalname.split(".").pop();
                 if (!fs.existsSync(StaticDirectoryPath)) {
                     fs.mkdirSync(StaticDirectoryPath, {
                         recursive: true,
                     });
                 }
+                const extension = DataUploadManager.UploadFileManager[projectThumbnail].originalname.split(".").pop();
                 if (!handle(`${UploadDirectoryPath}/${projectThumbnail}`, `${StaticDirectoryPath}/${projectThumbnail}.${extension}`)) {
                     return false;
                 }
                 projectThumbnail = `${projectThumbnail}.${extension}`;
+                DataUploadManager.deleteUploadFileInfo(projectThumbnail);
             }
             this.setProjectInfo(projectId, {
                 projectId: projectId,
@@ -244,6 +247,7 @@ export default class DataProjectManager {
                 projectCreator: userId,
                 projectParticipants: projectParticipants ? [...projectParticipants, userId] : [userId],
             });
+            DataDockerManager.create(dockerInfo, { projectId, projectName });
         } catch (err) {
             log.error(err.stack);
             return false;
@@ -251,7 +255,8 @@ export default class DataProjectManager {
         return true;
     }
 
-    static update(userId: string, projectName: string, participantIncluded: boolean, projectInfo: TProjectUpdateData): boolean {
+    static update(userId: string, projectName: string, participantIncluded: boolean, projectInfo: TProjectUpdateData, dockerInfo: TDockerUpdateData): boolean {
+        DataUploadManager.loadUploadFileInfo();
         const projectId = this.getProjectId(userId, projectName);
         if (projectId === undefined) {
             return false;
@@ -264,8 +269,16 @@ export default class DataProjectManager {
             if (projectData === undefined) {
                 return false;
             }
-            if (projectInfo.projectThumbnail !== undefined) {
-                fs.unlinkSync(`${this.getProjectDataPath(projectId)}/${projectData.projectThumbnail}`);
+            if (projectInfo.projectThumbnail !== undefined && path.parse(projectData.projectThumbnail as string).name !== projectInfo.projectThumbnail) {
+                const extension = DataUploadManager.UploadFileManager[projectInfo.projectThumbnail].originalname.split(".").pop();
+                if (!handle(`${UploadDirectoryPath}/${projectInfo.projectThumbnail}`, `${StaticDirectoryPath}/${projectInfo.projectThumbnail}.${extension}`)) {
+                    return false;
+                }
+                if (projectData.projectThumbnail !== undefined) {
+                    fs.unlinkSync(`${StaticDirectoryPath}/${projectData.projectThumbnail}`);
+                }
+                projectData.projectThumbnail = `${projectInfo.projectThumbnail}.${extension}`;
+                DataUploadManager.deleteUploadFileInfo(projectInfo.projectThumbnail);
             }
             if (
                 !this.setProjectInfo(projectId, {
@@ -280,6 +293,7 @@ export default class DataProjectManager {
             ) {
                 return false;
             }
+            DataDockerManager.update(userId, projectName, dockerInfo);
         } catch (e) {
             log.error(e.stack);
             return false;
@@ -295,11 +309,10 @@ export default class DataProjectManager {
         if (!this.canEditProject(userId, projectId, false)) {
             return false;
         }
-
-        if (!this.isExists(projectId, this.getProjectWorkPath) || !removeData(this.getProjectWorkPath(projectId))) {
+        if (!DataDockerManager.delete(userId, projectName)) {
             return false;
         }
-        if (!this.isExists(projectId, this.getProjectDataPath) || !removeData(this.getProjectDataPath(projectId))) {
+        if (!this.isExists(projectId, this.getProjectWorkPath) || !removeData(this.getProjectWorkPath(projectId))) {
             return false;
         }
         return true;
@@ -339,47 +352,47 @@ export default class DataProjectManager {
     static changeProjectCode(userId: string, { projectName, filePath, code }: { projectName: string; filePath: string; code: string }) {
         const projectId = this.getProjectId(userId, projectName);
         if (projectId === undefined) {
-            return { message: "could not find project" };
+            return { code: ResponseCode.missingParameter };
         }
         if (!this.canEditProject(userId, projectId, true)) {
-            return { message: "could not edit project" };
+            return { code: ResponseCode.invaildRequest };
         }
 
         if (!writeCodeToFile(this.getProjectWorkPath(projectId), filePath, code)) {
-            return { message: "file write error" };
+            return { code: ResponseCode.internalError };
         }
-        return { message: "file write complete" };
+        return { code: ResponseCode.ok, path: filePath };
     }
 
     static moveProjectFileOrDir(userId: string, { projectName, oldPath, newPath }: { projectName: string; oldPath: string; newPath: string }) {
         const projectId = this.getProjectId(userId, projectName);
         if (projectId === undefined) {
-            return { message: "could not find project" };
+            return { code: ResponseCode.missingParameter };
         }
         if (!this.canEditProject(userId, projectId, true)) {
-            return { message: "could not change file or dir" };
+            return { code: ResponseCode.invaildRequest };
         }
         const fullOldPath = path.join(this.getProjectWorkPath(projectId), oldPath);
         const fullNewPath = path.join(this.getProjectWorkPath(projectId), newPath);
         if (!isExists(fullOldPath)) {
-            return { message: "could not find path" };
+            return { code: ResponseCode.internalError };
         }
         try {
             fs.renameSync(fullOldPath, fullNewPath);
         } catch (e) {
             log.error(e.stack);
-            return { message: "fail to move file or dir" };
+            return { code: ResponseCode.internalError };
         }
-        return { message: "move complete" };
+        return { code: ResponseCode.ok, path: newPath };
     }
 
     static deleteFileOrDir(userId: string, { projectName, deletePath, recursive }: { projectName: string; deletePath: string; recursive?: boolean }) {
         const projectId = this.getProjectId(userId, projectName);
         if (projectId === undefined) {
-            return { message: "could not find project" };
+            return { code: ResponseCode.missingParameter };
         }
         if (!this.canEditProject(userId, projectId, true)) {
-            return { message: "could not change file or dir" };
+            return { code: ResponseCode.invaildRequest };
         }
         try {
             const fullPath = path.join(this.getProjectWorkPath(projectId), deletePath);
@@ -390,52 +403,52 @@ export default class DataProjectManager {
             }
         } catch (e) {
             log.error(e.stack);
-            return { message: "fail to delete file or dir" };
+            return { code: ResponseCode.internalError };
         }
-        return { message: "delete complete" };
+        return { code: ResponseCode.ok, path: deletePath };
     }
     static createProjectFile(userId: string, { projectName, filePath }: { projectName: string; filePath: string }) {
         const projectId = this.getProjectId(userId, projectName);
         if (projectId === undefined) {
-            return { message: "could not find project" };
+            return { code: ResponseCode.missingParameter };
         }
         if (!this.canEditProject(userId, projectId, true)) {
-            return { message: "could not create file" };
+            return { code: ResponseCode.invaildRequest };
         }
         try {
             const fullPath = path.join(this.getProjectWorkPath(projectId), filePath);
             fs.openSync(fullPath, "w");
         } catch (e) {
             log.error(e.stack);
-            return { message: "fail to create file" };
+            return { code: ResponseCode.internalError };
         }
-        return { message: "create file complete" };
+        return { code: ResponseCode.ok, path: filePath };
     }
     static createProjectDir(userId: string, { projectName, dirPath }: { projectName: string; dirPath: string }) {
         const projectId = this.getProjectId(userId, projectName);
         if (projectId === undefined) {
-            return { message: "could not find project" };
+            return { code: ResponseCode.missingParameter };
         }
         if (!this.canEditProject(userId, projectId, true)) {
-            return { message: "could not create dir" };
+            return { code: ResponseCode.invaildRequest };
         }
         try {
             const fullPath = path.join(this.getProjectWorkPath(projectId), dirPath);
             fs.mkdirSync(fullPath, { recursive: true });
         } catch (e) {
             log.error(e.stack);
-            return { message: "fail to create dir" };
+            return { code: ResponseCode.internalError };
         }
-        return { message: "create dir complete" };
+        return { code: ResponseCode.ok, path: dirPath };
     }
 
     static getAllProjectPath(userId: string, projectName: string) {
         const projectId = this.getProjectId(userId, projectName);
         if (projectId === undefined) {
-            return { message: "could not find project" };
+            return { code: ResponseCode.missingParameter };
         }
         if (!this.canEditProject(userId, projectId, true)) {
-            return { message: "could not create dir" };
+            return { code: ResponseCode.invaildRequest };
         }
         const projectPath = DataProjectManager.getProjectWorkPath(projectId);
         return getAllChildren(projectId, projectPath, "/");

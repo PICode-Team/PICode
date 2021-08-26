@@ -2,10 +2,8 @@ import { DataDirectoryPath } from "../../types/module/data/data.types";
 import { TMilestoneCreateData, TMilestoneData, TMilestoneJsonData, TMilestoneUpdateData } from "../../types/module/data/milestone.types";
 import { getJsonData, isExists, setJsonData } from "./fileManager";
 import { v4 as uuidv4 } from "uuid";
-import DataKanbanManager from "./kanbanManager";
 import fs from "fs";
 import log from "../log";
-import { TkanbanData } from "../../types/module/data/kanban.types";
 
 export default class DataMilestoneManager {
     static getMilestonePath(type: "milestoneListInfo.json" | "" = "") {
@@ -44,11 +42,6 @@ export default class DataMilestoneManager {
 
     static create(milestoneData: TMilestoneCreateData) {
         const milestoneUUID = uuidv4();
-        if (milestoneData.kanban !== undefined) {
-            DataKanbanManager.update(milestoneData.kanban, { milestone: milestoneUUID });
-            delete milestoneData.kanban;
-        }
-
         fs.mkdirSync(this.getMilestonePath(), { recursive: true });
         if (!this.setMilestoneInfo(milestoneUUID, { ...milestoneData, uuid: milestoneUUID })) {
             log.error(`[DataMilestoneManager] create -> fail to setMilestoneInfo`);
@@ -59,11 +52,6 @@ export default class DataMilestoneManager {
     }
 
     static update(milestoneUUID: string, milestoneData: TMilestoneUpdateData) {
-        if (milestoneData.kanban !== undefined) {
-            DataKanbanManager.update(milestoneData.kanban, { milestone: milestoneUUID });
-            delete milestoneData.kanban;
-        }
-
         const newMilestoneData = { ...(this.getMilestoneInfo(milestoneUUID) as TMilestoneData), ...milestoneData } as TMilestoneData;
         if (!this.setMilestoneInfo(milestoneUUID, newMilestoneData)) {
             log.error(`[DataMilestoneManager] update -> fail to setMilestoneInfo`);
@@ -84,15 +72,6 @@ export default class DataMilestoneManager {
             log.error(`[DataMilestoneManager] delete -> milestoneUUID is not in ListData`);
         }
         delete milestoneListData[milestoneUUID];
-        const kanbanUUID = fs.readdirSync(DataKanbanManager.getKanbanPath()).find((kanban) => {
-            kanban !== "milestoneListInfo.json" && DataKanbanManager.getKanbanInfo(kanban)?.milestone === milestoneUUID;
-        });
-        if (kanbanUUID !== undefined) {
-            const kanbanData = DataKanbanManager.getKanbanInfo(kanbanUUID) as TkanbanData;
-            delete kanbanData.milestone;
-            DataKanbanManager.setKanbanInfo(kanbanUUID, kanbanData);
-        }
-
         if (!setJsonData(this.getMilestonePath("milestoneListInfo.json"), milestoneListData)) {
             log.error(`[DataMilestoneManager] update -> fail to setMilestoneInfo`);
             return false;

@@ -134,6 +134,7 @@ export function handle(
     const fileData = getFileInfo(oldPath);
     try {
         switch (fileData.mimetype.toLowerCase() as TUploadMimeType) {
+            case "image/svg+xml":
             case "image/png":
             case "image/bmp":
             case "image/jpeg": {
