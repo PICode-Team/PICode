@@ -2,6 +2,140 @@ import { makeStyles } from "@material-ui/styles";
 import createStyles from "@material-ui/styles/createStyles";
 import { IThemeStyle } from "../../theme";
 
+export const userModalStyle = makeStyles((theme: IThemeStyle) =>
+  createStyles({
+    overlay: {
+      width: "100%",
+      height: "100%",
+      position: "absolute",
+      backgroundColor: "black",
+      top: 0,
+      left: 0,
+      opacity: 0.4,
+      zIndex: 9999,
+    },
+    modal: {
+      width: "30%",
+      height: "40%",
+      position: "absolute",
+      top: 0,
+      left: 0,
+      backgroundColor: "#2c3239",
+      zIndex: 9999,
+      marginLeft: "35%",
+      marginTop: "10%",
+      borderRadius: "4px",
+    },
+    modalHeader: {
+      fontWeight: "bold",
+      color: theme.font.medium.color,
+      marginBottom: "12px",
+      padding: "8px 14px",
+      backgroundColor: "#434c57",
+    },
+    modalBody: {
+      height: "70%",
+    },
+    modalFooter: {
+      width: "100%",
+      display: "flex",
+      justifyContent: "flex-end",
+      alignItems: "flex-end",
+      "&>button": {
+        marginBottom: "-24px",
+      },
+    },
+    visibility: {
+      visibility: "hidden",
+    },
+    addedWrapper: {
+      display: "flex",
+      padding: "0px 4px",
+      marginBottom: "6px",
+    },
+    addedItem: {
+      height: "16px",
+      padding: "2px 4px",
+      backgroundColor: "#434c57",
+      borderRadius: "4px",
+      marginRight: "8px",
+      color: "#ffffff",
+      fontSize: "10px",
+      display: "flex",
+      alignItems: "center",
+      "&>div": {
+        display: "flex",
+        alignItems: "center",
+      },
+      "&>div>svg": {
+        marginLeft: "4px",
+        width: "10px",
+        height: "10px",
+        cursor: "pointer",
+      },
+    },
+    inputWrapper: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    input: {
+      "&>input": {
+        backgroundColor: "inherit",
+        border: "none",
+        outline: "none",
+        color: "#ffffff",
+      },
+    },
+    addButton: {
+      "&>button": {
+        border: "none",
+        outline: "none",
+        backgroundColor: "#4078b8",
+        color: "#ffffff",
+        fontSize: "12px",
+        width: "50px",
+        height: "20px",
+        borderRadius: "4px",
+        cursor: "pointer",
+        "&:hover": {
+          background: "#488cd9",
+          transition: "all 0.3s",
+        },
+      },
+    },
+
+    subTitle: {
+      padding: "4px 12px",
+      color: "#ffffff",
+    },
+    user: {
+      display: "flex",
+      justifyContent: "space-between",
+      padding: "4px 12px",
+      cursor: "pointer",
+      "&:hover": {
+        backgroundColor: "#3b4a4f",
+      },
+    },
+    userList: {},
+    userInfo: {
+      display: "flex",
+    },
+    thumbnail: {
+      width: "18px",
+      height: "18px",
+      backgroundColor: "#ffffff",
+      borderRadius: "12px",
+      marginRight: "6px",
+    },
+    userName: {
+      color: "#ffffff",
+    },
+    privileges: {},
+  })
+);
+
 export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
   createStyles({
     root: {
@@ -42,19 +176,21 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
       width: "100%",
       paddingTop: "16px",
       height: "100%",
-      cursor: "pointer",
     },
     typeContent: {
       width: "100%",
       height: "fit-content",
+      display: "flex",
+      gap: "30px",
     },
     typeNode: {
-      width: "500px",
-      height: "70px",
+      cursor: "pointer",
+      width: "250px",
       display: "flex",
       minWidth: "242px",
       alignItems: "center",
-      padding: "16px",
+      flexDirection: "column",
+      padding: "70px 30px",
       color: theme.font.medium.color,
       background: "#3b434c",
       "&:hover": {
@@ -62,14 +198,21 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
         transition: "all 0.3s",
         color: theme.font.low.color,
       },
-      "&>span": {
-        paddingLeft: "12px",
+      "&>svg": {
+        width: "100px",
+        height: "100px",
+      },
+      "&>div": {
+        fontSize: "24px",
+        fontWeight: "bold",
+        paddingTop: "15px",
       },
     },
     buttonBox: {
       display: "flex",
       width: "500px",
       justifyContent: "flex-end",
+      marginTop: "15px",
     },
     button: {
       width: "100px",
@@ -88,24 +231,20 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
       "&:nth-child(1)": {
         background: "#566372",
         "&:hover": {
-          background: theme.backgroundColor.step3,
+          background: "#647487",
           transition: "all 0.3s",
         },
       },
       "&:nth-child(2)": {
         background: "#4078b8",
         "&:hover": {
-          background: theme.backgroundColor.step3,
+          background: "#488cd9",
           transition: "all 0.3s",
         },
       },
     },
     inputContent: {
       width: "500px",
-      "&>div": {
-        color: theme.font.high.color,
-        fontSize: theme.font.small.size,
-      },
     },
 
     input: {
@@ -132,6 +271,7 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
       },
     },
     textarea: {
+      flex: 1,
       "&>textarea": {
         width: "100%",
         background: "#3b434c",
@@ -140,15 +280,42 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
         borderRadius: "2px",
         color: theme.font.high.color,
         marginTop: "8px",
-        marginBottom: "14px",
         lineHeight: "17px",
         fontFamily: "Arial",
         resize: "none",
         outline: "none",
+        height: "100px",
       },
       "&>span": {
         color: theme.font.high.color,
         fontSize: theme.font.small.size,
+      },
+    },
+    participant: {
+      display: "flex",
+      alignItems: "center",
+      marginTop: "16px",
+      "&>div": {
+        width: "100%",
+        backgroundColor: "#3b434c",
+        padding: "4px 8px",
+        border: "none",
+        borderRadius: "2px",
+        color: "#757575",
+        height: "32px",
+        flex: 1,
+        outline: "none",
+        lineHeight: "24px",
+        cursor: "pointer",
+        "&:hover": {
+          backgroundColor: "#4f5a66",
+        },
+      },
+      "&>span": {
+        color: theme.font.high.color,
+        fontSize: theme.font.small.size,
+        marginRight: "8px",
+        marginTop: "2px",
       },
     },
 
@@ -166,12 +333,13 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
     subTitle: {
       color: "#ffffff",
       marginBottom: "10px",
+      fontSize: "16px",
     },
 
     imageUpload: {
-      height: "150px",
+      height: "100px",
       width: "100%",
-      marginTop: "4px",
+      marginTop: "8px",
       marginBottom: "14px",
       border: `1px solid ${theme.font.small.color}`,
       display: "flex",
@@ -184,7 +352,7 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
       display: "flex",
       alignItems: "center",
       margin: "30px 0px",
-      marginBottom: "75px",
+      marginBottom: "65px",
       width: "120vh",
       justifyContent: "center",
     },
@@ -211,7 +379,7 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
       backgroundColor: "#90CAF9",
     },
     stepNumber: {
-      paddingTop: "6px",
+      paddingTop: "8px",
       paddingBottom: "10px",
       fontSize: "12px",
       "&>svg": {
@@ -219,10 +387,13 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
         width: "18px",
         height: "18px",
       },
+      "&>span": {
+        width: "18px",
+        height: "18px",
+      },
     },
     stepText: {
       whiteSpace: "nowrap",
-      paddingLeft: "5px",
       fontSize: "14px",
       fontWeight: "normal",
       color: "rgba(255, 255, 255, 0.55)",
@@ -235,6 +406,10 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
       backgroundColor: "#2c3239",
       padding: "30px",
       height: "calc(100% - 75px)",
+    },
+
+    required: {
+      color: "#C33030",
     },
   })
 );

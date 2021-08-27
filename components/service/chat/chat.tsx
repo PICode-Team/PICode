@@ -76,9 +76,9 @@ function CreateChannel({
 }) {
   const classes = createChannelStyle();
   const [name, setName] = useState<string>("");
-  const nameRef = useRef<HTMLInputElement>(null);
   const [description, setDescription] = useState<string>("");
   const [users, setUsers] = useState<TUser>({});
+  const nameRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {

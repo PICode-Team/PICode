@@ -4,8 +4,6 @@ import CreateNewFolderIcon from "@material-ui/icons/CreateNewFolder";
 import PublishIcon from "@material-ui/icons/Publish";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import { DefualtInput } from "./defualt";
-import { OptionalInput } from "./optional";
-import { Step, StepLabel, Stepper } from "@material-ui/core";
 import { Check } from "@material-ui/icons";
 
 interface TSource {
@@ -17,26 +15,42 @@ interface TSource {
   };
 }
 
-interface TProjectInfo {
+export interface IProjectInfo {
   projectName: string;
   projectDescription: string;
   projectThumbnail?: string;
-  projectParticipants?: any;
+  projectParticipants?: string[];
+}
+
+interface IDockerInfo {
+  containerName?: string;
+  image: string;
+  tag?: string;
+  bridgeName?: string;
+  bridgeAlias?: string;
 }
 
 interface TCreate {
-  projectInfo: TProjectInfo;
+  projectInfo: IProjectInfo;
+  dockerInfo: IDockerInfo;
   source?: TSource;
 }
 
 export default function Create() {
   const classes = createProjectStyle();
   const [type, setType] = React.useState<string>("");
-  const [defaultInput, setDefualtInput] = React.useState<TProjectInfo>({
+  const [defaultInput, setDefualtInput] = React.useState<IProjectInfo>({
     projectDescription: "",
     projectName: "",
     projectParticipants: undefined,
     projectThumbnail: undefined,
+  });
+  const [dockerInfo, setDockerInfo] = useState<IDockerInfo>({
+    containerName: "",
+    image: "",
+    tag: "",
+    bridgeName: "",
+    bridgeAlias: "",
   });
   const [source, setSource] = React.useState<TSource>();
   const [step, setStep] = useState<number>(1);
@@ -67,16 +81,27 @@ export default function Create() {
       projectName: string;
       projectDescription: string;
       projectThumbnail?: string;
-      projectParticipants?: string[] | string;
+      projectParticipants?: string[];
     } = defaultInput;
     if (defaultInput.projectParticipants !== undefined) {
-      resultInputData.projectParticipants =
-        defaultInput.projectParticipants.split(",");
+      resultInputData.projectParticipants = defaultInput.projectParticipants;
     }
 
     let payload: TCreate = {
       projectInfo: resultInputData,
-      source: source,
+      dockerInfo: {
+        containerName:
+          dockerInfo.containerName !== ""
+            ? dockerInfo.containerName
+            : undefined,
+        image: dockerInfo.image,
+        tag: dockerInfo.tag !== "" ? dockerInfo.tag : undefined,
+        bridgeName:
+          dockerInfo.bridgeName !== "" ? dockerInfo.bridgeName : undefined,
+        bridgeAlias:
+          dockerInfo.bridgeAlias !== "" ? dockerInfo.bridgeAlias : undefined,
+      },
+      source,
     };
 
     let data = await fetch(`http://localhost:8000/api/project`, {
@@ -95,29 +120,42 @@ export default function Create() {
 
   return (
     <div className={classes.root}>
-      <div className={classes.header}>Create Project</div>
+      <div className={classes.header}>{`Create Code & Container`}</div>
       <div className={classes.createWrapper}>
         <div>
           <div className={classes.stepper}>
             <div className={`${classes.step} ${classes.active}`}>
-              <div className={classes.stepNumber}>
-                {type !== "" ? <Check /> : 1}
+              <div
+                className={classes.stepNumber}
+                style={{ paddingBottom: step === 1 ? "15.2px" : "10px" }}
+              >
+                {step >= 2 ? <Check /> : <span>1</span>}
               </div>
-              <div className={classes.stepText}>
-                Select master blaster campaign settings
-              </div>
+              <div className={classes.stepText}>Select Type</div>
             </div>
             <div
-              className={`${classes.lail} ${type !== "" && classes.active}`}
+              className={`${classes.lail} ${step >= 2 && classes.active}`}
             ></div>
-            <div className={`${classes.step} ${type !== "" && classes.active}`}>
-              <div className={classes.stepNumber}>2</div>
-              <div className={classes.stepText}>Create an ad group</div>
+            <div className={`${classes.step} ${step >= 2 && classes.active}`}>
+              <div
+                className={classes.stepNumber}
+                style={{ paddingBottom: step < 3 ? "15.2px" : "10px" }}
+              >
+                {step >= 3 ? <Check /> : <span>2</span>}
+              </div>
+              <div className={classes.stepText}>Create Code</div>
             </div>
-            <div className={classes.lail}></div>
-            <div className={classes.step}>
-              <div className={classes.stepNumber}>3</div>
-              <div className={classes.stepText}>Create an ad</div>
+            <div
+              className={`${classes.lail} ${step === 3 && classes.active}`}
+            ></div>
+            <div className={`${classes.step} ${step === 3 && classes.active}`}>
+              <div
+                className={classes.stepNumber}
+                style={{ paddingBottom: "15.2px" }}
+              >
+                <span>3</span>
+              </div>
+              <div className={classes.stepText}>Create Container</div>
             </div>
           </div>
         </div>
@@ -126,40 +164,34 @@ export default function Create() {
             <div className={classes.content}>
               <div className={classes.typeContent}>
                 <div
-                  className={classes.selectContent}
+                  className={classes.typeNode}
                   onClick={() => {
                     setStep(2);
                     setType("defualt");
                   }}
                 >
-                  <div className={classes.typeNode}>
-                    <CreateNewFolderIcon />
-                    <span>Create a Project</span>
-                  </div>
+                  <CreateNewFolderIcon />
+                  <div>Create Project</div>
                 </div>
                 <div
-                  className={classes.selectContent}
+                  className={classes.typeNode}
                   onClick={() => {
                     setStep(2);
                     setType("git");
                   }}
                 >
-                  <div className={classes.typeNode}>
-                    <GitHubIcon />
-                    <span>Clone project in Git</span>
-                  </div>
+                  <GitHubIcon />
+                  <div>Clone Project</div>
                 </div>
                 <div
-                  className={classes.selectContent}
+                  className={classes.typeNode}
                   onClick={() => {
                     setStep(2);
                     setType("upload");
                   }}
                 >
-                  <div className={classes.typeNode}>
-                    <PublishIcon />
-                    <span>Upload your own Project</span>
-                  </div>
+                  <PublishIcon />
+                  <div>Upload Project</div>
                 </div>
               </div>
             </div>
@@ -170,15 +202,11 @@ export default function Create() {
               setDefualtInput={setDefualtInput}
               defaultInput={defaultInput}
               step={step}
-            />
-          )}
-          {type !== "" && (
-            <OptionalInput
-              type={type}
-              classes={classes}
               setSource={setSource}
               source={source}
-              step={step}
+              type={type}
+              dockerInfo={dockerInfo}
+              setDockerInfo={setDockerInfo}
             />
           )}
           {type !== "" && (
@@ -186,8 +214,23 @@ export default function Create() {
               <div
                 className={classes.button}
                 onClick={() => {
+                  if (step === 2) {
+                    setType("");
+                    setDefualtInput({
+                      projectDescription: "",
+                      projectName: "",
+                      projectParticipants: undefined,
+                      projectThumbnail: undefined,
+                    });
+                    setDockerInfo({
+                      containerName: "",
+                      image: "",
+                      tag: "",
+                      bridgeName: "",
+                      bridgeAlias: "",
+                    });
+                  }
                   setStep(step - 1);
-                  setType("");
                 }}
               >
                 PREV
