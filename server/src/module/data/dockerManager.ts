@@ -134,8 +134,8 @@ export default class DataDockerManager {
             command,
             (containerId: Buffer) => {
                 const bridgeInfo: TBridgeInfo = {};
-                if (dockerInfo.bridgeName !== undefined) {
-                    bridgeInfo[dockerInfo.bridgeName] = dockerInfo.bridgeAlias ? dockerInfo.bridgeAlias : undefined;
+                if (dockerInfo.bridgeName !== undefined || dockerInfo.bridgeAlias !== undefined) {
+                    bridgeInfo[dockerInfo.bridgeName ?? "bridge"] = dockerInfo.bridgeAlias ? dockerInfo.bridgeAlias : undefined;
                 }
                 this.setDockerInfo(projectId, {
                     containerName: containerName,
