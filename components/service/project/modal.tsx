@@ -93,10 +93,11 @@ export default function Modal({
           <div className={classes.userList}>
             {participantList
               .filter((item) => {
+                let check = true;
                 tempList.forEach((v) => {
-                  if (v.userId === item.userId) return false;
-                  return true;
+                  if (v.userId === item.userId) check = false;
                 });
+                return check;
               })
               .map((v, i) => (
                 <div
@@ -108,7 +109,7 @@ export default function Modal({
                 >
                   <div className={classes.userInfo}>
                     <div className={classes.thumbnail}></div>
-                    <div className={classes.userName}>testname</div>
+                    <div className={classes.userName}>{v.userName}</div>
                   </div>
                   <div className={classes.privileges}></div>
                 </div>

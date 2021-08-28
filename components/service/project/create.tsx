@@ -6,7 +6,7 @@ import GitHubIcon from "@material-ui/icons/GitHub";
 import { DefualtInput } from "./defualt";
 import { Check } from "@material-ui/icons";
 
-interface TSource {
+export interface TSource {
   type: string;
   gitUrl?: string;
   upload?: {
@@ -22,12 +22,15 @@ export interface IProjectInfo {
   projectParticipants?: string[];
 }
 
-interface IDockerInfo {
+export interface IDockerInfo {
   containerName?: string;
   image: string;
   tag?: string;
   bridgeName?: string;
   bridgeAlias?: string;
+  hostPort?: number;
+  containerPort?: number;
+  linkContainer?: string;
 }
 
 interface TCreate {
@@ -159,7 +162,8 @@ export default function Create() {
             </div>
           </div>
         </div>
-        <div>
+
+        <div style={{ overflow: "auto" }}>
           {type === "" && (
             <div className={classes.content}>
               <div className={classes.typeContent}>
@@ -196,56 +200,59 @@ export default function Create() {
               </div>
             </div>
           )}
+
           {type !== "" && (
-            <DefualtInput
-              classes={classes}
-              setDefualtInput={setDefualtInput}
-              defaultInput={defaultInput}
-              step={step}
-              setSource={setSource}
-              source={source}
-              type={type}
-              dockerInfo={dockerInfo}
-              setDockerInfo={setDockerInfo}
-            />
-          )}
-          {type !== "" && (
-            <div className={classes.buttonBox}>
-              <div
-                className={classes.button}
-                onClick={() => {
-                  if (step === 2) {
-                    setType("");
-                    setDefualtInput({
-                      projectDescription: "",
-                      projectName: "",
-                      projectParticipants: undefined,
-                      projectThumbnail: undefined,
-                    });
-                    setDockerInfo({
-                      containerName: "",
-                      image: "",
-                      tag: "",
-                      bridgeName: "",
-                      bridgeAlias: "",
-                    });
-                  }
-                  setStep(step - 1);
-                }}
-              >
-                PREV
-              </div>
-              <div
-                className={classes.button}
-                onClick={() => {
-                  if (step === 2) {
-                    setStep(3);
-                  } else {
-                    submitData();
-                  }
-                }}
-              >
-                {step === 3 ? "SUBMIT" : "NEXT"}
+            <div className={classes.content}>
+              <div className={classes.inputContent}>
+                <DefualtInput
+                  classes={classes}
+                  setDefualtInput={setDefualtInput}
+                  defaultInput={defaultInput}
+                  step={step}
+                  setSource={setSource}
+                  source={source}
+                  type={type}
+                  dockerInfo={dockerInfo}
+                  setDockerInfo={setDockerInfo}
+                />
+                <div className={classes.buttonBox}>
+                  <div
+                    className={classes.button}
+                    onClick={() => {
+                      if (step === 2) {
+                        setType("");
+                        setDefualtInput({
+                          projectDescription: "",
+                          projectName: "",
+                          projectParticipants: undefined,
+                          projectThumbnail: undefined,
+                        });
+                        setDockerInfo({
+                          containerName: "",
+                          image: "",
+                          tag: "",
+                          bridgeName: "",
+                          bridgeAlias: "",
+                        });
+                      }
+                      setStep(step - 1);
+                    }}
+                  >
+                    PREV
+                  </div>
+                  <div
+                    className={classes.button}
+                    onClick={() => {
+                      if (step === 2) {
+                        setStep(3);
+                      } else {
+                        submitData();
+                      }
+                    }}
+                  >
+                    {step === 3 ? "SUBMIT" : "NEXT"}
+                  </div>
+                </div>
               </div>
             </div>
           )}

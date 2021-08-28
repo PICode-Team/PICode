@@ -268,6 +268,7 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
         fontSize: theme.font.small.size,
         marginRight: "8px",
         marginTop: "2px",
+        width: "106px",
       },
     },
     textarea: {
@@ -307,8 +308,31 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
         outline: "none",
         lineHeight: "24px",
         cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
         "&:hover": {
           backgroundColor: "#4f5a66",
+        },
+        "&>div": {
+          height: "16px",
+          padding: "2px 4px",
+          backgroundColor: "#5b6878",
+          borderRadius: "4px",
+          marginRight: "8px",
+          color: "#ffffff",
+          fontSize: "10px",
+          display: "flex",
+          alignItems: "center",
+          "&>div": {
+            display: "flex",
+            alignItems: "center",
+          },
+          "&>div>svg": {
+            marginLeft: "4px",
+            width: "10px",
+            height: "10px",
+            cursor: "pointer",
+          },
         },
       },
       "&>span": {
@@ -321,7 +345,7 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
 
     divider: {
       width: "100%",
-      height: "41px",
+      height: "36px",
       display: "flex",
       alignItems: "center",
       "&>div": {

@@ -146,6 +146,16 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       padding: "8px 20px",
       display: "flex",
     },
+    messageInfo: {
+      "&:hover": {
+        "&>div>span>span": {
+          display: "none",
+        },
+        "&>div>span>div": {
+          display: "flex",
+        },
+      },
+    },
     thumbnail: {
       backgroundColor: "#E8912D",
       width: "22px",
@@ -174,6 +184,32 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       color: theme.font.high.color,
       fontSize: "10px",
       margin: "0px 5px",
+    },
+    interactionDivider: {
+      width: "1px",
+      height: "16px",
+      margin: "2px 0px",
+      backgroundColor: "#8092a8",
+    },
+    interactionIcon: {
+      padding: "4px",
+      height: "18px",
+      cursor: "pointer",
+      "&>svg": {
+        width: "14px",
+        height: "14px",
+        color: "#afc3db",
+      },
+      "&:hover": {
+        "&>svg": {
+          color: "#ffffff",
+        },
+      },
+    },
+    messageInteraction: {
+      display: "none",
+      backgroundColor: "#667485",
+      borderRadius: "4px",
     },
 
     activitybar: {
@@ -297,7 +333,12 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       alignItems: "center",
       height: "51px",
       padding: "4px 8px 0px",
-      "&>div>svg": {
+      "&>div": {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      },
+      "&>div>div>svg": {
         color: "#515C60",
         cursor: "pointer",
         "&:hover": {
@@ -429,7 +470,7 @@ export const createChannelStyle = makeStyles((theme: IThemeStyle) =>
       height: "40%",
       position: "absolute",
       display: "fixed",
-      backgroundColor: theme.backgroundColor.step1,
+      backgroundColor: "#2c3239",
       zIndex: 9999,
       marginLeft: "35%",
       marginTop: "10%",
@@ -463,14 +504,26 @@ export const createChannelStyle = makeStyles((theme: IThemeStyle) =>
       justifyContent: "flex-end",
       alignItems: "flex-end",
       "&>button": {
-        marginBottom: "-24px",
+        border: "none",
+        outline: "none",
+        backgroundColor: "#4078b8",
+        color: "#ffffff",
+        fontSize: "15px",
+        width: "76px",
+        height: "32px",
+        borderRadius: "4px",
+        cursor: "pointer",
+        "&:hover": {
+          background: "#488cd9",
+          transition: "all 0.3s",
+        },
       },
     },
     visibility: {
       visibility: "hidden",
     },
     input: {
-      backgroundColor: "#3b4a4f",
+      background: "#3b434c",
       color: "#ffffff",
       width: "100%",
       outline: "none",

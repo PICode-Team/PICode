@@ -24,6 +24,9 @@ import {
   AlternateEmail,
   TextFormatOutlined,
   Send,
+  Comment,
+  SmsOutlined,
+  FavoriteBorderOutlined,
 } from "@material-ui/icons";
 import CustomButton from "../../items/input/button";
 
@@ -40,7 +43,8 @@ interface IDayBoundary {
 }
 
 interface IChannel {
-  chatName: string;
+  chatName?: string;
+  userId?: string;
   chatParticipant: string[];
   creation: string;
   description: string;
@@ -58,6 +62,12 @@ interface IThread {
 type TUser = {
   [key in string]: boolean;
 };
+
+interface IUser {
+  userId: string;
+  userName: string;
+  userThumbnail?: string;
+}
 
 function CreateChannel({
   modal,
@@ -78,17 +88,36 @@ function CreateChannel({
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [users, setUsers] = useState<TUser>({});
+  const [userList, setUserList] = useState<IUser[]>([]);
+  const [isDirect, setIsDirect] = useState<boolean>(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const userList = ["1", "2", "3"].reduce((a: TUser, c: string) => {
-      if (c === userId) return a;
-      return { ...a, [c]: false };
+    getParticipantList();
+  }, []);
+
+  useEffect(() => {
+    const temp = userList.reduce((a: TUser, c: IUser) => {
+      if (c.userName === userId) return a;
+      return { ...a, [c.userName]: false };
     }, {});
 
-    // setUsers(userList)
-  }, []);
+    setUsers(temp);
+  }, [userList]);
+
+  const getParticipantList = async () => {
+    await fetch(`http://localhost:8000/api/userList`, {
+      method: "GET",
+      mode: "cors",
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.code === 200) {
+          setUserList(res.user);
+        }
+      });
+  };
 
   return (
     <React.Fragment>
@@ -114,7 +143,7 @@ function CreateChannel({
         <div className={classes.modalBody}>
           <input
             type="text"
-            placeholder="Channel Name"
+            placeholder={isDirect === false ? "Channel Name" : "User Name"}
             ref={nameRef}
             value={name}
             className={classes.input}
@@ -132,38 +161,62 @@ function CreateChannel({
               setDescription(event.currentTarget.value);
             }}
           />
+          <div
+            style={{
+              color: "#ffffff",
+              fontSize: "12px",
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
+            is Direct Message?
+            <input
+              type="checkbox"
+              checked={isDirect}
+              onClick={(e) => {
+                setIsDirect(!isDirect);
+              }}
+              style={{ verticalAlign: "middle" }}
+            />
+          </div>
           <div className={classes.participantWrapper}>
-            {Object.keys(users).map((v, i) => (
-              <div className={classes.participant} key={`checkbox-${i}`}>
-                <input
-                  type="checkbox"
-                  name={v}
-                  id={v}
-                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                    setUsers({
-                      ...users,
-                      [event.target.name]: event.target.checked,
-                    });
-                  }}
-                />
-                <label htmlFor={v}>{v}</label>
-              </div>
-            ))}
+            {!isDirect &&
+              Object.keys(users).map((v, i) => (
+                <div className={classes.participant} key={`checkbox-${i}`}>
+                  <input
+                    type="checkbox"
+                    name={v}
+                    id={v}
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                      setUsers({
+                        ...users,
+                        [event.target.name]: event.target.checked,
+                      });
+                    }}
+                  />
+                  <label htmlFor={v}>{v}</label>
+                </div>
+              ))}
           </div>
         </div>
         <div className={classes.modalFooter}>
-          <CustomButton
-            text="CREATE"
-            width="76px"
+          <button
             onClick={() => {
               const participant = Object.keys(users).filter((v) => users[v]);
 
-              createChannel(`#${name}`, description, participant);
+              createChannel(
+                `${!isDirect ? "#" : ""}${name}`,
+                description,
+                isDirect ? [name] : participant
+              );
               setName("");
               setDescription("");
+              setIsDirect(false);
               setModal(false);
             }}
-          />
+          >
+            Create
+          </button>
         </div>
       </div>
     </React.Fragment>
@@ -180,7 +233,9 @@ export default function Chat(ctx: any) {
   const [newMessage, setNewMessage] = useState<boolean>(false);
   const [thread, setThread] = useState<IThread | undefined>(undefined);
   const messageRef = useRef<HTMLInputElement>(null);
+  const threadMessageRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLInputElement>(null);
+  const threadEndRef = useRef<HTMLInputElement>(null);
 
   function enterEvent(event: KeyboardEvent) {
     if (event.key === "Enter") {
@@ -204,15 +259,16 @@ export default function Chat(ctx: any) {
     }
   }
 
-  function sendMessage(target: string, msg: string) {
+  function sendMessage(target: string, message: string, parentChatId?: string) {
     if (ctx.ws.current) {
       ctx.ws.current.send(
         JSON.stringify({
           category: "chat",
           type: "sendMessage",
           data: {
-            target: target,
-            msg: msg,
+            target,
+            message,
+            parentChatId,
           },
         })
       );
@@ -316,11 +372,34 @@ export default function Chat(ctx: any) {
     return (
       <div className={classes.messageBox}>
         <div className={classes.thumbnail}></div>
-        <div>
+        <div className={classes.messageInfo}>
           <div className={classes.target}>{user}</div>
           <div className={classes.textWrapper}>
             <span className={classes.messageText}>{message}</span>
-            <span className={classes.time}>{timeText}</span>
+            <span className={classes.time}>
+              <span>{timeText}</span>
+              <div className={classes.messageInteraction}>
+                <div
+                  className={classes.interactionIcon}
+                  onClick={() => {
+                    setThread({
+                      chatName: target,
+                      messages: threadList,
+                      parentId: chatId,
+                      parentMessage: message,
+                      parentTime: time,
+                      parentUser: user,
+                    });
+                  }}
+                >
+                  <SmsOutlined />
+                </div>
+                <div className={classes.interactionDivider} />
+                <div className={classes.interactionIcon}>
+                  <FavoriteBorderOutlined />
+                </div>
+              </div>
+            </span>
           </div>
           {threadList.length > 0 && (
             <Thread
@@ -377,7 +456,30 @@ export default function Chat(ctx: any) {
           style={{ display: "flex", flexDirection: "row-reverse" }}
         >
           <div className={classes.messageText}>{message}</div>
-          <span className={classes.time}>{timeText}</span>
+          <span className={classes.time}>
+            <span>{timeText}</span>
+            <div className={classes.messageInteraction}>
+              <div
+                className={classes.interactionIcon}
+                onClick={() => {
+                  setThread({
+                    chatName: target,
+                    messages: threadList,
+                    parentId: chatId,
+                    parentMessage: message,
+                    parentTime: time,
+                    parentUser: user,
+                  });
+                }}
+              >
+                <SmsOutlined />
+              </div>
+              <div className={classes.interactionDivider} />
+              <div className={classes.interactionIcon}>
+                <FavoriteBorderOutlined />
+              </div>
+            </div>
+          </span>
         </div>
         {threadList.length > 0 && (
           <Thread
@@ -444,7 +546,9 @@ export default function Chat(ctx: any) {
     for (let i = 0; i < messages.length; i++) {
       const dayCheck =
         i === 0 ||
-        messages[i - 1].time.split(" ")[0] !== messages[i].time.split(" ")[0];
+        (messages[i].time !== undefined &&
+          messages[i - 1].time.split(" ")[0] !==
+            messages[i].time.split(" ")[0]);
 
       if (dayCheck === true) {
         value.push(<DayBoundary text={messages[i].time.split(" ")[0]} />);
@@ -533,23 +637,48 @@ export default function Chat(ctx: any) {
               });
               break;
             case "sendMessage":
-              if (message.data.sender !== ctx.session.userId) {
-                setNewMessage(true);
-                setTimeout(() => {
-                  setNewMessage(false);
-                }, 3000);
+              if (message.data.parentChatId !== undefined) {
+                const messageList: IChat[] = messages.map((v) => {
+                  if (v.chatId === message.data.parentChatId) {
+                    return {
+                      ...v,
+                      threadList: [
+                        ...v.threadList,
+                        {
+                          user: message.data.sender,
+                          message: message.data.message,
+                          time: message.data.time ?? "2021-08-26 11:32:14",
+                          chatId: message.data.chatId ?? "",
+                          threadList: message.data.threadList ?? [],
+                        },
+                      ],
+                    };
+                  }
+
+                  return v;
+                });
+
+                setMessages(messageList);
+              } else {
+                if (message.data.sender !== ctx.session.userId) {
+                  setNewMessage(true);
+                  setTimeout(() => {
+                    setNewMessage(false);
+                  }, 3000);
+                }
+
+                setMessages([
+                  ...messages,
+                  {
+                    user: message.data.sender,
+                    message: message.data.message,
+                    time: message.data.time ?? "2021-08-26 11:32:14",
+                    chatId: message.data.chatId ?? "",
+                    threadList: message.data.threadList ?? [],
+                  },
+                ]);
               }
 
-              setMessages([
-                ...messages,
-                {
-                  user: message.data.sender,
-                  message: message.data.message,
-                  time: message.data.time,
-                  chatId: message.data.chatId ?? "",
-                  threadList: message.data.threadList ?? [],
-                },
-              ]);
               break;
           }
         }
@@ -573,15 +702,17 @@ export default function Chat(ctx: any) {
                 className={classes.channel}
                 key={`channel-${i}`}
                 onClick={() => {
-                  setTarget(v.chatName);
+                  setTarget(v.chatName ?? v.userId!);
                 }}
               >
                 <div className={classes.channelThumbnail}></div>
                 <div className={classes.channelBody}>
                   <div className={classes.channelInfo}>
-                    <span className={classes.channelName}>{v.chatName}</span>
+                    <span className={classes.channelName}>
+                      {v.chatName ?? v.userId!}
+                    </span>
                     <span className={classes.channelParticipant}>
-                      {v.chatName.includes("#") &&
+                      {v.chatName?.includes("#") &&
                         `(${v.chatParticipant.join(", ")})`}
                     </span>
                   </div>
@@ -627,20 +758,58 @@ export default function Chat(ctx: any) {
               <input type="text" ref={messageRef} />
               <div className={classes.interaction}>
                 <div>
-                  <FormatBold />
-                  <FormatItalic />
-                  <FormatStrikethrough style={{ marginRight: "1px" }} />
-                  <Code style={{ marginRight: "4px" }} />
-                  <Link style={{ marginRight: "1px" }} />
-                  <FormatListNumbered style={{ marginRight: "4px" }} />
-                  <FormatListBulleted />
+                  <div>
+                    <FormatBold />
+                  </div>
+                  <div>
+                    <FormatItalic />
+                  </div>
+                  <div>
+                    <FormatStrikethrough style={{ marginRight: "1px" }} />
+                  </div>
+                  <div>
+                    <Code style={{ marginRight: "4px" }} />
+                  </div>
+                  <div>
+                    <Link style={{ marginRight: "1px" }} />
+                  </div>
+                  <div>
+                    <FormatListNumbered style={{ marginRight: "4px" }} />
+                  </div>
+                  <div>
+                    <FormatListBulleted />
+                  </div>
                 </div>
                 <div>
-                  <TextFormatOutlined style={{ marginRight: "1px" }} />
-                  <AlternateEmail style={{ marginRight: "4px" }} />
-                  <SentimentSatisfiedOutlined style={{ marginRight: "4px" }} />
-                  <AttachFile style={{ marginRight: "4px" }} />
-                  <Send />
+                  <div>
+                    <TextFormatOutlined style={{ marginRight: "1px" }} />
+                  </div>
+                  <div>
+                    <AlternateEmail style={{ marginRight: "4px" }} />
+                  </div>
+                  <div>
+                    <SentimentSatisfiedOutlined
+                      style={{ marginRight: "4px" }}
+                    />
+                  </div>
+                  <div>
+                    <AttachFile style={{ marginRight: "4px" }} />
+                  </div>
+                  <div
+                    onClick={() => {
+                      if (
+                        messageRef.current &&
+                        target !== "" &&
+                        messageRef.current.value !== ""
+                      ) {
+                        sendMessage(target, messageRef.current.value);
+                        messageRef.current.value = "";
+                        endRef.current!.scrollIntoView();
+                      }
+                    }}
+                  >
+                    <Send />
+                  </div>
                 </div>
               </div>
             </div>
@@ -692,29 +861,68 @@ export default function Chat(ctx: any) {
                 <DayBoundary text={`${thread.messages.length} replies`} />
               )}
               {renderMessage(thread.messages, classes, ctx.session.userId)}
-              <div ref={endRef} />
+              <div ref={threadEndRef} />
             </div>
             <div className={classes.input}>
               <div className={classes.inputBox}>
-                <input type="text" ref={messageRef} />
+                <input type="text" ref={threadMessageRef} />
                 <div className={classes.interaction}>
                   <div>
-                    <FormatBold />
-                    <FormatItalic />
-                    <FormatStrikethrough style={{ marginRight: "1px" }} />
-                    <Code style={{ marginRight: "4px" }} />
-                    <Link style={{ marginRight: "1px" }} />
-                    <FormatListNumbered style={{ marginRight: "4px" }} />
-                    <FormatListBulleted />
+                    <div>
+                      <FormatBold />
+                    </div>
+                    <div>
+                      <FormatItalic />
+                    </div>
+                    <div>
+                      <FormatStrikethrough style={{ marginRight: "1px" }} />
+                    </div>
+                    <div>
+                      <Code style={{ marginRight: "4px" }} />
+                    </div>
+                    <div>
+                      <Link style={{ marginRight: "1px" }} />
+                    </div>
+                    <div>
+                      <FormatListNumbered style={{ marginRight: "4px" }} />
+                    </div>
+                    <div>
+                      <FormatListBulleted />
+                    </div>
                   </div>
                   <div>
-                    <TextFormatOutlined style={{ marginRight: "1px" }} />
-                    <AlternateEmail style={{ marginRight: "4px" }} />
-                    <SentimentSatisfiedOutlined
-                      style={{ marginRight: "4px" }}
-                    />
-                    <AttachFile style={{ marginRight: "4px" }} />
-                    <Send />
+                    <div>
+                      <TextFormatOutlined style={{ marginRight: "1px" }} />
+                    </div>
+                    <div>
+                      <AlternateEmail style={{ marginRight: "4px" }} />
+                    </div>
+                    <div>
+                      <SentimentSatisfiedOutlined
+                        style={{ marginRight: "4px" }}
+                      />
+                    </div>
+                    <div>
+                      <AttachFile style={{ marginRight: "4px" }} />
+                    </div>
+                    <div
+                      onClick={() => {
+                        if (
+                          threadMessageRef.current &&
+                          threadMessageRef.current.value !== ""
+                        ) {
+                          sendMessage(
+                            thread.parentId,
+                            threadMessageRef.current?.value ?? "",
+                            thread.parentId
+                          );
+                          threadMessageRef.current.value = "";
+                          threadEndRef.current!.scrollIntoView();
+                        }
+                      }}
+                    >
+                      <Send />
+                    </div>
                   </div>
                 </div>
               </div>
