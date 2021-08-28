@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
 
 export default function ClientOnly({ children, ...delegated }: any) {
-    const [hasMounted, setHasMounted] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
 
-    useEffect(() => {
-        setHasMounted(true);
-    }, []);
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
-    if (!hasMounted) {
-        return null;
-    }
+  if (!hasMounted) {
+    return null;
+  }
 
-    return <div {...delegated}>{children}</div>;
+  return (
+    <div {...delegated} style={{ width: "100%" }}>
+      {children}
+    </div>
+  );
 }
