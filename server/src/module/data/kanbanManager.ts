@@ -4,6 +4,8 @@ import { getJsonData, isExists, setJsonData } from "./fileManager";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 import log from "../log";
+import DataProjectManager from "./projectManager";
+import DataAlarmManager from "./alarmManager";
 
 export default class DataKanbanManager {
     static isExists(kanbanUUID: string) {
@@ -58,38 +60,62 @@ export default class DataKanbanManager {
             fs.mkdirSync(this.getKanbanPath(), { recursive: true });
         }
 
-        const kanbanList: TkanbanData[] = [];
-        fs.readdirSync(this.getKanbanPath())
+        return fs
+            .readdirSync(this.getKanbanPath())
             .filter((kanban) => {
                 const kanbanData = kanban !== "milestoneListInfo.json" ? this.getKanbanInfo(kanban) : undefined;
                 return (
                     kanban !== "milestoneListInfo.json" &&
                     (options.uuid === undefined || options.uuid === kanbanData?.uuid) &&
                     (options.column === undefined || (options.column as string) in (kanbanData?.columns as string[])) &&
-                    (options.projectName === undefined || options.projectName === kanbanData?.projectName) &&
-                    (options.milestone === undefined || options.milestone === kanbanData?.milestone)
+                    (options.projectName === undefined || options.projectName === kanbanData?.projectName)
                 );
             })
-            .map((kanban) => {
+            .reduce((kanbanList: TkanbanData[], kanban: string) => {
                 kanbanList.push(this.getKanbanInfo(kanban) as TkanbanData);
-            });
-        return kanbanList;
+                return kanbanList;
+            }, []);
     }
 
-    static create(kanbanData: TkanbanCreateData) {
+    static create(userId: string, kanbanData: TkanbanCreateData) {
         const kanbanUUID = uuidv4();
         fs.mkdirSync(this.getKanbanPath(kanbanUUID), { recursive: true });
 
-        if (!this.setKanbanInfo(kanbanUUID, { uuid: kanbanUUID, columns: ["backlog", "todo", "in progress", "Done"], totalIssue: 0, doneIssue: 0, ...kanbanData })) {
+        if (
+            !fs
+                .readdirSync(DataProjectManager.getProjectDefaultPath())
+                .reduce((projectIdList: string[], projectId: string) => {
+                    projectIdList.push(DataProjectManager.getProjectInfo(projectId)?.projectName as string);
+                    return projectIdList;
+                }, [])
+                .includes(kanbanData.projectName)
+        ) {
+            log.error(`[DataKanbanManager] create -> could not find projectName`);
+            return undefined;
+        }
+
+        if (!this.setKanbanInfo(kanbanUUID, { uuid: kanbanUUID, columns: ["backlog", "todo", "in progress", "Done"], totalIssue: 0, doneIssue: 0, nextIssue: 0, ...kanbanData })) {
             log.error(`[DataKanbanManager] create -> fail to setKanbanInfo`);
             return undefined;
         }
         setJsonData(`${this.getKanbanPath(kanbanUUID)}/issueList.json`, {});
         log.info(`kanbandata created: ${kanbanUUID}`);
+        DataAlarmManager.create(userId, {
+            type: "kanban",
+            location: "",
+            content: `${userId} create ${kanbanData.title} kanban at ${kanbanData.projectName}`,
+            checkAlarm: (DataProjectManager.getProjectInfo(DataProjectManager.getProjectId(userId, kanbanData.projectName) as string)?.projectParticipants as string[]).reduce(
+                (list: { [ket in string]: boolean }, member) => {
+                    list[member] = true;
+                    return list;
+                },
+                {}
+            ),
+        });
         return kanbanUUID;
     }
 
-    static update(kanbanUUID: string, kanbanData: Partial<TkanbanData>) {
+    static update(kanbanUUID: string, kanbanData: Partial<TkanbanData>, userId: string = "") {
         if (!isExists(this.getKanbanPath(kanbanUUID))) {
             log.error(`[DataKanbanManager] update -> could not find kanbanPath`);
             return false;
@@ -99,10 +125,43 @@ export default class DataKanbanManager {
             return false;
         }
         log.info(`kanbandata updated: ${JSON.stringify({ ...this.getKanbanInfo(kanbanUUID), ...kanbanData })}`);
+        if (userId !== "") {
+            DataAlarmManager.create(userId, {
+                type: "kanban",
+                location: "",
+                content: `${userId} update ${kanbanData.title ?? this.getKanbanInfo(kanbanUUID)?.title} kanban at ${kanbanData.projectName}`,
+                checkAlarm: (
+                    DataProjectManager.getProjectInfo(DataProjectManager.getProjectId(userId, kanbanData.projectName ?? (this.getKanbanInfo(kanbanUUID)?.projectName as string)) as string)
+                        ?.projectParticipants as string[]
+                ).reduce((list: { [ket in string]: boolean }, member) => {
+                    list[member] = true;
+                    return list;
+                }, {}),
+            });
+        }
         return true;
     }
-    static delete(kanbanUUID: string) {
+
+    static delete(userId: string, kanbanUUID: string) {
+        if (kanbanUUID === undefined || !fs.readdirSync(this.getKanbanPath()).includes(kanbanUUID)) {
+            log.error(`[DataKanbanManager] delete -> kanban uuid is not in kanbanList`);
+            return false;
+        }
+        const kanbanData = this.getKanbanInfo(kanbanUUID) as TkanbanData;
         fs.rmdirSync(this.getKanbanPath(kanbanUUID), { recursive: true });
+        log.info(`kanbandata deleted: kanbanUUID: ${kanbanUUID}`);
+        DataAlarmManager.create(userId, {
+            type: "kanban",
+            location: "",
+            content: `${userId} delete ${kanbanData.title} kanban at ${kanbanData.projectName}`,
+            checkAlarm: (DataProjectManager.getProjectInfo(DataProjectManager.getProjectId(userId, kanbanData.projectName) as string)?.projectParticipants as string[]).reduce(
+                (list: { [ket in string]: boolean }, member) => {
+                    list[member] = true;
+                    return list;
+                },
+                {}
+            ),
+        });
         return true;
     }
 }

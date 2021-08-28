@@ -8,7 +8,8 @@ export default class DataUploadManager {
     static getUploadInfoPath(uploadFileInfo: "uploadFileInfo.json" | "" = "") {
         return `${DataDirectoryPath}/upload/${uploadFileInfo}`;
     }
-    static saveUploadFileInfo() {
+    static saveUploadFileInfo(fileId: string, file: Express.Multer.File) {
+        this.UploadFileManager[fileId] = file;
         setJsonData(this.getUploadInfoPath("uploadFileInfo.json"), this.UploadFileManager);
     }
     static loadUploadFileInfo() {
@@ -19,5 +20,9 @@ export default class DataUploadManager {
         } else {
             this.UploadFileManager = getJsonData(this.getUploadInfoPath("uploadFileInfo.json"));
         }
+    }
+    static deleteUploadFileInfo(fileId: string) {
+        delete this.UploadFileManager[fileId];
+        setJsonData(this.getUploadInfoPath("uploadFileInfo.json"), this.UploadFileManager);
     }
 }
