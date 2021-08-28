@@ -4,6 +4,9 @@ export interface TDockerCreateData {
     tag?: string | "latest";
     bridgeName?: string;
     bridgeAlias?: string;
+    hostPort?: number;
+    containerPort?: number;
+    linkContainer?: string;
 }
 
 export type TBridgeInfo = {

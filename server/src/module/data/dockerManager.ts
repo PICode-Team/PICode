@@ -128,6 +128,8 @@ export default class DataDockerManager {
         let command = `docker run -itd --volume="${path.resolve(path.normalize(projectPath))}:/home/${projectName}" -w /home/${projectName} `;
         command += dockerInfo.bridgeName ? `--net ${dockerInfo.bridgeName} ` : ``;
         command += dockerInfo.bridgeAlias ? `--net-alias ${dockerInfo.bridgeAlias} ` : ``;
+        command += dockerInfo.hostPort !== undefined && dockerInfo.containerPort !== undefined ? `-p ${dockerInfo.hostPort}:${dockerInfo.containerPort} ` : ``;
+        command += dockerInfo.linkContainer ? `--link ${dockerInfo.linkContainer}:${dockerInfo.linkContainer} ` : ``;
         command += `--name ${containerName} ${dockerInfo.image}:${tag}`;
 
         this.commandDockerAsync(
