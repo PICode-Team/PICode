@@ -2,7 +2,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Layout } from "../components/layout";
 import Dashboard from "../components/service/dashboard";
-import Login from "../components/service/user/_login";
+import Login from "../components/service/user/login";
 
 export default function Home(pageProps: any) {
   return (

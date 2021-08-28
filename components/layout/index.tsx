@@ -25,6 +25,8 @@ export function Layout(ctx: any) {
   const [loginUser, setLoginUser] =
     React.useState<{ loginId: string; workInfo: ISocket }[]>();
 
+  const [alertData, setAlertData] = React.useState();
+
   if (typeof window !== "undefined") {
     if (ctx.session.userId === undefined) {
       window.location.href = "/";
@@ -127,7 +129,7 @@ export function Layout(ctx: any) {
 
   return (
     <div className={classes.main} onMouseMoveCapture={userMouseMoveCapture}>
-      <Topbar {...ctx} loginUser={loginUser} />
+      <Topbar {...ctx} loginUser={loginUser} ws={ws} />
       <div className={classes.contentWrapper}>
         <Sidebar {...ctx} />
 
