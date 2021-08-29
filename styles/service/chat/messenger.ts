@@ -280,7 +280,10 @@ export const messengerStyle = makeStyles((theme: IThemeStyle) =>
       fontSize: "11px",
       fontWeight: "bold",
     },
-    participant: {},
+    participant: {
+      fontSize: "11px",
+      marginLeft: "4px",
+    },
     etc: {},
     thumbnail: {
       color: "rgba(0, 0, 0, 0.4)",

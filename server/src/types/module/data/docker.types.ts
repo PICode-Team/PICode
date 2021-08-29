@@ -19,6 +19,7 @@ export type TDockerData = Pick<TDockerCreateData, "containerName" | "image" | "t
     containerId: string;
     status: "created" | "running" | "exited";
     bridgeInfo: TBridgeInfo;
+    ramUsage?: string;
 };
 
 export type TDockerNetworkCreateData = {

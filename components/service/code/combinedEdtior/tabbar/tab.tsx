@@ -18,6 +18,7 @@ import {
 } from "../../functions";
 import { useCode } from "../../../../../hooks/code";
 import { useDrag } from "../../../../../hooks/drag";
+import { List } from "@material-ui/icons";
 
 export function Tab({
   path,
@@ -103,6 +104,8 @@ export function Tab({
   function handleDropTab(event: React.DragEvent<HTMLElement>) {
     event.preventDefault();
 
+    if (drag.path === "default") return;
+
     if (
       findTabByPathInCode(code.root, codeId, drag.path) ===
       Number(event.currentTarget.id.split("-")[1])
@@ -136,6 +139,7 @@ export function Tab({
               extension: getExtension(drag.path),
               langauge: getLanguage(getExtension(drag.path)),
               tabId: code.tabCount,
+              content: "",
             }
           );
         }
@@ -161,6 +165,7 @@ export function Tab({
           extension: getExtension(drag.path),
           langauge: getLanguage(getExtension(drag.path)),
           tabId: code.tabCount,
+          content: "",
         }
       );
     })();
@@ -194,8 +199,16 @@ export function Tab({
       onDrop={handleDropTab}
       onDragOver={handleDragOverTab}
     >
-      <div className={classes.icon}></div>
-      <div className={classes.text}>{lastPath}</div>
+      {getLanguage(getExtension(path)) !== "default" ? (
+        <span
+          className={
+            classes[getLanguage(getExtension(path.replace("\\", ""))) as any]
+          }
+        ></span>
+      ) : (
+        <List />
+      )}
+      <div className={classes.text}>{lastPath.replace("\\", "")}</div>
       <div className={classes.closeButton} onClick={handleTabClose}>
         <Clear />
       </div>

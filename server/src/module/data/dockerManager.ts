@@ -31,7 +31,7 @@ export default class DataDockerManager {
     static commandDockerSync(command: string) {
         const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
         const commandDocker = spawnSync(shell, [command]);
-        return commandDocker.stdout.toString().replace("/n", "");
+        return commandDocker.stdout.toString().split("/n").join("").replace("\n", "");
     }
 
     static commandDockerAsync(command: string, stdout: (result: Buffer) => void, stderr: (error: any) => void) {
@@ -39,7 +39,7 @@ export default class DataDockerManager {
         const commandDocker = spawn(shell, [command]);
         commandDocker.stdout.on("data", stdout);
         commandDocker.stderr.on("data", stderr);
-        return true;
+        return commandDocker;
     }
 
     static getNetwork(networkName?: string) {
@@ -101,7 +101,7 @@ export default class DataDockerManager {
         return type === undefined ? DataProjectManager.getProjectDataPath(projectId) : `${DataProjectManager.getProjectDataPath(projectId)}/${type}`;
     }
     static getDockerInfo(projectId: string) {
-        return getJsonData(this.getDockerPath(projectId, "dockerInfo.json")) as TDockerData;
+        return getJsonData(this.getDockerPath(projectId, "dockerInfo.json"));
     }
 
     static setDockerInfo(projectId: string, dockerInfo: TDockerData) {
@@ -109,6 +109,7 @@ export default class DataDockerManager {
     }
 
     static get(userId: string, projectName?: string) {
+        this.updateRamUsage(userId, projectName);
         return fs
             .readdirSync(DataProjectManager.getProjectDefaultPath())
             .filter((projectId) => {
@@ -120,10 +121,44 @@ export default class DataDockerManager {
             }, []);
     }
 
+    static updateRamUsage(userId: string, projectName?: string) {
+        fs.readdirSync(DataProjectManager.getProjectDefaultPath())
+            .filter((projectId) => {
+                return projectName === undefined || DataProjectManager.getProjectId(userId, projectName) === projectId;
+            })
+            .map((projectId) => {
+                const dockerInfo = this.getDockerInfo(projectId);
+                const getRam = this.commandDockerAsync(
+                    `docker stats --format "{{.MemPerc}}" ${dockerInfo.containerName}`,
+                    (result: Buffer) => {
+                        const ramUsage = result.toString("utf8").split("/n").join("").split(`\u001b[2J`).join("").replace(`\u001B[H`, "").replace("\n", "");
+                        if (ramUsage.length > 0) {
+                            dockerInfo.ramUsage = ramUsage;
+                            this.setDockerInfo(projectId, dockerInfo);
+                            getRam.stdout.pause();
+                            getRam.kill();
+                        }
+                    },
+                    (error) => {
+                        log.error(error);
+                    }
+                );
+            });
+    }
+
     static create(userId: string, dockerInfo: TDockerCreateData, { projectId, projectName, projectParticipants }: { projectId: string; projectName: string; projectParticipants: string[] }) {
         const tag = dockerInfo.tag ?? "latest";
         const projectPath = DataProjectManager.getProjectWorkPath(projectId);
         const containerName = dockerInfo.containerName ?? projectName;
+
+        // log.debug(`    containerName: ${dockerInfo.containerName}
+        // image: ${dockerInfo.image}
+        // tag?: ${dockerInfo.tag}
+        // bridgeName?: ${dockerInfo.bridgeName}
+        // bridgeAlias?: ${dockerInfo.bridgeAlias}
+        // hostPort?: ${dockerInfo.hostPort}
+        // containerPort?: ${dockerInfo.containerPort}
+        // linkContainer?: ${dockerInfo.linkContainer}`);
 
         let command = `docker run -itd --volume="${path.resolve(path.normalize(projectPath))}:/home/${projectName}" -w /home/${projectName} `;
         command += dockerInfo.bridgeName ? `--net ${dockerInfo.bridgeName} ` : ``;
@@ -136,15 +171,14 @@ export default class DataDockerManager {
             command,
             (containerId: Buffer) => {
                 const bridgeInfo: TBridgeInfo = {};
-                if (dockerInfo.bridgeName !== undefined || dockerInfo.bridgeAlias !== undefined) {
-                    bridgeInfo[dockerInfo.bridgeName ?? "bridge"] = dockerInfo.bridgeAlias ? dockerInfo.bridgeAlias : undefined;
-                }
+                bridgeInfo[dockerInfo.bridgeName ?? "bridge"] = dockerInfo.bridgeAlias ? dockerInfo.bridgeAlias : undefined;
                 this.setDockerInfo(projectId, {
+                    ...dockerInfo,
                     containerName: containerName,
                     image: dockerInfo.image,
                     tag: tag,
                     containerId: containerId.toString().replace("\n", ""),
-                    status: this.commandDockerSync(`docker inspect --format="{{.State.Status}}" ${containerName}`).replace("/n", "") as "created" | "running" | "exited",
+                    status: this.commandDockerSync(`docker inspect --format="{{.State.Status}}" ${containerName}`).replace("\n", "") as "created" | "running" | "exited",
                     bridgeInfo: bridgeInfo,
                 });
 
@@ -158,6 +192,8 @@ export default class DataDockerManager {
                     }, {}),
                 });
                 log.info(`Create docker container: ${containerId}`);
+                this.updateRamUsage(userId, projectName);
+                log.info(`Ram usage update Complete ${containerId}`);
             },
             (error) => {
                 log.error(`${error}`);
@@ -271,7 +307,6 @@ export default class DataDockerManager {
                 this.commandDockerAsync(
                     `docker rm ${dockerInfo.containerName}`,
                     () => {
-                        removeData(DataProjectManager.getProjectDataPath(projectId));
                         DataAlarmManager.create(userId, {
                             type: "code & container",
                             location: "",
@@ -281,6 +316,7 @@ export default class DataDockerManager {
                                 return list;
                             }, {}),
                         });
+                        removeData(DataProjectManager.getProjectDataPath(projectId));
                     },
                     (error) => log.error(error)
                 );

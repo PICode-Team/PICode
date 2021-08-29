@@ -220,10 +220,6 @@ export default class DataProjectManager {
             DataUploadManager.loadUploadFileInfo();
             const projectId = uuidv4();
 
-            if (!func[source.type](projectId, source)) {
-                return false;
-            }
-
             fs.mkdirSync(this.getProjectDataPath(projectId), { recursive: true });
 
             if (projectThumbnail !== undefined) {
@@ -248,6 +244,10 @@ export default class DataProjectManager {
                 projectCreator: userId,
                 projectParticipants: participants,
             });
+
+            if (!func[source.type](projectId, source)) {
+                return false;
+            }
             DataDockerManager.create(userId, dockerInfo, { projectId, projectName, projectParticipants: participants });
         } catch (err) {
             log.error(err.stack);
