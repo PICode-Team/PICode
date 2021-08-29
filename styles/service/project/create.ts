@@ -182,6 +182,7 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
       height: "fit-content",
       display: "flex",
       gap: "30px",
+      marginTop: "40px",
     },
     typeNode: {
       cursor: "pointer",
@@ -199,11 +200,11 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
         color: theme.font.low.color,
       },
       "&>svg": {
-        width: "100px",
-        height: "100px",
+        width: "80px",
+        height: "80px",
       },
       "&>div": {
-        fontSize: "24px",
+        fontSize: "22px",
         fontWeight: "bold",
         paddingTop: "15px",
       },

@@ -16,6 +16,7 @@ export const DefualtInput = ({
   source,
   dockerInfo,
   setDockerInfo,
+  edit,
 }: {
   classes: any;
   setDefualtInput: React.Dispatch<React.SetStateAction<IProjectInfo>>;
@@ -26,6 +27,7 @@ export const DefualtInput = ({
   source: TSource | undefined;
   dockerInfo: IDockerInfo;
   setDockerInfo: React.Dispatch<React.SetStateAction<IDockerInfo>>;
+  edit: boolean;
 }) => {
   const [upload, setUpload] = React.useState<boolean>(false);
   const [imageName, setImageName] = React.useState<string>("");
@@ -117,7 +119,9 @@ export const DefualtInput = ({
     <React.Fragment>
       {step === 2 && (
         <React.Fragment>
-          <div className={classes.subTitle}>Create Code</div>
+          <div className={classes.subTitle}>
+            {edit ? "Edit" : "Create"} Code
+          </div>
           <div className={classes.input}>
             <span>
               Workspace Name <span className={classes.required}>*</span>
@@ -364,7 +368,9 @@ export const DefualtInput = ({
       )}
       {step === 3 && (
         <React.Fragment>
-          <div className={classes.subTitle}>Create Container</div>
+          <div className={classes.subTitle}>
+            {edit ? "Edit" : "Create"} Container
+          </div>
           <div
             className={classes.input}
             style={{ marginTop: "0px", fontSize: "14px" }}

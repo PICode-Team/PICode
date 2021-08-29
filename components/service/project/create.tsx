@@ -103,6 +103,16 @@ export default function Create() {
           dockerInfo.bridgeName !== "" ? dockerInfo.bridgeName : undefined,
         bridgeAlias:
           dockerInfo.bridgeAlias !== "" ? dockerInfo.bridgeAlias : undefined,
+        hostPort:
+          dockerInfo.hostPort !== undefined ? dockerInfo.hostPort : undefined,
+        containerPort:
+          dockerInfo.containerPort !== undefined
+            ? dockerInfo.containerPort
+            : undefined,
+        linkContainer:
+          dockerInfo.linkContainer !== ""
+            ? dockerInfo.linkContainer
+            : undefined,
       },
       source,
     };
@@ -214,6 +224,7 @@ export default function Create() {
                   type={type}
                   dockerInfo={dockerInfo}
                   setDockerInfo={setDockerInfo}
+                  edit={false}
                 />
                 <div className={classes.buttonBox}>
                   <div

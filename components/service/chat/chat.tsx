@@ -912,7 +912,7 @@ export default function Chat(ctx: any) {
                           threadMessageRef.current.value !== ""
                         ) {
                           sendMessage(
-                            thread.parentId,
+                            thread.chatName,
                             threadMessageRef.current?.value ?? "",
                             thread.parentId
                           );
