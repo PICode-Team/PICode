@@ -14,7 +14,7 @@ export const signupStyle = makeStyles((theme: IThemeStyle) =>
             justifyContent: "center",
         },
         loginForm: {
-            backgroundColor: theme.backgroundColor.step1,
+            backgroundColor: theme.loginBackground,
             padding: "100px 60px",
             width: "460px",
             height: "800px",
@@ -66,7 +66,7 @@ export const signupStyle = makeStyles((theme: IThemeStyle) =>
             top: "20px",
         },
         stepper: {
-            background: theme.backgroundColor.step1,
+            background: theme.loginBackground,
             padding: "24px 0 0 0",
             width: "100%",
             color: theme.font.high.color,

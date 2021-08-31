@@ -28,6 +28,7 @@ export interface IThemeStyle {
             emptyCode: string;
         };
     };
+    loginBackground: string;
     hover: string;
     scroll: {
         bar: string;
@@ -40,11 +41,12 @@ export interface IThemeStyle {
 export const darkTheme = createTheme({
     backgroundColor: {
         step0: "#09111B",
-        step1: "#1D2228",
-        step2: "#414C50",
+        step1: "#2C3239",
+        step2: "#3B434D",
         step3: "#515C60",
         step4: "#626262",
     },
+    loginBackground: "#1D2228",
     button: "#192428",
     font: {
         high: {

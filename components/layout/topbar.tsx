@@ -43,6 +43,7 @@ export function Topbar(ctx: any) {
       },
     }).then((res) => res.json());
     setData(data.user);
+    console.log(data.user)
   };
 
   useEffect(() => {
@@ -164,29 +165,6 @@ export function Topbar(ctx: any) {
             style={{ color: theme === "dark" ? "#fff" : "#121212" }}
           >
             <Brightness4Icon />
-          </IconButton>
-        </div>
-        <div className={classes.themeButton}>
-          <IconButton
-            style={{ color: theme === "dark" ? "#fff" : "#121212" }}
-            onClick={() => {
-              if (ctx.ws !== null && ctx.ws.current !== null && ctx.ws.current!.readyState === WebSocket.OPEN) {
-                let payload: { [key: string]: boolean } = {};
-                payload[ctx.session.userId] = false;
-                ctx.ws.current.send(JSON.stringify({
-                  "category": "alarm",
-                  "type": "createAlarm",
-                  "data": {
-                    "type": "test",
-                    "location": "/",
-                    "content": "알람 내용",
-                    "checkAlarm": payload
-                  }
-                }))
-              }
-            }}
-          >
-            <CreateIcon />
           </IconButton>
         </div>
         <div className={classes.themeButton}>

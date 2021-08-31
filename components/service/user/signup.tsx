@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-html-link-for-pages */
@@ -38,8 +39,9 @@ export default function SignUp() {
 
     const [userImage, setUserImage] = React.useState();
 
+    const [imageUUID, setImageUUID] = React.useState("");
+
     const onDrop = useCallback((acceptedFiles) => {
-        console.log(acceptedFiles)
         setUserImage(acceptedFiles[0])
     }, [])
 
@@ -97,6 +99,7 @@ export default function SignUp() {
             userId: userId,
             userName: userName,
             passwd: passwd,
+            userThumbnail: imageUUID
         }
         let data = await fetch(`http://localhost:8000/api/user`, {
             method: "POST",
@@ -128,6 +131,7 @@ export default function SignUp() {
                         e.stopPropagation();
                         e.preventDefault();
                         setUserImage(undefined)
+                        setImageUUID("");
                     }}
                 >
                     <CloseIcon />
@@ -149,6 +153,23 @@ export default function SignUp() {
             </div>
         </div>
     ]
+
+    const makeImageUuid = async () => {
+        if (userImage === undefined) return;
+        let formData = new FormData();
+        formData.append("uploadFile", userImage)
+        let result = await fetch(`http://localhost:8000/api/data`, {
+            method: "POST",
+            body: formData
+        }).then((res) => res.json())
+        if (result.code === 200) {
+            setImageUUID(result.uploadFileId)
+        }
+    }
+
+    useEffect(() => {
+        makeImageUuid();
+    }, [userImage])
 
     return <div className={classes.root}>
         <div className={classes.themeChangeButton}>
@@ -173,15 +194,6 @@ export default function SignUp() {
                 ))}
             </Stepper>
             {stepDiv[activeStep]}
-            {/* <div className={classes.buttonBox} style={{ marginTop: "24px" }}>
-                <CustomButton text="Sign Up" onClick={() => {
-                    if (userId === "") return;
-                    if (userName === "") return;
-                    if (passwd === "" || confirmPw !== passwd) return;
-                    if (confirmPw === "") return;
-                    submitSignUp();
-                }} />
-            </div> */}
             <div className={classes.buttonGroup}>
                 <div
                     className={clsx(classes.button, stpeInfo[activeStep].prev.display ? classes.activeButton : classes.disableButton)}

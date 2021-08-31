@@ -13,7 +13,7 @@ export const loginStyle = makeStyles((theme: IThemeStyle) =>
             justifyContent: "center",
         },
         loginForm: {
-            backgroundColor: theme.backgroundColor.step1,
+            backgroundColor: theme.loginBackground,
             width: "460px",
             height: "680px",
             display: "flex",
