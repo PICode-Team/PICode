@@ -5,6 +5,7 @@ import InsertPhotoIcon from "@material-ui/icons/InsertPhoto";
 import Modal, { IUser } from "./modal";
 import { IDockerInfo, IProjectInfo, TSource } from "./create";
 import { Close } from "@material-ui/icons";
+import { FormControlLabel, Grid, Switch } from "@material-ui/core";
 
 export const DefualtInput = ({
   classes,
@@ -35,6 +36,7 @@ export const DefualtInput = ({
   const [participantList, setParticipantList] = useState<IUser[]>([]);
   const [imageCheck, setImageCheck] = useState<boolean>(false);
   const [modal, setModal] = useState<boolean>(false);
+  const [state, setState] = useState<boolean>(true);
 
   const fileButton = useRef<any>(null);
 
@@ -426,6 +428,18 @@ export const DefualtInput = ({
             style={{ marginTop: "0px", fontSize: "14px" }}
           >
             <span>Network Info</span>
+            {/* <FormControlLabel
+              control={
+                <Switch
+                  checked={state}
+                  onChange={() => {
+                    setState(!state);
+                  }}
+                  name="checkedA"
+                />
+              }
+              label="Secondary"
+            /> */}
           </div>
           <div className={classes.input}>
             <span>Network Name</span>

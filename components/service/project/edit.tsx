@@ -78,6 +78,16 @@ export default function EditProject() {
         projectThumbnail: undefined,
         projectParticipants: data.projectList[0].projectParticipants,
       });
+      setDockerInfo({
+        containerName: data.projectList[0].containerName ?? "",
+        image: data.projectList[0].image ?? "",
+        tag: data.projectList[0].tag ?? "",
+        bridgeName: data.projectList[0].bridgeName ?? "",
+        bridgeAlias: data.projectList[0].bridgeAlias ?? "",
+        hostPort: data.projectList[0].hostPort ?? "",
+        containerPort: data.projectList[0].containerPort ?? "",
+        linkContainer: data.projectList[0].linkContainer ?? "",
+      });
     }
   };
 
@@ -199,7 +209,6 @@ export default function EditProject() {
                     onClick={() => {
                       if (step === 2) {
                         setStep(3);
-                        console.log(step);
                       } else {
                         editData();
                       }
