@@ -12,7 +12,7 @@ export default function ClientOnly({ children, ...delegated }: any) {
   }
 
   return (
-    <div {...delegated} style={{ width: "100%" }}>
+    <div {...delegated} style={{ width: "100%", height: "100%" }}>
       {children}
     </div>
   );

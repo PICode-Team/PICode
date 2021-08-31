@@ -1,11 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React from "react";
+import React, { useState } from "react";
 import { LayoutStyle } from "../../styles/layout/layout";
 import { Topbar } from "./topbar";
 import { Sidebar } from "./sidebar";
 import Messenger from "../service/chat/messenger";
 import { throttle } from "lodash";
 import UserMouse from "./usermouse";
+import { sidebarData } from "./data";
+import { useRouter } from "next/router";
 
 interface IUserMouse {
   x: number;
@@ -19,11 +21,18 @@ export interface ISocket {
 
 export function Layout(ctx: any) {
   const classes = LayoutStyle();
+  const pageData: any = sidebarData;
+  const route = useRouter();
   let ws = React.useRef<WebSocket | null>(null);
   const [userMouse, setUserMouse] =
     React.useState<{ x: number; y: number; screenSize: IUserMouse }>();
   const [loginUser, setLoginUser] =
     React.useState<{ loginId: string; workInfo: ISocket }[]>();
+  const [pageName, setPageName] = useState({
+    name: "",
+    icon: undefined
+  })
+  const [alertData, setAlertData] = React.useState();
 
   if (typeof window !== "undefined") {
     if (ctx.session.userId === undefined) {
@@ -61,6 +70,22 @@ export function Layout(ctx: any) {
 
   React.useEffect(() => {
     getLoginUserData();
+    console.log(route)
+    for (let i in pageData) {
+      if (pageData[i].url === route.route) {
+        setPageName({
+          name: i,
+          icon: pageData[i].icon
+        })
+      } else {
+        if (pageData[i].subUrl !== undefined && pageData[i].subUrl.some((v: any) => v === route.route)) {
+          setPageName({
+            name: i,
+            icon: pageData[i].icon
+          })
+        }
+      }
+    }
   }, []);
 
   React.useEffect(() => {
@@ -127,18 +152,23 @@ export function Layout(ctx: any) {
 
   return (
     <div className={classes.main} onMouseMoveCapture={userMouseMoveCapture}>
-      <Topbar {...ctx} loginUser={loginUser} />
+      <Topbar {...ctx} loginUser={loginUser} ws={ws} />
       <div className={classes.contentWrapper}>
         <Sidebar {...ctx} />
-
-        {React.cloneElement(ctx.children, {
-          path: ctx.path,
-          session: ctx.session,
-          ws:
-            ws.current !== null &&
-            ws.current!.readyState === WebSocket.OPEN &&
-            ws,
-        })}
+        <div style={{ width: "100%", height: "calc(100% - 41px)" }}>
+          <div className={classes.pageName}>
+            {pageName.icon}
+            {pageName.name}
+          </div>
+          {React.cloneElement(ctx.children, {
+            path: ctx.path,
+            session: ctx.session,
+            ws:
+              ws.current !== null &&
+              ws.current!.readyState === WebSocket.OPEN &&
+              ws,
+          })}
+        </div>
       </div>
       {loginUser !== undefined && loginUser.length > 1 && (
         <UserMouse

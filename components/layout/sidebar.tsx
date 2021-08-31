@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { rowStyle, sidebarStyle } from "../../styles/layout/sidebar";
 import { sidebarData } from "./data";
 import { RadioButtonUnchecked, MenuRounded } from "@material-ui/icons";
+import clsx from "clsx";
 
 
 function checkTogglePath(path: string): boolean {
@@ -10,15 +11,28 @@ function checkTogglePath(path: string): boolean {
   return true;
 }
 
+function checkActive(props: any, route: any) {
+  if (route.route === props.data.url) {
+    return true;
+  }
+  else {
+    if (props.data.subUrl !== undefined && props.data.subUrl.some((v: any) => v === route.route)) {
+      return true
+    }
+  }
+  return false;
+}
+
 function Row(props: {
   data: { url: string; icon: JSX.Element; title: string };
   toggle: boolean;
 }): JSX.Element {
   const classes = rowStyle();
+  const route = useRouter();
 
   return (
     <a
-      className={`${classes.row} ${props.toggle && classes.toggle}`}
+      className={clsx(`${classes.row} ${props.toggle && classes.toggle}`, checkActive(props, route) ? classes.active : classes.unactive)}
       href={props.data.url}
     >
       {props.data.icon}

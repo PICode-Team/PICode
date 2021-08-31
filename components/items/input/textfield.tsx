@@ -14,7 +14,7 @@ export default function CustomTextField(props: any) {
         helperText={props.error ? props.errorText : ""}
         style={{
             width: props.width ? props.width : "100%",
-            height: props.height ? props.height : "48px"
+            height: props.height ? props.height : "48px",
         }}
     />
 }
