@@ -1,16 +1,11 @@
 import { TChatChannelData } from "../../types/module/data/chat.types";
 import { TSocketPacket } from "../../types/module/socket.types";
+import DataAlarmManager from "../data/alarmManager";
 import DataChatManager from "../data/chatManager";
 import { getSocket, makePacket } from "./manager";
 
-function sendMessage(
-    sender: string,
-    target: string,
-    { message, parentChatId }: { message: string; parentChatId?: string }
-) {
-    const sendData = JSON.stringify(
-        makePacket("chat", "sendMessage", { message, sender })
-    );
+function sendMessage(sender: string, target: string, { message, parentChatId }: { message: string; parentChatId?: string }) {
+    const sendData = JSON.stringify(makePacket("chat", "sendMessage", { message, sender }));
     DataChatManager.saveChat(sender, target, message, parentChatId);
 
     if (DataChatManager.getChatType(target) === "direct") {
@@ -18,6 +13,12 @@ function sendMessage(
             getSocket(sender)?.send(sendData);
         }
         getSocket(target)?.send(sendData);
+        DataAlarmManager.create(sender, {
+            type: "chat",
+            location: "",
+            content: `${sender} send message to you : ${message}`,
+            checkAlarm: { [target]: true },
+        });
     } else {
         const [chatData] = DataChatManager.getChat(sender, target);
 
@@ -25,19 +26,21 @@ function sendMessage(
             chatData.chatParticipant?.forEach((userId) => {
                 getSocket(userId)?.send(sendData);
             });
+            DataAlarmManager.create(sender, {
+                type: "chat",
+                location: "",
+                content: `${sender} send message to channel ${target}: ${message}`,
+                checkAlarm: chatData.chatParticipant.reduce((list: { [ket in string]: boolean }, member) => {
+                    list[member] = true;
+                    return list;
+                }, {}),
+            });
         }
     }
 }
 
-function createChannel(
-    creator: string,
-    chatName: string,
-    data: { description?: string; chatParticipant?: string[] }
-) {
-    const chatParticipant =
-        data?.chatParticipant === undefined
-            ? [creator]
-            : Array.from(new Set([creator, ...data?.chatParticipant]));
+function createChannel(creator: string, chatName: string, data: { description?: string; chatParticipant?: string[] }) {
+    const chatParticipant = data?.chatParticipant === undefined ? [creator] : Array.from(new Set([creator, ...data?.chatParticipant]));
     const createData: TChatChannelData = {
         userId: creator,
         chatName,
@@ -49,39 +52,32 @@ function createChannel(
 
     chatParticipant.forEach((userId) => {
         try {
-            getSocket(userId)?.send(
-                JSON.stringify(makePacket("chat", "createChannel", createData))
-            );
+            getSocket(userId)?.send(JSON.stringify(makePacket("chat", "createChannel", createData)));
         } catch {}
+    });
+    DataAlarmManager.create(creator, {
+        type: "chat",
+        location: "",
+        content: `${creator} create channel ${chatName}`,
+        checkAlarm: chatParticipant.reduce((list: { [ket in string]: boolean }, member) => {
+            list[member] = true;
+            return list;
+        }, {}),
     });
 }
 
 function getChat(userId: string) {
-    const sendData = JSON.stringify(
-        makePacket("chat", "getChat", DataChatManager.getChat(userId))
-    );
+    const sendData = JSON.stringify(makePacket("chat", "getChat", DataChatManager.getChat(userId)));
     getSocket(userId)?.send(sendData);
 }
 
 function getChatLog(userId: string, chatName: string, page: string) {
-    const sendData = JSON.stringify(
-        makePacket(
-            "chat",
-            "getChatLog",
-            DataChatManager.getChatLog(userId, chatName, page)
-        )
-    );
+    const sendData = JSON.stringify(makePacket("chat", "getChatLog", DataChatManager.getChatLog(userId, chatName, page)));
     getSocket(userId).send(sendData);
 }
 
 function getChatLogList(userId: string, chatName: string) {
-    const sendData = JSON.stringify(
-        makePacket(
-            "chat",
-            "getChatLogList",
-            DataChatManager.getChatLogList(userId, chatName)
-        )
-    );
+    const sendData = JSON.stringify(makePacket("chat", "getChatLogList", DataChatManager.getChatLogList(userId, chatName)));
     getSocket(userId).send(sendData);
 }
 
