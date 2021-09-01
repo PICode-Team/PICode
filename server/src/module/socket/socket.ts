@@ -9,9 +9,11 @@ import terminal from "./terminal";
 import user from "./user";
 import issue from "./issue";
 import kanban from "./kanban";
-import alarm from "./alarm";
-import milestone from "./milestone";
+import alarm from './alarm'
+import milestone from './milestone'
+import document from './document'
 import docker from "./docker";
+
 const SocketFuncs = {
     chat,
     code,
@@ -22,6 +24,7 @@ const SocketFuncs = {
     kanban,
     alarm,
     milestone,
+    document,
     docker,
 };
 
