@@ -5,7 +5,7 @@ import React from "react";
 export default function CodePages(pageProps: any) {
   return (
     <Layout {...pageProps}>
-      <Code />
+      <Code {...pageProps} />
     </Layout>
   );
 }

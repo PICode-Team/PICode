@@ -12,7 +12,7 @@ export const sidebarData = {
         title: "Dashboard",
     },
     code: {
-        url: "/code",
+        url: "/codeview",
         icon: <CodeRoundedIcon />,
         title: "Code",
     },

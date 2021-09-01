@@ -8,8 +8,7 @@ const router = express.Router();
 
 router.get("/", sessionRouter, (req, res) => {
     const userId = req.session.userId as string;
-    const queryUser = req.query?.userId as string | undefined;
-    const userData = queryUser ? DataUserManager.getList(queryUser) : DataUserManager.get(userId);
+    const userData = DataUserManager.get(userId);
 
     if (userData === undefined) {
         return res.json({ code: ResponseCode.invaildRequest });
@@ -22,7 +21,7 @@ router.post("/", (req, res) => {
     const userId = req.body?.userId;
     const passwd = req.body?.passwd;
     const userName = req.body?.userName;
-    const userThumnail = req.body?.userThumbnail;
+    const userThumbnail = req.body?.userThumbnail;
 
     if (userId === undefined || passwd === undefined || userName === undefined) {
         return res.json({ code: ResponseCode.missingParameter });
@@ -31,7 +30,7 @@ router.post("/", (req, res) => {
         return res.json({ code: ResponseCode.invaildParameterType });
     }
 
-    if (!DataUserManager.create({ userId, userName, passwd, userThumnail })) {
+    if (!DataUserManager.create({ userId, userName, passwd, userThumbnail })) {
         return res.json({ code: ResponseCode.internalError });
     }
 
@@ -44,9 +43,9 @@ router.put("/", sessionRouter, (req, res) => {
     const userId = req.session.userId as string;
     const passwd = req.body?.passwd;
     const userName = req.body?.userName;
-    const userThumnail = req.body?.userThumbnail;
+    const userThumbnail = req.body?.userThumbnail;
 
-    if (!DataUserManager.update({ userId, passwd, userName, userThumnail })) {
+    if (!DataUserManager.update({ userId, passwd, userName, userThumbnail })) {
         return res.json({ code: ResponseCode.invaildParameterType });
     }
 

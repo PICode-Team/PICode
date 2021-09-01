@@ -34,6 +34,7 @@ export interface IThemeStyle {
     thumb: string;
     track: string;
   };
+  divider: string;
 }
 
 export const darkTheme = createTheme({
@@ -82,6 +83,7 @@ export const darkTheme = createTheme({
     thumb: "#555",
     track: "#1e1e2f",
   },
+  divider: "rgba(255, 255, 255, 0.1)",
 } as any);
 
 export const whiteTheme = createTheme({
@@ -130,4 +132,5 @@ export const whiteTheme = createTheme({
     thumb: "rgba(0, 0, 0, 0.1)",
     track: "rgba(230, 230, 230, 0.3)",
   },
+  divider: "rgba(220, 220, 220, 1)",
 } as any);

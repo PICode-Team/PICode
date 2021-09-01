@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client";
+import { gql, useMutation } from "@apollo/client";
 
 interface INoteContent {
     text: string;
@@ -7,16 +7,30 @@ interface INoteContent {
     clicked?: boolean;
 }
 
-export default function queryUpdate(
+export default function QueryUpdate(
     documentId: string,
-    content: INoteContent[]
+    path: string,
+    content?: INoteContent[]
 ) {
     let UPDATEQUERY = gql`
         mutation {
             updateDocument(
-                documentId: "24194650-f825-4e36-86ad-c61d76d26c2d"
-                content: "test333"
+                documentId: "${documentId}"
+                path:"${path}"
+                content: "${content}"
             )
         }
     `;
+
+    if (content === undefined) {
+        UPDATEQUERY = gql`
+        mutation {
+            updateDocument(
+                documentId: "${documentId}"
+                path:"${path}"
+            )
+        }
+    `;
+    }
+    return UPDATEQUERY;
 }

@@ -23,11 +23,11 @@ export default class DataUserManager {
         return getJsonData(this.getUserDataPath(userId, "userInfo.json")) as TUserData;
     }
 
-    static getList(queryUser: string) {
+    static getList(userId: string, queryUser?: string) {
         return fs
             .readdirSync(`${DataDirectoryPath}/user`)
             .filter((user) => {
-                return queryUser === "" || user === queryUser;
+                return (queryUser === undefined || user === queryUser) && userId !== user;
             })
             .map((user) => {
                 return { ...(getJsonData(this.getUserDataPath(user, "userInfo.json")) as TUserData), passwd: undefined };
@@ -46,18 +46,18 @@ export default class DataUserManager {
         if (this.isExists(userId)) {
             return false;
         }
-        if (userInfo.userThumnail !== undefined) {
+        if (userInfo.userThumbnail !== undefined) {
             if (!fs.existsSync(StaticDirectoryPath)) {
                 fs.mkdirSync(StaticDirectoryPath, {
                     recursive: true,
                 });
             }
-            const extension = DataUploadManager.UploadFileManager[userInfo.userThumnail].originalname.split(".").pop();
-            if (!handle(`${UploadDirectoryPath}/${userInfo.userThumnail}`, `${StaticDirectoryPath}/${userInfo.userThumnail}.${extension}`)) {
+            const extension = DataUploadManager.UploadFileManager[userInfo.userThumbnail].originalname.split(".").pop();
+            if (!handle(`${UploadDirectoryPath}/${userInfo.userThumbnail}`, `${StaticDirectoryPath}/${userInfo.userThumbnail}.${extension}`)) {
                 return false;
             }
-            DataUploadManager.deleteUploadFileInfo(userInfo.userThumnail);
-            userInfo.userThumnail = `${userInfo.userThumnail}.${extension}`;
+            DataUploadManager.deleteUploadFileInfo(userInfo.userThumbnail);
+            userInfo.userThumbnail = `${userInfo.userThumbnail}.${extension}`;
         }
         return setJsonData(this.getUserDataPath(userId, "userInfo.json"), userInfo);
     }
@@ -73,16 +73,16 @@ export default class DataUserManager {
             return false;
         }
 
-        if (userInfo.userThumnail !== undefined && path.parse(userData.userThumnail as string).name !== userInfo.userThumnail) {
-            const extension = DataUploadManager.UploadFileManager[userInfo.userThumnail].originalname.split(".").pop();
-            if (!handle(`${UploadDirectoryPath}/${userInfo.userThumnail}`, `${StaticDirectoryPath}/${userInfo.userThumnail}.${extension}`)) {
+        if (userInfo.userThumbnail !== undefined && path.parse(userData.userThumbnail as string).name !== userInfo.userThumbnail) {
+            const extension = DataUploadManager.UploadFileManager[userInfo.userThumbnail].originalname.split(".").pop();
+            if (!handle(`${UploadDirectoryPath}/${userInfo.userThumbnail}`, `${StaticDirectoryPath}/${userInfo.userThumbnail}.${extension}`)) {
                 return false;
             }
-            if (userData.userThumnail !== undefined) {
-                fs.unlinkSync(`${StaticDirectoryPath}/${userData.userThumnail}`);
+            if (userData.userThumbnail !== undefined) {
+                fs.unlinkSync(`${StaticDirectoryPath}/${userData.userThumbnail}`);
             }
-            DataUploadManager.deleteUploadFileInfo(userInfo.userThumnail);
-            userInfo.userThumnail = `${userInfo.userThumnail}.${extension}`;
+            DataUploadManager.deleteUploadFileInfo(userInfo.userThumbnail);
+            userInfo.userThumbnail = `${userInfo.userThumbnail}.${extension}`;
         }
 
         return setJsonData(this.getUserDataPath(userId, "userInfo.json"), { ...userData, ...userInfo });

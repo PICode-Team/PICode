@@ -15,6 +15,7 @@ import {
   findTabByPathInCode,
   getExtension,
   getLanguage,
+  insertCodeContent,
   reorderTab,
 } from "../functions";
 import { useCode } from "../../../../hooks/code";
@@ -25,11 +26,17 @@ export function CombinedEditor({
   tabOrderStack,
   codeId,
   focus,
+  projectName,
+  getCode,
+  changeCode,
 }: {
   tabList: TTab[];
   tabOrderStack: number[];
   codeId: number;
   focus: boolean;
+  projectName: string;
+  getCode: (projectName: string, filePath: string) => void;
+  changeCode: (projectName: string, filePath: string, code: string) => void;
 }): JSX.Element {
   const classes = editorStyle();
   const editorWrapperRef = useRef<HTMLDivElement>(null);
@@ -39,14 +46,22 @@ export function CombinedEditor({
   const { code, setCode } = useCode();
   const { data } = useThemeData();
   const [theme, setTheme] = useState<string>("dark");
+  const [content, setContent] = useState<string>("");
 
   useEffect(() => {
     setTheme(data.theme);
   }, [data]);
 
+  useEffect(() => {}, [tabOrderStack]);
+
   useEffect(() => {
-    setTab(tabList.find((tab) => tab.tabId === tabOrderStack[0]));
-  }, [tabOrderStack]);
+    if (tab !== undefined && content != tab.content) {
+      setCode({
+        ...code,
+        root: insertCodeContent(code.root, tab.path, content),
+      });
+    }
+  }, [content]);
 
   useEffect(() => {
     setEditorWidth(
@@ -61,6 +76,11 @@ export function CombinedEditor({
   }
 
   useEffect(() => {
+    const targetTab = tabList.find((tab) => tab.tabId === tabOrderStack[0]);
+    setTab(targetTab);
+
+    if (targetTab !== undefined) getCode(projectName, targetTab.path);
+
     window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
@@ -177,6 +197,9 @@ export function CombinedEditor({
 
   function handleDropToEditor(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
+
+    if (drag.path === "default") return;
+
     const dragOverlayDiv = document.getElementById(`drag-overlay-${codeId}`);
     dragOverlayDiv?.parentNode?.removeChild(dragOverlayDiv);
 
@@ -208,6 +231,7 @@ export function CombinedEditor({
                 extension: getExtension(drag.path),
                 langauge: getLanguage(getExtension(drag.path)),
                 tabId: code.tabCount,
+                content: "",
               },
             ],
             tabOrderStack: [code.tabCount],
@@ -235,6 +259,7 @@ export function CombinedEditor({
                 extension: getExtension(drag.path),
                 langauge: getLanguage(getExtension(drag.path)),
                 tabId: code.tabCount,
+                content: "",
               },
             ],
             tabOrderStack: [code.tabCount],
@@ -262,6 +287,7 @@ export function CombinedEditor({
                 extension: getExtension(drag.path),
                 langauge: getLanguage(getExtension(drag.path)),
                 tabId: code.tabCount,
+                content: "",
               },
             ],
             tabOrderStack: [code.tabCount],
@@ -289,6 +315,7 @@ export function CombinedEditor({
                 extension: getExtension(drag.path),
                 langauge: getLanguage(getExtension(drag.path)),
                 tabId: code.tabCount,
+                content: "",
               },
             ],
             tabOrderStack: [code.tabCount],
@@ -310,6 +337,7 @@ export function CombinedEditor({
             extension: getExtension(drag.path),
             langauge: getLanguage(getExtension(drag.path)),
             tabId: code.tabCount,
+            content: "",
           });
         }
       }
@@ -329,6 +357,7 @@ export function CombinedEditor({
         extension: getExtension(drag.path),
         langauge: getLanguage(getExtension(drag.path)),
         tabId: code.tabCount,
+        content: "",
       });
     })();
 
@@ -388,9 +417,12 @@ export function CombinedEditor({
           width="calc(100% - 1px)"
           height="calc(100% - 55px)"
           theme={theme === "dark" ? "vs-dark" : "light"}
-          path={""}
-          defaultLanguage={""}
-          defaultValue={""}
+          path={tab?.path ?? ""}
+          language={getLanguage(getExtension(tab?.path ?? "default"))}
+          value={tab?.content ?? ""}
+          onChange={(event: any) => {
+            setContent(event);
+          }}
         />
       </div>
     </div>
