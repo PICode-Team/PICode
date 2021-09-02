@@ -51,7 +51,7 @@ export default function SignUp() {
 
     const dispatch = useDispatch();
 
-    const step = ["Account Info", "User Info", "Optional"]
+    const step = ["Account Info", "User Info"]
 
     const stpeInfo = [{
         prev: {
@@ -120,8 +120,6 @@ export default function SignUp() {
         </div>,
         <div className={classes.inputBox} key={1}>
             <CustomTextField label="Name" onChange={(e: any) => setUserName(e.target.value)} />
-        </div>,
-        <div className={classes.inputBox} key={1}>
             <div {...getRootProps()} className={classes.uploadFile}>
                 {userImage && <div
                     style={{
@@ -151,7 +149,7 @@ export default function SignUp() {
                         </>
                 }
             </div>
-        </div>
+        </div>,
     ]
 
     const makeImageUuid = async () => {
