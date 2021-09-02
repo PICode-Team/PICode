@@ -48,7 +48,6 @@ export const rowStyle = makeStyles((theme: IThemeStyle) =>
             fontSize: "16px",
             color: theme.font.medium.color,
             "&>svg": {
-                position: "absolute",
                 left: 20,
             },
         },
@@ -68,7 +67,26 @@ export const rowStyle = makeStyles((theme: IThemeStyle) =>
             background: "#4078B8",
         },
         unactive: {
-            background: theme.loginBackground,
+            "&:hover": {
+                background: theme.loginBackground,
+            },
+        },
+        collapseButton: {
+            color: theme.font.high.color,
+        },
+        collapseWrapper: {
+            transition: "all ease 0.3s 0s",
+            height: "80px",
+            width: "100%",
+            background: theme.backgroundColor.step2,
+            overflow: "hidden",
+        },
+        unOpenWrapper: {
+            transition: "all ease 0.3s 0s",
+            height: "0",
+            background: theme.backgroundColor.step2,
+            width: "100%",
+            overflow: "hidden",
         },
     })
 );

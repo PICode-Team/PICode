@@ -48,6 +48,7 @@
     "react-multi-carousel": "^2.6.3",
     "react-redux": "^7.2.4",
     "react-responsive-carousel": "^3.2.19",
+    "react-transition-group": "^4.4.2",
     "redux-persist": "^6.0.0",
     "redux-thunk": "^2.3.0",
     "reflect-metadata": "^0.1.13",
