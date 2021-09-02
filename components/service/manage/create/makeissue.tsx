@@ -59,7 +59,6 @@ export default function MakeIssue(props: any) {
                                 content: content,
                             }
                         }
-                        console.log(payload)
                         props.ws.send(JSON.stringify({
                             category: "issue",
                             type: "createIssue",

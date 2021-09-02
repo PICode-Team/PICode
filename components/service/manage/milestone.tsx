@@ -50,7 +50,6 @@ export default function Milestone({ ctx, setCreate, milestone }: any) {
                     </div>
                 </div>
                 {milestone !== undefined && milestone.map((v: any, idx: number) => {
-                    console.log(milestone)
                     return <div className={classes.kanbanItem} key={v.uuid} onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();

@@ -35,7 +35,7 @@ export default function TerminalContent(props: any): JSX.Element {
 
   const userMouseMoveCapture = React.useCallback(
     throttle((e) => {
-      console.log(e)
+      //
     }, 200),
     []
   );

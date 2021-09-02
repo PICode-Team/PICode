@@ -89,6 +89,7 @@ export default function TestNote(ctx: any) {
     }, [dragEnd]);
 
     useEffect(() => {
+        console.log(ctx)
         if (selectFile === undefined) return;
         if (selectFile.documentId === undefined && selectFile.path === "") return;
         let path = selectFile?.path.split("/")

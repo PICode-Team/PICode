@@ -43,7 +43,6 @@ export function Topbar(ctx: any) {
       },
     }).then((res) => res.json());
     setData(data.user);
-    console.log(data.user)
   };
 
   useEffect(() => {
