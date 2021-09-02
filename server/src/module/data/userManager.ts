@@ -23,11 +23,11 @@ export default class DataUserManager {
         return getJsonData(this.getUserDataPath(userId, "userInfo.json")) as TUserData;
     }
 
-    static getList(queryUser?: string) {
+    static getList(userId: string, queryUser?: string) {
         return fs
             .readdirSync(`${DataDirectoryPath}/user`)
             .filter((user) => {
-                return queryUser === undefined || user === queryUser;
+                return (queryUser === undefined || user === queryUser) && userId !== user;
             })
             .map((user) => {
                 return { ...(getJsonData(this.getUserDataPath(user, "userInfo.json")) as TUserData), passwd: undefined };

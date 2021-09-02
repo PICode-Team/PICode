@@ -5,188 +5,133 @@ import { IThemeStyle } from "../../theme";
 export const chatStyle = makeStyles((theme: IThemeStyle) =>
   createStyles({
     root: {
-      backgroundColor: theme.backgroundColor.step0,
+      backgroundColor: "#2c3239",
       width: "calc(100% - 64px)",
       height: "100%",
       display: "flex",
     },
+
     sidebar: {
-      width: "220px",
+      width: "400px",
       height: "100%",
-      backgroundColor: theme.backgroundColor.step3,
+      backgroundColor: "#3b434d",
+      resize: "horizontal",
+      overflow: "auto",
+      padding: "20px",
+    },
+
+    sidebarHeader: {
+      padding: "0px 12px",
+      marginBottom: "30px",
+    },
+
+    search: {
+      width: "100%",
+      height: "40px",
+      backgroundColor: "#434D59",
+      borderRadius: "20px",
+      display: "flex",
+      padding: "0px 12px",
+      alignItems: "center",
+      "&>svg": {
+        color: "#ffffff",
+        marginRight: "6px",
+      },
+      "&>input": {
+        backgroundColor: "inherit",
+        outline: "none",
+        border: "none",
+        color: "#ffffff",
+        marginTop: "4px",
+        "&::placeholder": {
+          color: "rgba(183, 183, 183, 0.42)",
+          fontSize: "17px",
+        },
+      },
+    },
+
+    sidebarContent: {},
+
+    channel: {
+      margin: "0px -15px",
+      width: "calc(100% + 30px)",
+      height: "60px",
+      display: "flex",
+      color: "#ffffff",
+      padding: "10px 26px",
+      borderRadius: "10px",
+      cursor: "pointer",
+      "&:hover": {
+        backgroundColor: "#505866",
+      },
+    },
+    channelThumbnail: {
+      width: "40px",
+      height: "40px",
+      backgroundColor: "#ffffff",
+      borderRadius: "20px",
+      marginRight: "12px",
+    },
+    channelBody: {
+      flex: 1,
+    },
+    channelInfo: {},
+    channelName: {
+      marginRight: "8px",
+      fontWeight: "bold",
+    },
+    channelParticipant: {},
+    lastContent: {},
+    channelTail: {
+      width: "70px",
+    },
+    unreadMessage: {},
+    lastTime: {
+      marginTop: "20px",
+      fontSize: "12px",
     },
 
     contentWrapper: {
-      width: "calc(100% - 220px)",
       height: "100%",
+      flex: 1,
+      backgroundColor: "#2C3239",
     },
 
-    title: {
-      padding: "8px 12px",
-      fontWeight: "bold",
-      color: theme.font.high.color,
-      fontSize: "16px",
-      borderBottom: "1px solid rgba(255, 255, 255, 0.2)",
-      height: "40px",
-    },
-    toolWrapper: {
-      padding: "4px 0px",
-    },
-    tool: {
-      color: theme.font.low.color,
-      padding: "2px 10px",
-      display: "flex",
-      alignItems: "center",
-      height: "26px",
-      lineHeight: "26px",
-      fontSize: "13px",
-      cursor: "pointer",
-      "&:hover": {
-        backgroundColor: theme.hover,
-      },
-      "&>svg": {
-        width: "16px",
-        height: "16px",
-        marginRight: "4px",
-      },
-    },
-
-    open: {
-      height: "28px !important",
-      overflowY: "hidden",
-      "&>div>svg": {
-        transform: "rotate(-0.25turn)",
-      },
-    },
-
-    channelList: {
-      paddingBottom: "12px",
-      cursor: "pointer",
-      "&>div>svg": {
-        transition: "all ease-in 0.1s",
-        marginBottom: "4px",
-      },
-    },
-    channelTitle: {
-      padding: "2px 4px",
-      display: "flex",
-      alignItems: "center",
-      height: "28px",
-      lineHeight: "28px",
-      color: theme.font.medium.color,
-    },
-    channel: {
-      color: theme.font.medium.color,
-      padding: "2px 10px",
-      cursor: "pointer",
-      "&:hover": {
-        backgroundColor: theme.hover,
-      },
-    },
-    box: {
-      paddingLeft: "10px",
-      paddingRight: "10px",
-    },
-    join: {
-      display: "flex",
-      justifyContent: "space-between",
-      "&:hover": {
-        "&>span": {
-          visibility: "visible",
-        },
-      },
-    },
-    unjoin: {},
-    deleteChannel: {
-      visibility: "hidden",
-      paddingRight: "8px",
-    },
-    addChannel: {
-      borderRadius: "2px",
-      margin: "0px 6px",
-      padding: "0px 4px",
-      backgroundColor: theme.hover,
-    },
-
-    directList: {
-      cursor: "pointer",
-      "&>div>svg": {
-        transition: "all ease-in 0.1s",
-        marginBottom: "4px",
-      },
-    },
-    directTitle: {
-      padding: "2px 4px",
-      display: "flex",
-      alignItems: "center",
-      height: "28px",
-      lineHeight: "28px",
-      color: theme.font.medium.color,
-    },
-    direct: {
-      color: theme.font.medium.color,
-      padding: "2px 10px",
-      paddingLeft: "16px",
-      cursor: "pointer",
-      display: "flex",
-      justifyContent: "space-between",
-      "&:hover": {
-        backgroundColor: theme.hover,
-        "&>span": {
-          visibility: "visible",
-        },
-      },
-    },
-    directUserWrapper: {
-      display: "flex",
-    },
-    directUser: {
-      backgroundColor: "black",
-      width: "16px",
-      height: "16px",
-      borderTopLeftRadius: "2px",
-      borderTopRightRadius: "4px",
-      borderBottomLeftRadius: "4px",
-      borderBottomRightRadius: "2px",
-    },
-    directName: {
-      marginLeft: "4px",
-    },
-
-    header: {
+    contentHeader: {
+      height: "60px",
       width: "100%",
+      borderBottom: "1px solid #505050",
+      display: "flex",
+      alignItems: "center",
+      padding: "0px 20px",
+    },
+
+    targetThubnail: {
+      width: "40px",
       height: "40px",
-      backgroundColor: theme.backgroundColor.step0,
-      borderBottom: "1px solid rgba(255, 255, 255, 0.2)",
-      display: "flex",
-      alignItems: "center",
-      paddingLeft: "20px",
-      paddingRight: "16px",
+      backgroundColor: "#ffffff",
+      borderRadius: "20px",
+      marginRight: "12px",
     },
-    headerUser: {
-      backgroundColor: "#E8912D",
-      width: "22px",
-      height: "22px",
-      borderTopLeftRadius: "2px",
-      borderTopRightRadius: "4px",
-      borderBottomLeftRadius: "4px",
-      borderBottomRightRadius: "2px",
+    targetInfo: {
+      color: "#ffffff",
     },
-    headerName: {
-      color: "rgba(255, 255, 255, 1)",
+    targetName: {
       fontWeight: "bold",
-      marginLeft: "4px",
-      marginTop: "4px",
     },
-    headerInfo: {
-      display: "flex",
-      alignItems: "center",
+    targetLast: {
+      fontSize: "12px",
     },
-    channelDetail: {},
-    participant: {},
-    number: {},
+    targetParticipant: {},
 
     content: {
+      height: "calc(100% - 165px)",
+      width: "100%",
+      flex: 1,
+      display: "flex",
+      overflow: "auto",
+    },
+    contentBox: {
       height: "fit-content",
       minHeight: "calc(100% - 20px)",
       width: "100%",
@@ -196,27 +141,212 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       marginBottom: "10px",
       marginTop: "10px",
     },
-    contentBox: {
-      height: "calc(100% - 155px)",
-      width: "100%",
-      flex: 1,
+
+    messageBox: {
+      padding: "8px 20px",
       display: "flex",
+    },
+    messageInfo: {
+      "&:hover": {
+        "&>div>span>span": {
+          display: "none",
+        },
+        "&>div>span>div": {
+          display: "flex",
+        },
+      },
+    },
+    thumbnail: {
+      backgroundColor: "#E8912D",
+      width: "22px",
+      height: "22px",
+      borderRadius: "11px",
+    },
+    target: {
+      color: theme.font.high.color,
+      fontWeight: "bold",
+      marginLeft: "6px",
+    },
+    textWrapper: {
+      marginLeft: "6px",
+      marginTop: "4px",
+      display: "flex",
+      alignItems: "flex-end",
+    },
+    messageText: {
+      backgroundColor: theme.backgroundColor.step3,
+      borderRadius: "14px",
+      padding: "4px 14px",
+      color: theme.font.high.color,
+      maxWidth: "750px",
+    },
+    time: {
+      color: theme.font.high.color,
+      fontSize: "10px",
+      margin: "0px 5px",
+    },
+    interactionDivider: {
+      width: "1px",
+      height: "16px",
+      margin: "2px 0px",
+      backgroundColor: "#8092a8",
+    },
+    interactionIcon: {
+      padding: "4px",
+      height: "18px",
+      cursor: "pointer",
+      "&>svg": {
+        width: "14px",
+        height: "14px",
+        color: "#afc3db",
+      },
+      "&:hover": {
+        "&>svg": {
+          color: "#ffffff",
+        },
+      },
+    },
+    messageInteraction: {
+      display: "none",
+      backgroundColor: "#667485",
+      borderRadius: "4px",
+    },
+
+    activitybar: {
+      width: "400px",
+      height: "100%",
+      borderLeft: "1px solid #505050",
+    },
+
+    activitybarHeader: {
+      height: "60px",
+      width: "100%",
+      borderBottom: "1px solid #505050",
+      color: "#ffffff",
+      display: "flex",
+      alignItems: "center",
+      padding: "0px 20px",
+      justifyContent: "space-between",
+    },
+
+    activitybarTitle: {
+      fontSize: "28px",
+      fontWeight: "bold",
+      marginRight: "8px",
+    },
+    activitybarTarget: {},
+    activitybarClose: {
+      marginTop: "8px",
+      cursor: "pointer",
+    },
+
+    activitybarContent: {
+      maxHeight: "calc(100% - 60px)",
       overflow: "auto",
+      paddingBottom: "50px",
+    },
+
+    newMessage: {
+      color: theme.font.high.color,
+      width: "calc(100% - 292px)",
+      height: "30px",
+      position: "absolute",
+      top: "0px",
+      display: "flex",
+      alignItems: "center",
+      pointerEvents: "none",
+      justifyContent: "center",
+      "&>div": {
+        backgroundColor: theme.backgroundColor.step1,
+        width: "130px",
+        height: "30px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: "15px",
+        cursor: "pointer",
+        opacity: 0,
+        pointerEvents: "none",
+        transition: "ease-in 0.4s opacity",
+        "&:after": {
+          content: "''",
+          position: "absolute",
+          top: "100%",
+          left: "50%",
+          marginLeft: "-6px",
+          marginBottom: "-6px",
+          border: "6px solid transparent",
+          borderTopColor: theme.backgroundColor.step1,
+        },
+      },
+    },
+    active: {
+      backgroundColor: "#505866 !important",
+    },
+
+    createChannel: {
+      margin: "0px -15px",
+      width: "calc(100% + 30px)",
+      height: "60px",
+      display: "flex",
+      color: "#ffffff",
+      padding: "10px 26px",
+      borderRadius: "10px",
+      justifyContent: "center",
+      alignItems: "center",
+      cursor: "pointer",
+      "&>svg": {
+        color: "#ffffff",
+        width: "40px",
+        height: "40px",
+      },
+      "&:hover": {
+        backgroundColor: "#505866",
+      },
     },
 
     input: {
       height: "105px",
       padding: "0px 20px",
       paddigTop: "10px",
+    },
+    inputBox: {
+      height: "calc(100% - 24px)",
+      width: "100%",
+      border: "1px solid rgba(255, 255, 255, 0.5)",
+      color: theme.font.medium.color,
+      backgroundColor: theme.backgroundColor.step1,
       "&>input": {
-        height: "calc(100% - 24px)",
+        minHeight: "38px",
         width: "100%",
-        backgroundColor: theme.backgroundColor.step1,
-        color: theme.font.medium.color,
+        backgroundColor: "inherit",
+        color: "inherit",
         outline: "none",
-        border: "1px solid rgba(255, 255, 255, 0.5)",
+        border: "none",
+        padding: "8px",
+        fontSize: "16px",
       },
     },
+    interaction: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      height: "51px",
+      padding: "4px 8px 0px",
+      "&>div": {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      },
+      "&>div>div>svg": {
+        color: "#515C60",
+        cursor: "pointer",
+        "&:hover": {
+          color: "#ffffff",
+        },
+      },
+    },
+
     entering: {
       height: "24px",
       display: "flex",
@@ -269,60 +399,46 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       backgroundColor: theme.backgroundColor.step0,
     },
 
-    messageBox: {
-      padding: "8px 20px",
+    visible: {
+      pointerEvents: "auto !important" as any,
+      "&>div": {
+        opacity: "1 !important",
+        pointerEvents: "auto !important" as any,
+      },
+    },
+
+    thread: {
+      height: "24px",
       display: "flex",
-    },
-
-    interaction: {},
-    emojiWrapper: {},
-    emoji: {},
-    addEmoji: {},
-
-    user: {
-      backgroundColor: "#E8912D",
-      width: "22px",
-      height: "22px",
-      borderRadius: "11px",
-    },
-    name: {
-      color: theme.font.high.color,
-      fontWeight: "bold",
+      alignItems: "center",
+      padding: "2px 10px",
+      borderRadius: "10px",
+      backgroundColor: "#5a687a",
+      marginTop: "6px",
       marginLeft: "6px",
+      cursor: "pointer",
     },
-    textWrapper: {
-      marginLeft: "6px",
-      marginTop: "4px",
+    threadParticipant: {
       display: "flex",
-      alignItems: "flex-end",
+      marginRight: "6px",
+      "&>div": {
+        width: "18px",
+        height: "18px",
+        borderRadius: "9px",
+        backgroundColor: "#ffffff",
+        marginRight: "4px",
+      },
     },
-    messageText: {
-      backgroundColor: theme.backgroundColor.step3,
-      borderRadius: "3px",
-      padding: "4px 10px",
-      color: theme.font.high.color,
-      maxWidth: "750px",
+    threadCount: {
+      marginRight: "6px",
+      color: "#ffffff",
+      fontSize: "12px",
     },
-    time: {
-      color: theme.font.high.color,
-      fontSize: "10px",
-      margin: "0px 5px",
+    lastThread: {
+      color: "#ffffff",
+      fontSize: "12px",
     },
 
-    "@keyframes entering": {
-      "0%": {
-        transform: "translateY(0)",
-      },
-      "25%": {
-        transform: "translateY(-2px)",
-      },
-      "50%": {
-        transform: "translateY(0)",
-      },
-      "100%": {
-        transform: "translateY(0)",
-      },
-    },
     emptyWrapper: {
       width: "calc(100% - 220px)",
       height: "100%",
@@ -332,48 +448,6 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       alignItems: "center",
       justifyContent: "center",
       backgroundColor: theme.backgroundColor.step0,
-    },
-
-    newMessage: {
-      color: theme.font.high.color,
-      width: "calc(100% - 292px)",
-      height: "30px",
-      position: "absolute",
-      top: "0px",
-      display: "flex",
-      alignItems: "center",
-      pointerEvents: "none",
-      justifyContent: "center",
-      "&>div": {
-        backgroundColor: theme.backgroundColor.step1,
-        width: "130px",
-        height: "30px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        borderRadius: "15px",
-        cursor: "pointer",
-        opacity: 0,
-        pointerEvents: "none",
-        transition: "ease-in 0.4s opacity",
-        "&:after": {
-          content: "''",
-          position: "absolute",
-          top: "100%",
-          left: "50%",
-          marginLeft: "-6px",
-          marginBottom: "-6px",
-          border: "6px solid transparent",
-          borderTopColor: theme.backgroundColor.step1,
-        },
-      },
-    },
-    visible: {
-      pointerEvents: "auto !important" as any,
-      "&>div": {
-        opacity: "1 !important",
-        pointerEvents: "auto !important" as any,
-      },
     },
   })
 );
@@ -396,7 +470,7 @@ export const createChannelStyle = makeStyles((theme: IThemeStyle) =>
       height: "40%",
       position: "absolute",
       display: "fixed",
-      backgroundColor: theme.backgroundColor.step1,
+      backgroundColor: "#2c3239",
       zIndex: 9999,
       marginLeft: "35%",
       marginTop: "10%",
@@ -430,14 +504,26 @@ export const createChannelStyle = makeStyles((theme: IThemeStyle) =>
       justifyContent: "flex-end",
       alignItems: "flex-end",
       "&>button": {
-        marginBottom: "-24px",
+        border: "none",
+        outline: "none",
+        backgroundColor: "#4078b8",
+        color: "#ffffff",
+        fontSize: "15px",
+        width: "76px",
+        height: "32px",
+        borderRadius: "4px",
+        cursor: "pointer",
+        "&:hover": {
+          background: "#488cd9",
+          transition: "all 0.3s",
+        },
       },
     },
     visibility: {
       visibility: "hidden",
     },
     input: {
-      backgroundColor: "#3b4a4f",
+      background: "#3b434c",
       color: "#ffffff",
       width: "100%",
       outline: "none",

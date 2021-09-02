@@ -1,11 +1,11 @@
 import { Layout } from "../../components/layout";
 import React from "react";
-import CreateTmp from "../../components/service/project/createtmp";
+import Create from "../../components/service/project/create";
 
 export default function CodePages(pageProps: any) {
     return (
         <Layout {...pageProps}>
-            <CreateTmp />
+            <Create />
         </Layout>
     );
 }
