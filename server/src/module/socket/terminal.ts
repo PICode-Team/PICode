@@ -5,14 +5,14 @@ import { getSocket, makePacket } from "./manager";
 import DataTerminalManager from "../data/terminalManager";
 import DataProjectManager from "../data/projectManager";
 
-function createTerminal(userId: string, { projectName, size }: { projectName: string; size: { cols: number; rows: number } }) {
+function createTerminal(userId: string, { projectName, size, ip, socketPort }: { projectName: string; size: { cols: number; rows: number }; ip: string; socketPort: number }) {
     const uuid = uuidv4();
     const terminalWorker = DataTerminalManager.createTerminal(userId, uuid);
-    const projectId = DataProjectManager.getProjectId(userId, projectName);
+    const projectId = DataProjectManager.getProjectId(userId, projectName) ?? projectName;
     if (terminalWorker === undefined || projectId === undefined) {
         getSocket(userId)?.send(JSON.stringify(makePacket("terminal", "createTerminal", { message: "fail to create terminal" })));
     } else {
-        DataTerminalManager.listenToTerminalWorker(userId, uuid, projectId as string, terminalWorker, size);
+        DataTerminalManager.listenToTerminalWorker(userId, uuid, projectId as string, size, ip, socketPort);
         getSocket(userId)?.send(JSON.stringify(makePacket("terminal", "createTerminal", { uuid: uuid })));
     }
 }

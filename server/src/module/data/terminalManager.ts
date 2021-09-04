@@ -1,62 +1,64 @@
-import { TCommandData, UUIDToWorker } from "../../types/module/data/terminal.types";
-import { Worker } from "worker_threads";
 import { getSocket, makePacket } from "../socket/manager";
 import log from "../log";
 import DataProjectManager from "./projectManager";
-import path from "path";
-
-const terminalInfo: UUIDToWorker = {};
+import net from "net";
+import { UUIDToSocket } from "../../types/module/data/terminal.types";
+const terminalInfo: UUIDToSocket = {};
 
 export default class DataTerminalManager {
-    static projectPath: string;
-
     static getUserTerminal(uuid: string) {
         return terminalInfo[uuid];
     }
 
-    static createTerminal(userId: string, uuid: string) {
-        const worker = new Worker(path.resolve(__dirname, "../terminal.js"));
-        try {
-            terminalInfo[uuid] = {
-                socket: getSocket(userId),
-                worker: worker,
-            };
-        } catch (e) {
-            log.error(e.stack);
-            return undefined;
-        }
-        return worker;
+    static serialize(data: object) {
+        return JSON.stringify(data);
     }
 
-    static listenToTerminalWorker(userId: string, uuid: string, projectId: string, worker: Worker, size: { cols: number; rows: number }) {
-        worker.postMessage({ type: "setup", setupData: { projectPath: DataProjectManager.getProjectWorkPath(projectId), size: size } } as TCommandData);
-        worker.on("message", (message: TCommandData) => {
-            switch (message.type) {
-                case "command": {
-                    const sendData = JSON.stringify(makePacket("terminal", "commandTerminal", { message: message.command, uuid: uuid }));
-                    getSocket(userId).send(sendData);
-                    break;
+    static createTerminal(userId: string, uuid: string) {
+        const socket = new net.Socket();
+
+        terminalInfo[uuid] = {
+            socket: getSocket(userId),
+            net: socket,
+        };
+
+        return socket;
+    }
+
+    static listenToTerminalWorker(userId: string, uuid: string, projectId: string, size: { cols: number; rows: number }, ip: string, socketPort: number) {
+        const socketInfo = terminalInfo[uuid].net;
+        socketInfo.connect({ host: ip, port: socketPort }, () => {
+            socketInfo.on("data", function (chunk) {
+                const data = JSON.parse(chunk.toString());
+                switch (data.type) {
+                    case "command": {
+                        getSocket(userId).send(JSON.stringify(makePacket("terminal", "commandTerminal", { message: data.command, uuid: uuid })));
+                        break;
+                    }
+                    case "setup": {
+                        getSocket(userId).send(JSON.stringify(makePacket("terminal", "createTerminal", { message: data.command, uuid: uuid })));
+                        break;
+                    }
+                    case "exit": {
+                        getSocket(userId).send(JSON.stringify(makePacket("terminal", "deleteTerminal", { uuid: uuid })));
+                        socketInfo.destroy();
+                        break;
+                    }
                 }
-                case "exit": {
-                    const sendData = JSON.stringify(makePacket("terminal", "deleteTerminal", { uuid: uuid }));
-                    getSocket(userId).send(sendData);
-                    terminalInfo[uuid].worker.terminate();
-                    delete terminalInfo[uuid];
-                    break;
-                }
-            }
+            });
         });
+        socketInfo.on("error", (error) => {
+            log.error(`terminal error occured! ${error}`);
+        });
+
+        socketInfo.write(this.serialize({ type: "setup", setupData: { projectPath: DataProjectManager.getProjectWorkPath(projectId), size: size } }));
     }
 
     static commandToTerminal(terminal: { command?: string; id: string }) {
-        const terminalInfo = DataTerminalManager.getUserTerminal(terminal.id);
-        terminalInfo.worker.postMessage({ type: "command", command: terminal.command } as TCommandData);
-        return terminalInfo;
+        terminalInfo[terminal.id].net.write(this.serialize({ type: "command", command: terminal.command }));
     }
 
     static deleteTerminal(terminal: { command?: string; id: string }) {
-        const terminalInfo = DataTerminalManager.getUserTerminal(terminal.id);
-        terminalInfo.worker.postMessage({ type: "exit", command: terminal.command } as TCommandData);
-        return terminalInfo;
+        terminalInfo[terminal.id].net.write(this.serialize({ type: "exit" }));
     }
 }

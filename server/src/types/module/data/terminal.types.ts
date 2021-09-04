@@ -1,11 +1,11 @@
-import { Worker } from "worker_threads";
+import net from "net";
 
 export interface terminal {
     socket: WebSocket;
-    worker: Worker;
+    net: net.Socket;
 }
 
-export type UUIDToWorker = {
+export type UUIDToSocket = {
     [key in string]: terminal;
 };
 
