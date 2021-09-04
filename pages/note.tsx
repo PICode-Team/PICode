@@ -5,8 +5,6 @@ import TestNote from "../components/service/note/inlinebar";
 
 export default function NotePages(pageProps: any) {
     return <Layout {...pageProps}>
-        <ClientOnly>
-            <TestNote {...pageProps} />
-        </ClientOnly>
+        <TestNote {...pageProps} />
     </Layout>
 }

@@ -89,7 +89,6 @@ export default function TestNote(ctx: any) {
     }, [dragEnd]);
 
     useEffect(() => {
-        console.log(ctx)
         if (selectFile === undefined) return;
         if (selectFile.documentId === undefined && selectFile.path === "") return;
         let path = selectFile?.path.split("/")
@@ -144,6 +143,21 @@ export default function TestNote(ctx: any) {
                 setFileView(res.data.getDocument);
             });
     }, []);
+
+    useEffect(() => {
+        if (ctx.ws !== false) {
+            ctx.ws.current.addEventListener("message", (msg: any) => {
+                const message = JSON.parse(msg.data);
+                if (message.category === "document") {
+                    switch (message.type) {
+                        case "getDocument":
+                            setFileView(message.data)
+                            break;
+                    }
+                }
+            })
+        }
+    }, [ctx])
 
     useEffect(() => {
         if (tmpFileName === "") return;
