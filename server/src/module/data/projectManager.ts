@@ -113,7 +113,7 @@ export default class DataProjectManager {
                 .catch((e) => {
                     log.error(e.stack);
                 });
-        } catch (e) {
+        } catch (e: any) {
             log.error(e.stack);
             return false;
         }
@@ -248,8 +248,8 @@ export default class DataProjectManager {
             if (!func[source.type](projectId, source)) {
                 return false;
             }
-            DataDockerManager.create(userId, dockerInfo, { projectId, projectName, projectParticipants: participants });
-        } catch (err) {
+            DataDockerManager.createPkgProgram(userId, dockerInfo, { projectId, projectName, projectParticipants: participants });
+        } catch (err: any) {
             log.error(err.stack);
             return false;
         }
@@ -295,7 +295,7 @@ export default class DataProjectManager {
                 return false;
             }
             DataDockerManager.update(userId, projectName, dockerInfo);
-        } catch (e) {
+        } catch (e: any) {
             log.error(e.stack);
             return false;
         }
@@ -326,7 +326,7 @@ export default class DataProjectManager {
         }
         try {
             zip(this.getProjectWorkPath(projectId), `${this.getProjectWorkPath(projectId)}/${projectName}.zip`);
-        } catch (e) {
+        } catch (e: any) {
             log.error(e.stack);
             return false;
         }
@@ -380,7 +380,7 @@ export default class DataProjectManager {
         }
         try {
             fs.renameSync(fullOldPath, fullNewPath);
-        } catch (e) {
+        } catch (e: any) {
             log.error(e.stack);
             return { code: ResponseCode.internalError };
         }
@@ -402,7 +402,7 @@ export default class DataProjectManager {
             } else if (fs.statSync(fullPath).isFile()) {
                 fs.unlinkSync(fullPath);
             }
-        } catch (e) {
+        } catch (e: any) {
             log.error(e.stack);
             return { code: ResponseCode.internalError };
         }
@@ -419,7 +419,7 @@ export default class DataProjectManager {
         try {
             const fullPath = path.join(this.getProjectWorkPath(projectId), filePath);
             fs.openSync(fullPath, "w");
-        } catch (e) {
+        } catch (e: any) {
             log.error(e.stack);
             return { code: ResponseCode.internalError };
         }
@@ -436,7 +436,7 @@ export default class DataProjectManager {
         try {
             const fullPath = path.join(this.getProjectWorkPath(projectId), dirPath);
             fs.mkdirSync(fullPath, { recursive: true });
-        } catch (e) {
+        } catch (e: any) {
             log.error(e.stack);
             return { code: ResponseCode.internalError };
         }

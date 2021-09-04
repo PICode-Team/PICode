@@ -4,10 +4,13 @@ export interface TDockerCreateData {
     tag?: string | "latest";
     bridgeName?: string;
     bridgeAlias?: string;
-    hostPort?: number;
-    containerPort?: number;
+    portInfo?: TPortMappingData;
     linkContainer?: string;
 }
+
+export type TPortMappingData = {
+    [key in string]: number;
+};
 
 export type TBridgeInfo = {
     [key in string]: string | undefined;
@@ -21,6 +24,7 @@ export type TDockerData = Omit<TDockerCreateData, "linkContainer" | "bridgeName"
     bridgeInfo: TBridgeInfo;
     ramUsage?: string;
     containers: string[];
+    socketPort?: number;
 };
 
 export type TDockerNetworkCreateData = {
@@ -39,9 +43,21 @@ export type TDockerNetworkJsonData = {
 };
 
 export type TDockerVisualData = {
-    node: TDockerNodeData[];
-    edge: TDockerEdgeData[];
+    container: (TDockerData & { parent?: string[] })[];
+    port: TDockerPortVisualData[];
+    network: TDockerNetworkVisualData[];
 };
 
-export type TDockerNodeData = Pick<TDockerData, "containerId" | "image" | "tag" | "status" | "ramUsage"> & { source: string };
-export type TDockerEdgeData = Pick<TDockerData, "containerId" | "bridgeInfo" | "hostPort" | "containerPort"> & { target: string[] };
+export type TDockerPortVisualData = {
+    outBound?: number;
+    inBound?: number[];
+    onContainer?: string;
+    connectedContainers?: string[];
+};
+export type TDockerNetworkVisualData = {
+    name: string;
+    subnet?: string;
+    ip?: string;
+    networkId?: string;
+    containers?: string[];
+};
