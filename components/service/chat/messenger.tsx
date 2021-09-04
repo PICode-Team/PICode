@@ -212,9 +212,18 @@ function Home({
     <div className={classes.messenger}>
       <div className={classes.wrapper}>
         <div className={classes.homeHeader}>
-          <div className={classes.backspace}></div>
           <div className={classes.opponent}>
-            <div className={classes.name}>Chatting</div>
+            <div className={classes.name}>
+              <span
+                style={{
+                  marginRight: "4px",
+                  fontSize: "18px",
+                  fontWeight: "bold",
+                }}
+              >
+                Chatting
+              </span>
+            </div>
             <div className={classes.online}></div>
           </div>
           <div
@@ -896,9 +905,17 @@ function ThreadMessage({
   }
 
   return (
-    <div className={classes.messenger} style={{ right: "390px" }}>
+    <div className={classes.messenger} style={{ boxShadow: "none" }}>
       <div className={classes.wrapper}>
         <div className={classes.header}>
+          <div
+            className={classes.back}
+            onClick={() => {
+              setThread(undefined);
+            }}
+          >
+            <NavigateBefore />
+          </div>
           <div className={classes.opponent}>
             <div className={classes.name}>
               <span
@@ -915,9 +932,17 @@ function ThreadMessage({
             <div className={classes.online}></div>
           </div>
           <div
+            className={classes.expand}
+            onClick={() => {
+              window.location.href = "/chat";
+            }}
+          >
+            <FilterNone />
+          </div>
+          <div
             className={classes.cancel}
             onClick={() => {
-              setThread(undefined);
+              setOpen(false);
             }}
           >
             <Close />

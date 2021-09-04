@@ -5,6 +5,7 @@ import MakeKanban from "./create/makeboard";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 import EditIcon from "@material-ui/icons/Edit";
 import MakeMile from "./create/makemile";
+import { DeleteForever, Edit } from "@material-ui/icons";
 
 export default function Milestone({ ctx, setCreate, milestone }: any) {
   const classes = boardStyle();
@@ -23,61 +24,12 @@ export default function Milestone({ ctx, setCreate, milestone }: any) {
     <div className={classes.wrapper}>
       {kanbanIssue === "" && (
         <>
-          <div className={classes.header}>
-            <div
-              className={classes.createButton}
-              onClick={() => {
-                setOpen(true);
-              }}
-            >
-              Create Milestone <CreateIcon style={{ marginLeft: "10px" }} />
-            </div>
-          </div>
           <div className={classes.content} id="kanbanBoard">
-            <div
-              style={{
-                width: "100%",
-                height: "40px",
-                fontSize: "16px",
-                lineHeight: "40px",
-                textAlign: "center",
-                borderBottom: "1px solid #fff",
-              }}
-            >
-              <div style={{ padding: "0 30px" }}>
-                <div
-                  style={{
-                    width: "100px",
-                    display: "inline-block",
-                    textAlign: "left",
-                  }}
-                >
-                  Name
-                </div>
-                <div style={{ width: "155px", display: "inline-block" }}>
-                  Start Date
-                </div>
-                <div style={{ width: "155px", display: "inline-block" }}>
-                  End Date
-                </div>
-                <div
-                  style={{
-                    width: "calc(100% - 470px)",
-                    display: "inline-block",
-                  }}
-                >
-                  Content
-                </div>
-                <div style={{ width: "60px", display: "inline-block" }}>
-                  Action
-                </div>
-              </div>
-            </div>
             {milestone !== undefined &&
               milestone.map((v: any, idx: number) => {
                 return (
                   <div
-                    className={classes.kanbanItem}
+                    className={classes.item}
                     key={v.uuid}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -85,87 +37,32 @@ export default function Milestone({ ctx, setCreate, milestone }: any) {
                       setKanbanIssue(v.uuid);
                     }}
                   >
-                    <div className={classes.kanbanItemContent}>
-                      <div
-                        style={{
-                          fontSize: "15px",
-                          lineHeight: "50px",
-                          height: "50px",
-                          position: "relative",
-                          paddingLeft: "30px",
-                          display: "inline-block",
-                        }}
-                      >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      <div style={{ fontSize: "16px" }}>{v.title}</div>
+                      <div style={{ display: "flex", alignItems: "center" }}>
                         <div
-                          style={{
-                            width: "100px",
-                            display: "inline-block",
-                            textAlign: "left",
-                          }}
-                        >
-                          {v.title}
-                        </div>
-                        <div
-                          style={{ width: "155px", display: "inline-block" }}
-                        >
-                          {v.startDate}
-                        </div>
-                        <div
-                          style={{ width: "155px", display: "inline-block" }}
-                        >
-                          {v.endDate}
-                        </div>
-                        <div
-                          style={{
-                            width: "calc(100% - 470px)",
-                            display: "inline-block",
-                          }}
-                        >
-                          {v.content}
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          float: "right",
-                          fontSize: "12px",
-                          height: "50px",
-                          marginRight: "30px",
-                          display: "flex",
-                          alignItems: "center",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <EditIcon
-                          id={`editButton-${idx}`}
+                          className={classes.icon}
                           onClick={(e) => {
                             e.stopPropagation();
                           }}
-                          onMouseOver={(e) => {
-                            e.stopPropagation();
-                            let node = document.getElementById(
-                              `editButton-${idx}`
-                            );
-                            if (node) {
-                              node.style.opacity = "1";
-                            }
-                          }}
-                          onMouseOut={() => {
-                            let node = document.getElementById(
-                              `editButton-${idx}`
-                            );
-                            if (node) {
-                              node.style.opacity = "0.5";
-                            }
-                          }}
-                          style={{
-                            width: "25px",
-                            height: "25px",
-                            marginRight: "10px",
-                            opacity: "0.5",
-                          }}
-                        />
-                        <DeleteForeverIcon
-                          id={`buttonhover-${idx}`}
+                        >
+                          <Edit
+                            style={{
+                              width: "20px",
+                              height: "20px",
+                              marginRight: "4px",
+                            }}
+                          />
+                        </div>
+                        <div
+                          className={classes.icon}
                           onClick={(e) => {
                             e.stopPropagation();
                             ctx.ws.current.send(
@@ -179,36 +76,42 @@ export default function Milestone({ ctx, setCreate, milestone }: any) {
                             );
                             window.location.reload();
                           }}
-                          onMouseOver={(e) => {
-                            e.stopPropagation();
-                            let node = document.getElementById(
-                              `buttonhover-${idx}`
-                            );
-                            if (node) {
-                              node.style.opacity = "1";
-                            }
-                          }}
-                          onMouseOut={() => {
-                            let node = document.getElementById(
-                              `buttonhover-${idx}`
-                            );
-                            if (node) {
-                              node.style.opacity = "0.5";
-                            }
-                          }}
-                          style={{
-                            width: "25px",
-                            height: "25px",
-                            opacity: "0.5",
-                          }}
-                        />
+                        >
+                          <DeleteForever
+                            style={{ width: "20px", height: "20px" }}
+                          />
+                        </div>
                       </div>
+                    </div>
+                    <div style={{ marginBottom: "8px" }}>
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "10px",
+                          backgroundColor: "#6d7681",
+                          borderRadius: "6px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: "30%",
+                            height: "10px",
+                            backgroundColor: "#4078b8",
+                            borderRadius: "6px",
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                    <div>
+                      {v.startDate} ~ {v.endDate}
+                    </div>
+                    <div>
+                      {v.content ?? "this milestone is no have description."}
                     </div>
                   </div>
                 );
               })}
           </div>
-          <MakeMile open={open} setOpen={setOpen} ws={ctx.ws.current} />
         </>
       )}
     </div>

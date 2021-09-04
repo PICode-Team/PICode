@@ -28,10 +28,13 @@ export interface IDockerInfo {
   tag?: string;
   bridgeName?: string;
   bridgeAlias?: string;
-  hostPort?: number;
-  containerPort?: number;
+  portInfo: IPortInfo;
   linkContainer?: string;
 }
+
+type IPortInfo = {
+  [key in string]: number;
+};
 
 interface TCreate {
   projectInfo: IProjectInfo;
@@ -54,6 +57,7 @@ export default function Create() {
     tag: "",
     bridgeName: "",
     bridgeAlias: "",
+    portInfo: {},
   });
   const [source, setSource] = React.useState<TSource>();
   const [step, setStep] = useState<number>(1);
@@ -103,12 +107,7 @@ export default function Create() {
           dockerInfo.bridgeName !== "" ? dockerInfo.bridgeName : undefined,
         bridgeAlias:
           dockerInfo.bridgeAlias !== "" ? dockerInfo.bridgeAlias : undefined,
-        hostPort:
-          dockerInfo.hostPort !== undefined ? dockerInfo.hostPort : undefined,
-        containerPort:
-          dockerInfo.containerPort !== undefined
-            ? dockerInfo.containerPort
-            : undefined,
+        portInfo: dockerInfo.portInfo,
         linkContainer:
           dockerInfo.linkContainer !== ""
             ? dockerInfo.linkContainer
@@ -244,6 +243,7 @@ export default function Create() {
                           tag: "",
                           bridgeName: "",
                           bridgeAlias: "",
+                          portInfo: {},
                         });
                       }
                       setStep(step - 1);

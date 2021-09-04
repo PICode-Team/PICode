@@ -30,8 +30,8 @@ export function Layout(ctx: any) {
     React.useState<{ loginId: string; workInfo: ISocket }[]>();
   const [pageName, setPageName] = useState({
     name: "",
-    icon: undefined
-  })
+    icon: undefined,
+  });
   const [alertData, setAlertData] = React.useState();
 
   if (typeof window !== "undefined") {
@@ -70,19 +70,21 @@ export function Layout(ctx: any) {
 
   React.useEffect(() => {
     getLoginUserData();
-    console.log(route)
     for (let i in pageData) {
       if (pageData[i].url === route.route) {
         setPageName({
           name: i,
-          icon: pageData[i].icon
-        })
+          icon: pageData[i].icon,
+        });
       } else {
-        if (pageData[i].subUrl !== undefined && pageData[i].subUrl.some((v: any) => v === route.route)) {
+        if (
+          pageData[i].subUrl !== undefined &&
+          pageData[i].subUrl.some((v: any) => v === route.route)
+        ) {
           setPageName({
             name: i,
-            icon: pageData[i].icon
-          })
+            icon: pageData[i].icon,
+          });
         }
       }
     }

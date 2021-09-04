@@ -5,7 +5,15 @@ import InsertPhotoIcon from "@material-ui/icons/InsertPhoto";
 import Modal, { IUser } from "./modal";
 import { IDockerInfo, IProjectInfo, TSource } from "./create";
 import { Close } from "@material-ui/icons";
-import { FormControlLabel, Grid, Switch } from "@material-ui/core";
+import {
+  FormControlLabel,
+  Grid,
+  Radio,
+  RadioProps,
+  Switch,
+  withStyles,
+} from "@material-ui/core";
+import Add from "@material-ui/icons/Add";
 
 export const DefualtInput = ({
   classes,
@@ -37,8 +45,22 @@ export const DefualtInput = ({
   const [imageCheck, setImageCheck] = useState<boolean>(false);
   const [modal, setModal] = useState<boolean>(false);
   const [state, setState] = useState<boolean>(true);
+  const [add, setAdd] = useState<boolean>(true);
+  const [select, setSelect] = useState<string>("default");
+  const [hostPort, setHostPort] = useState<string>("");
+  const [containerPort, setContainerPort] = useState<string>("");
+  const [networkList, setNetworkList] = useState<string[]>([]);
+  const [containerList, setContainerList] = useState<string[]>([]);
 
   const fileButton = useRef<any>(null);
+
+  const handleRadio = (e: any) => {
+    if (e.currentTarget.id === "add") {
+      setAdd(true);
+    } else {
+      setAdd(false);
+    }
+  };
 
   const dragOver = (e: any) => {
     e.preventDefault();
@@ -116,6 +138,44 @@ export const DefualtInput = ({
   useEffect(() => {
     getParticipantList();
   }, []);
+
+  const getContainerList = async () => {
+    await fetch(
+      `http://localhost:8000/api/docker?projectName=${defaultInput.projectName}`,
+      {
+        method: "GET",
+        mode: "cors",
+      }
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.code === 200) {
+          console.log(res);
+
+          setContainerList(["1", "2", "3"]);
+        }
+      });
+  };
+
+  const getNetworkList = async () => {
+    await fetch(`http://localhost:8000/api/docker/network`, {
+      method: "GET",
+      mode: "cors",
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.code === 200) {
+          setNetworkList(res.networkList);
+        }
+      });
+  };
+
+  useEffect(() => {
+    if (edit === true) {
+      getContainerList();
+      getNetworkList();
+    }
+  }, [edit]);
 
   return (
     <React.Fragment>
@@ -423,122 +483,243 @@ export const DefualtInput = ({
           <div className={classes.divider}>
             <div></div>
           </div>
-          <div
-            className={classes.input}
-            style={{ marginTop: "0px", fontSize: "14px" }}
-          >
-            <span>Network Info</span>
-            {/* <FormControlLabel
-              control={
-                <Switch
-                  checked={state}
-                  onChange={() => {
-                    setState(!state);
+          {edit ? (
+            <React.Fragment>
+              <div
+                className={classes.input}
+                style={{ marginTop: "0px", fontSize: "14px" }}
+              >
+                <span>Network Info</span>
+                <div
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    height: "30px",
                   }}
-                  name="checkedA"
+                >
+                  <CustomRadio id="add" checked={add} onChange={handleRadio} />
+                  <span
+                    style={{
+                      color: "#ffffff",
+                      marginRight: "20px",
+                      marginLeft: "-5px",
+                    }}
+                  >
+                    Add
+                  </span>
+                  <CustomRadio
+                    id="delete"
+                    checked={!add}
+                    onChange={handleRadio}
+                  />
+                  <span style={{ color: "#ffffff", marginLeft: "-5px" }}>
+                    Delete
+                  </span>
+                </div>
+              </div>
+              {add === true ? (
+                <React.Fragment>
+                  <div className={classes.input}>
+                    <span>Network Name</span>
+                    <input
+                      placeholder="Input Bridge Name"
+                      onChange={(e) => {
+                        setDockerInfo({
+                          ...dockerInfo,
+                          bridgeName: e.target.value,
+                        });
+                      }}
+                      value={dockerInfo.bridgeName}
+                    />
+                  </div>
+                  <div className={classes.input}>
+                    <span>Network Alias</span>
+                    <input
+                      placeholder="Input Bridge Alias"
+                      onChange={(e) => {
+                        setDockerInfo({
+                          ...dockerInfo,
+                          bridgeAlias: e.target.value,
+                        });
+                      }}
+                      value={dockerInfo.bridgeAlias}
+                    />
+                  </div>
+                  <div className={classes.select}>
+                    <span>Containers To Be Connected</span>
+                    <select
+                      value={select}
+                      onChange={(e: any) => {
+                        setSelect(e.target.value);
+                      }}
+                    >
+                      <option value="default">default</option>
+                      {containerList.map((v, i) => (
+                        <option key={`option-${i}`} value={v}>
+                          {v}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </React.Fragment>
+              ) : (
+                <React.Fragment>
+                  <div className={classes.select}>
+                    <span>Deleted Network</span>
+                    <select>
+                      <option value="default">default</option>
+                      {networkList.map((v, i) => (
+                        <option key={`option-${i}`} value={v}>
+                          {v}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div></div>
+                </React.Fragment>
+              )}
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              <div
+                className={classes.input}
+                style={{ marginTop: "0px", fontSize: "14px" }}
+              >
+                <span>Network Info</span>
+              </div>
+              <div className={classes.input}>
+                <span>Network Name</span>
+                <input
+                  placeholder="Input Bridge Name"
+                  onChange={(e) => {
+                    setDockerInfo({
+                      ...dockerInfo,
+                      bridgeName: e.target.value,
+                    });
+                  }}
+                  value={dockerInfo.bridgeName}
                 />
-              }
-              label="Secondary"
-            /> */}
-          </div>
-          <div className={classes.input}>
-            <span>Network Name</span>
-            <input
-              placeholder="Input Bridge Name"
-              onChange={(e) => {
-                setDockerInfo({
-                  ...dockerInfo,
-                  bridgeName: e.target.value,
-                });
-              }}
-              value={dockerInfo.bridgeName}
-            />
-          </div>
-          <div className={classes.input}>
-            <span>Network Alias</span>
-            <input
-              placeholder="Input Bridge Alias"
-              onChange={(e) => {
-                setDockerInfo({
-                  ...dockerInfo,
-                  bridgeAlias: e.target.value,
-                });
-              }}
-              value={dockerInfo.bridgeAlias}
-            />
-          </div>
-          <div className={classes.input}>
-            <span>Port</span>
-            <input
-              placeholder="Input Host Port"
-              onChange={(e) => {
-                setDockerInfo({
-                  ...dockerInfo,
-                  hostPort: Number(e.target.value),
-                });
-              }}
-              value={dockerInfo.hostPort}
-            />
-            <span
-              style={{
-                width: "15px",
-                textAlign: "center",
-                padding: "0px 6px",
-                margin: "0px",
-                fontWeight: "bold",
-              }}
-            >
-              :
-            </span>
-            <input
-              placeholder="Input Container Port"
-              onChange={(e) => {
-                setDockerInfo({
-                  ...dockerInfo,
-                  containerPort: Number(e.target.value),
-                });
-              }}
-              value={dockerInfo.containerPort}
-            />
-          </div>
-          <div className={classes.input}>
-            <span>Containers To Be Connected</span>
-            <input
-              placeholder="Input Link Container"
-              onChange={(e) => {
-                setDockerInfo({
-                  ...dockerInfo,
-                  linkContainer: e.target.value,
-                });
-              }}
-              value={dockerInfo.linkContainer}
-            />
-          </div>
-          <input
-            type="file"
-            id="getFile"
-            style={{ display: "none" }}
-            ref={fileButton}
-            onChange={async (e) => {
-              let tmpImage = e.target.files;
-              if (tmpImage !== null) {
-                let formData = new FormData();
-                formData.append("uploadFile", tmpImage[0]);
-                let result = await fetch(`http://localhost:8000/api/data`, {
-                  method: "POST",
-                  body: formData,
-                }).then((res) => res.json());
-                if (result.code === 200) {
-                  setUpload(true);
-                  setImageName(tmpImage[0].name);
-                  setDefualtInput({
-                    ...defaultInput,
-                    projectThumbnail: result.uploadFileId,
-                  });
-                }
-              }
-            }}
-          />
+              </div>
+              <div className={classes.input}>
+                <span>Network Alias</span>
+                <input
+                  placeholder="Input Bridge Alias"
+                  onChange={(e) => {
+                    setDockerInfo({
+                      ...dockerInfo,
+                      bridgeAlias: e.target.value,
+                    });
+                  }}
+                  value={dockerInfo.bridgeAlias}
+                />
+              </div>
+              <div className={classes.input}>
+                <span>Port</span>
+                <input
+                  placeholder="Input Host Port"
+                  onChange={(e) => {
+                    setHostPort(e.target.value);
+                  }}
+                  value={hostPort}
+                />
+                <span
+                  style={{
+                    width: "15px",
+                    textAlign: "center",
+                    padding: "0px 6px",
+                    margin: "0px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  :
+                </span>
+                <input
+                  placeholder="Input Container Port"
+                  onChange={(e) => {
+                    setContainerPort(e.target.value);
+                  }}
+                  value={containerPort}
+                />
+                <button
+                  className={classes.addPort}
+                  onClick={() => {
+                    setDockerInfo({
+                      ...dockerInfo,
+                      portInfo: {
+                        ...dockerInfo.portInfo,
+                        [hostPort]: Number(containerPort),
+                      },
+                    });
+                    setHostPort("");
+                    setContainerPort("");
+                  }}
+                >
+                  <Add />
+                </button>
+              </div>
+              {Object.keys(dockerInfo.portInfo).length > 0 && (
+                <div className={classes.input}>
+                  <span></span>
+                  {Object.keys(dockerInfo.portInfo).map((v, i) => (
+                    <div
+                      style={{
+                        display: "flex",
+                        color: "#ffffff",
+                        fontSize: "10px",
+                        marginRight: "12px",
+                      }}
+                      key={`port-info-${i}`}
+                    >
+                      <div
+                        style={{
+                          backgroundColor: "#4c5661",
+                          padding: "2px 6px",
+                          borderRadius: "3px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          marginTop: "1px",
+                        }}
+                      >
+                        {v}
+                      </div>
+                      <div
+                        style={{
+                          padding: "0px 2px",
+                        }}
+                      >
+                        :
+                      </div>
+                      <div
+                        style={{
+                          backgroundColor: "#4c5661",
+                          padding: "2px 6px",
+                          borderRadius: "3px",
+                          marginTop: "1px",
+                        }}
+                      >
+                        {dockerInfo.portInfo[v]}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className={classes.input}>
+                <span>Containers To Be Connected</span>
+                <input
+                  placeholder="Input Link Container"
+                  onChange={(e) => {
+                    setDockerInfo({
+                      ...dockerInfo,
+                      linkContainer: e.target.value,
+                    });
+                  }}
+                  value={dockerInfo.linkContainer}
+                />
+              </div>
+            </React.Fragment>
+          )}
         </React.Fragment>
       )}
       <Modal
@@ -552,3 +733,13 @@ export const DefualtInput = ({
     </React.Fragment>
   );
 };
+
+const CustomRadio = withStyles({
+  root: {
+    color: "#4078b8 !important",
+    "&$checked": {
+      color: "#488cd9",
+    },
+  },
+  checked: {},
+})((props: RadioProps) => <Radio color="default" {...props} />);

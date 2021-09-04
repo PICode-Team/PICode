@@ -634,8 +634,6 @@ export default function Chat(ctx: any) {
               });
               break;
             case "sendMessage":
-              console.log(message.data);
-
               if (message.data.parentChatId !== undefined) {
                 const messageList: IChat[] = messages.map((v) => {
                   if (v.chatId === message.data.parentChatId) {

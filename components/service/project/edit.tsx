@@ -6,7 +6,7 @@ import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { createProjectStyle } from "../../../styles/service/project/create";
 import { resultType } from "../../constant/fetch/result";
-import { TSource } from "./create";
+import { IDockerInfo, TSource } from "./create";
 import { DefualtInput } from "./defualt";
 
 interface IEditProject {
@@ -14,17 +14,6 @@ interface IEditProject {
   projectDescription: string;
   projectThumbnail?: string;
   projectParticipants?: string[];
-}
-
-interface IDockerInfo {
-  containerName?: string;
-  image: string;
-  tag?: string;
-  bridgeName?: string;
-  bridgeAlias?: string;
-  hostPort?: number;
-  containerPort?: number;
-  linkContainer?: string;
 }
 
 export default function EditProject() {
@@ -37,6 +26,7 @@ export default function EditProject() {
     tag: "",
     bridgeName: "",
     bridgeAlias: "",
+    portInfo: {},
   });
   const [projectData, setProjectData] = useState<IEditProject>({
     projectDescription: "",
@@ -84,8 +74,7 @@ export default function EditProject() {
         tag: data.projectList[0].tag ?? "",
         bridgeName: data.projectList[0].bridgeName ?? "",
         bridgeAlias: data.projectList[0].bridgeAlias ?? "",
-        hostPort: data.projectList[0].hostPort ?? "",
-        containerPort: data.projectList[0].containerPort ?? "",
+        portInfo: data.projectList[0].portInfo,
         linkContainer: data.projectList[0].linkContainer ?? "",
       });
     }

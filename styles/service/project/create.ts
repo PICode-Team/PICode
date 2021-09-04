@@ -248,6 +248,22 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
       width: "500px",
     },
 
+    addPort: {
+      marginLeft: "8px",
+      border: "none",
+      color: "#ffffff",
+      cursor: "pointer",
+      background: "#4078b8",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      height: "32px",
+      "&:hover": {
+        background: "#488cd9",
+        transition: "all 0.3s",
+      },
+    },
+
     input: {
       display: "flex",
       alignItems: "center",
@@ -263,6 +279,32 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
         lineHeight: "32px",
         flex: 1,
         outline: "none",
+      },
+      "&>span": {
+        color: theme.font.high.color,
+        fontSize: theme.font.small.size,
+        marginRight: "8px",
+        marginTop: "2px",
+        width: "106px",
+      },
+    },
+    select: {
+      display: "flex",
+      alignItems: "center",
+      marginTop: "16px",
+      "&>select": {
+        flex: 1,
+        borderRadius: "2px",
+        color: theme.font.high.color,
+        background: "#3b434c",
+        padding: "4px 8px",
+        width: "100%",
+        height: "32px",
+        outline: "none",
+        border: "none",
+      },
+      "&>select>option": {
+        height: "32px",
       },
       "&>span": {
         color: theme.font.high.color,
@@ -293,6 +335,7 @@ export const createProjectStyle = makeStyles((theme: IThemeStyle) =>
         fontSize: theme.font.small.size,
       },
     },
+
     participant: {
       display: "flex",
       alignItems: "center",
