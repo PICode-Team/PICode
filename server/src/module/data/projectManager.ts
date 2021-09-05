@@ -248,7 +248,7 @@ export default class DataProjectManager {
             if (!func[source.type](projectId, source)) {
                 return false;
             }
-            DataDockerManager.createPkgProgram(userId, dockerInfo, { projectId, projectName, projectParticipants: participants });
+            DataDockerManager.create(userId, dockerInfo, { projectId, projectName, projectParticipants: participants });
         } catch (err: any) {
             log.error(err.stack);
             return false;

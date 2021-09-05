@@ -249,7 +249,7 @@ CMD ["./server-linux", "${socketPort}"]`;
             },
             (code) => {
                 code === 0
-                    ? this.create(userId, dockerInfo, { projectId, projectName, projectParticipants }, projectName.toLowerCase(), socketPort)
+                    ? this.create(userId, dockerInfo, { projectId, projectName, projectParticipants }) //, projectName.toLowerCase(), socketPort)
                     : DataAlarmManager.create(userId, {
                           type: "workspace",
                           location: "",
@@ -263,18 +263,12 @@ CMD ["./server-linux", "${socketPort}"]`;
         );
     }
 
-    static create(
-        userId: string,
-        dockerInfo: TDockerCreateData,
-        { projectId, projectName, projectParticipants }: { projectId: string; projectName: string; projectParticipants: string[] },
-        imageName: string,
-        socketPort: number
-    ) {
+    static create(userId: string, dockerInfo: TDockerCreateData, { projectId, projectName, projectParticipants }: { projectId: string; projectName: string; projectParticipants: string[] }) {
         const tag = dockerInfo.tag ?? "latest";
         const projectPath = DataProjectManager.getProjectWorkPath(projectId);
         const containerName = dockerInfo.containerName ?? projectName;
 
-        let command = `docker run -itd --volume="${path.resolve(path.normalize(projectPath))}:/home/${projectName}" `; // -w /home/${projectName} `;
+        let command = `docker run -itd --volume="${path.resolve(path.normalize(projectPath))}:/home/${projectName}" -w /home/${projectName} `;
         if (dockerInfo.portInfo !== undefined) {
             Object.keys(dockerInfo.portInfo).map((hostPort: string) => {
                 command += `-p ${hostPort}:${(dockerInfo.portInfo as TPortMappingData)[hostPort]} `;
@@ -311,7 +305,7 @@ CMD ["./server-linux", "${socketPort}"]`;
             command += dockerInfo.bridgeName && dockerInfo.bridgeAlias && !["bridge", "host", "none"].includes(dockerInfo.bridgeName) ? `--net-alias ${dockerInfo.bridgeAlias} ` : ``;
         }
 
-        command += `-p ${socketPort}:${socketPort} --name ${containerName} ${imageName}:latest`;
+        command += `--name ${containerName} ${dockerInfo.image}:${dockerInfo.tag ?? "latest"}`;
 
         this.commandDockerAsync(
             command,
@@ -327,7 +321,6 @@ CMD ["./server-linux", "${socketPort}"]`;
                     bridgeInfo: bridgeInfo,
                     containers: dockerInfo.linkContainer ? [dockerInfo.linkContainer] : [],
                     portInfo: dockerInfo.portInfo,
-                    socketPort: socketPort,
                 });
 
                 DataAlarmManager.create(userId, {
@@ -340,15 +333,6 @@ CMD ["./server-linux", "${socketPort}"]`;
                     }, {}),
                 });
                 log.info(`Create docker container: ${containerId}`);
-                this.commandDockerAsync(
-                    `docker rmi ${imageName} --force`,
-                    (result) => {
-                        log.debug(result);
-                    },
-                    (error) => {
-                        log.error(error);
-                    }
-                );
             },
             (error) => {
                 log.error(`${error}`);
@@ -408,9 +392,33 @@ CMD ["./server-linux", "${socketPort}"]`;
             log.error(`no project existed ${projectName}`);
             return false;
         }
-        const newDockerInfo = this.getDockerInfo(projectId);
+        const newDockerInfo = this.getDockerInfo(projectId) as TDockerData;
         if (dockerInfo.bridgeName !== undefined && Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeName) && dockerInfo.connect === false) {
             delete newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string];
+        }
+        if (dockerInfo.linkContainer !== undefined && dockerInfo.bridgeName !== undefined && !newDockerInfo.containers.includes(dockerInfo.linkContainer) && dockerInfo.connect === true) {
+            const linkProjectId = fs
+                .readdirSync(DataProjectManager.getProjectDefaultPath())
+                .filter((Id) => {
+                    return Id !== projectId;
+                })
+                .find((projectId) => {
+                    return (this.getDockerInfo(projectId) as TDockerData).containerName === dockerInfo.linkContainer;
+                });
+            if (linkProjectId !== undefined) {
+                newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string] = dockerInfo.bridgeAlias ?? "";
+                newDockerInfo.containers.push(dockerInfo.linkContainer);
+                const linkContainerInfo = this.getDockerInfo(linkProjectId) as TDockerData;
+                linkContainerInfo.containers.push(newDockerInfo.containerName), this.setDockerInfo(linkProjectId, linkContainerInfo);
+            }
+        }
+        if (dockerInfo.bridgeName !== undefined && dockerInfo.linkContainer === undefined && !Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeName) && dockerInfo.connect === true) {
+            log.debug(`docker Info : ${dockerInfo.bridgeName} : ${dockerInfo.bridgeAlias}`);
+            newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string] = dockerInfo.bridgeAlias ?? "";
+            log.debug(`docker Info : ${newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string]}}`);
+        }
+
+        if (dockerInfo.bridgeName !== undefined && Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeName) && dockerInfo.connect === false) {
             this.commandDockerAsync(
                 `docker network disconnect ${dockerInfo.bridgeName} ${newDockerInfo.containerName}`,
                 () => {},
@@ -434,10 +442,6 @@ CMD ["./server-linux", "${socketPort}"]`;
                     return (this.getDockerInfo(projectId) as TDockerData).containerName === dockerInfo.linkContainer;
                 });
             if (linkProjectId !== undefined) {
-                newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string] = dockerInfo.bridgeAlias ?? "";
-                newDockerInfo.containers.push(dockerInfo.linkContainer);
-                const linkContainerInfo = this.getDockerInfo(linkProjectId) as TDockerData;
-                linkContainerInfo.containers.push(newDockerInfo.containerName), this.setDockerInfo(linkProjectId, linkContainerInfo);
                 let command = `docker network connect --link ${dockerInfo.linkContainer} `;
                 command += dockerInfo.bridgeAlias ? `--alias ${dockerInfo.bridgeAlias} ` : ``;
                 command += `${dockerInfo.bridgeName} ${newDockerInfo.containerName}`;
@@ -458,12 +462,10 @@ CMD ["./server-linux", "${socketPort}"]`;
         }
 
         if (dockerInfo.bridgeName !== undefined && dockerInfo.linkContainer === undefined && !Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeName) && dockerInfo.connect === true) {
-            newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string] = dockerInfo.bridgeAlias ?? "";
             let command = `docker network connect `;
             command += dockerInfo.bridgeAlias ? `--alias ${dockerInfo.bridgeAlias} ` : ``;
             command += `${dockerInfo.bridgeName} ${newDockerInfo.containerName}`;
 
-            log.debug(`bridge connect command : ${command}`);
             this.commandDockerAsync(
                 command,
                 () => {},
@@ -479,7 +481,6 @@ CMD ["./server-linux", "${socketPort}"]`;
         }
 
         if (dockerInfo.containerName !== undefined && newDockerInfo.containerName !== dockerInfo.containerName) {
-            newDockerInfo.containerName = dockerInfo.containerName ?? newDockerInfo.containerName;
             this.commandDockerAsync(
                 `docker rename ${newDockerInfo.containerName} ${dockerInfo.containerName}`,
                 () => {},
@@ -494,6 +495,8 @@ CMD ["./server-linux", "${socketPort}"]`;
                 }
             );
         }
+
+        newDockerInfo.containerName = dockerInfo.containerName ?? newDockerInfo.containerName;
 
         log.info(`docker update complete ${JSON.stringify({ newDockerInfo })}`);
         DataAlarmManager.create(userId, {
