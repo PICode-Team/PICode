@@ -75,17 +75,34 @@ export default class DataDockerManager {
     }
 
     static updateRamUsage() {
-        fs.readdirSync(DataProjectManager.getProjectDefaultPath()).map((projectId) => {
-            const dockerInfo = isExists(this.getDockerPath(projectId, "dockerInfo.json")) ? this.getDockerInfo(projectId) : undefined;
-            if (dockerInfo !== undefined) {
-                const getRam = this.commandDockerAsync(
-                    `docker stats --format "{{.MemPerc}}" ${dockerInfo.containerName}`,
-                    (result: Buffer) => {
-                        const ramUsage = result.toString("utf8").replace(/\n/gi, "").split(`\u001b[2J`).join("").replace(`\u001B[H`, "");
-                        if (ramUsage.length > 0) {
-                            this.setDockerInfo(projectId, { ...dockerInfo, ramUsage: ramUsage });
-                            getRam.stdout.pause();
-                            getRam.kill();
+        fs.readdirSync(DataProjectManager.getProjectDefaultPath()).map(
+            (projectId) => {
+                const dockerInfo = isExists(
+                    this.getDockerPath(projectId, "dockerInfo.json")
+                )
+                    ? this.getDockerInfo(projectId)
+                    : undefined;
+                if (dockerInfo !== undefined) {
+                    const getRam = this.commandDockerAsync(
+                        `docker stats --format "{{.MemPerc}}" ${dockerInfo.containerName}`,
+                        (result: Buffer) => {
+                            const ramUsage = result
+                                .toString("utf8")
+                                .replace(/\n/gi, "")
+                                .split(`\u001b[2J`)
+                                .join("")
+                                .replace(`\u001B[H`, "");
+                            if (ramUsage.length > 0) {
+                                this.setDockerInfo(projectId, {
+                                    ...dockerInfo,
+                                    ramUsage: ramUsage,
+                                });
+                                getRam.stdout.pause();
+                                getRam.kill();
+                            }
+                        },
+                        (error) => {
+                            log.error(error);
                         }
                     );
                 }
@@ -114,9 +131,9 @@ export default class DataDockerManager {
                         : this.setDockerNetWorkInfo({
                               networkName,
                               subnet: networkInfo[1]
-                                  ?.split(":")[1]
-                                  ?.replace(/]/gi, ""),
-                              gateway: networkInfo[0]?.split(":")[1],
+                                  .split(":")[1]
+                                  .replace(/]/gi, ""),
+                              gateway: networkInfo[0].split(":")[1],
                               id: networkInfo[2],
                           });
                 },
@@ -128,18 +145,30 @@ export default class DataDockerManager {
     }
 
     static updateStatus() {
-        fs.readdirSync(DataProjectManager.getProjectDefaultPath()).map((projectId) => {
-            const dockerInfo = isExists(this.getDockerPath(projectId, "dockerInfo.json")) ? this.getDockerInfo(projectId) : undefined;
-            if (dockerInfo !== undefined) {
-                this.commandDockerAsync(
-                    `docker inspect --format="{{.State.Status}}" ${dockerInfo.containerName}`,
-                    (state: Buffer) => {
-                        this.setDockerInfo(projectId, { ...dockerInfo, status: state.toString().replace(/\n/gi, "") as "created" | "running" | "exited" });
-                    },
-                    (error) => {
-                        log.error(error);
-                    }
-                );
+        fs.readdirSync(DataProjectManager.getProjectDefaultPath()).map(
+            (projectId) => {
+                const dockerInfo = isExists(
+                    this.getDockerPath(projectId, "dockerInfo.json")
+                )
+                    ? this.getDockerInfo(projectId)
+                    : undefined;
+                if (dockerInfo !== undefined) {
+                    this.commandDockerAsync(
+                        `docker inspect --format="{{.State.Status}}" ${dockerInfo.containerName}`,
+                        (state: Buffer) => {
+                            this.setDockerInfo(projectId, {
+                                ...dockerInfo,
+                                status: state.toString().replace(/\n/gi, "") as
+                                    | "created"
+                                    | "running"
+                                    | "exited",
+                            });
+                        },
+                        (error) => {
+                            log.error(error);
+                        }
+                    );
+                }
             }
         );
     }
@@ -182,7 +211,9 @@ export default class DataDockerManager {
         this.commandDockerAsync(
             command,
             (networkId: Buffer) => {
-                const networkInfo = this.commandDockerSync(`docker network inspect --format="{{".IPAM.Config"}} {{".Containers"}}" ${dockerNetworkInfo.networkName}`).split(" ");
+                const networkInfo = this.commandDockerSync(
+                    `docker network inspect --format="{{".IPAM.Config"}} {{".Containers"}}" ${dockerNetworkInfo.networkName}`
+                ).split(" ");
                 log.debug(networkInfo);
                 this.setDockerNetWorkInfo({
                     ...dockerNetworkInfo,
@@ -252,7 +283,19 @@ export default class DataDockerManager {
             }, []);
     }
 
-    static createPkgProgram(userId: string, dockerInfo: TDockerCreateData, { projectId, projectName, projectParticipants }: { projectId: string; projectName: string; projectParticipants: string[] }) {
+    static createPkgProgram(
+        userId: string,
+        dockerInfo: TDockerCreateData,
+        {
+            projectId,
+            projectName,
+            projectParticipants,
+        }: {
+            projectId: string;
+            projectName: string;
+            projectParticipants: string[];
+        }
+    ) {
         if (!fs.existsSync(`${DataDirectoryPath}/docker`)) {
             fs.mkdirSync(`${DataDirectoryPath}/docker`, { recursive: true });
         }
@@ -268,18 +311,41 @@ export default class DataDockerManager {
                 (code) => {
                     log.debug(`code : ${code}`);
                     if (code === 0) {
-                        this.createDockerFile(userId, dockerInfo, { projectId, projectName, projectParticipants });
+                        this.createDockerFile(userId, dockerInfo, {
+                            projectId,
+                            projectName,
+                            projectParticipants,
+                        });
                     }
                 }
             );
         } else {
-            this.createDockerFile(userId, dockerInfo, { projectId, projectName, projectParticipants });
+            this.createDockerFile(userId, dockerInfo, {
+                projectId,
+                projectName,
+                projectParticipants,
+            });
         }
     }
 
-    static createDockerFile(userId: string, dockerInfo: TDockerCreateData, { projectId, projectName, projectParticipants }: { projectId: string; projectName: string; projectParticipants: string[] }) {
-        const socketPort = Math.floor(Math.random() * (49998 - 40000 + 1)) + 40000;
-        let dockerFileContent = `FROM ${dockerInfo.image}:${dockerInfo.tag ?? "latest"}
+    static createDockerFile(
+        userId: string,
+        dockerInfo: TDockerCreateData,
+        {
+            projectId,
+            projectName,
+            projectParticipants,
+        }: {
+            projectId: string;
+            projectName: string;
+            projectParticipants: string[];
+        }
+    ) {
+        const socketPort =
+            Math.floor(Math.random() * (49998 - 40000 + 1)) + 40000;
+        let dockerFileContent = `FROM ${dockerInfo.image}:${
+            dockerInfo.tag ?? "latest"
+        }
         
 COPY ./server-linux /server-linux
         
@@ -287,7 +353,10 @@ EXPOSE ${socketPort}
 
 CMD ["./server-linux", "${socketPort}"]`;
 
-        fs.writeFileSync(`${DataDirectoryPath}/docker/Dockerfile`, dockerFileContent);
+        fs.writeFileSync(
+            `${DataDirectoryPath}/docker/Dockerfile`,
+            dockerFileContent
+        );
 
         this.commandDockerAsync(
             `docker build -t ${projectName.toLowerCase()}:latest ${DataDirectoryPath}/docker`,
@@ -297,29 +366,52 @@ CMD ["./server-linux", "${socketPort}"]`;
             },
             (code) => {
                 code === 0
-                    ? this.create(userId, dockerInfo, { projectId, projectName, projectParticipants }) //, projectName.toLowerCase(), socketPort)
+                    ? this.create(userId, dockerInfo, {
+                          projectId,
+                          projectName,
+                          projectParticipants,
+                      }) //, projectName.toLowerCase(), socketPort)
                     : DataAlarmManager.create(userId, {
                           type: "workspace",
                           location: "",
                           content: `${userId} could not create workspace : ${projectName}`,
-                          checkAlarm: projectParticipants.reduce((list: { [ket in string]: boolean }, member) => {
-                              list[member] = true;
-                              return list;
-                          }, {}),
+                          checkAlarm: projectParticipants.reduce(
+                              (list: { [ket in string]: boolean }, member) => {
+                                  list[member] = true;
+                                  return list;
+                              },
+                              {}
+                          ),
                       });
             }
         );
     }
 
-    static create(userId: string, dockerInfo: TDockerCreateData, { projectId, projectName, projectParticipants }: { projectId: string; projectName: string; projectParticipants: string[] }) {
+    static create(
+        userId: string,
+        dockerInfo: TDockerCreateData,
+        {
+            projectId,
+            projectName,
+            projectParticipants,
+        }: {
+            projectId: string;
+            projectName: string;
+            projectParticipants: string[];
+        }
+    ) {
         const tag = dockerInfo.tag ?? "latest";
         const projectPath = DataProjectManager.getProjectWorkPath(projectId);
         const containerName = dockerInfo.containerName ?? projectName;
 
-        let command = `docker run -itd --volume="${path.resolve(path.normalize(projectPath))}:/home/${projectName}" -w /home/${projectName} `;
+        let command = `docker run -itd --volume="${path.resolve(
+            path.normalize(projectPath)
+        )}:/home/${projectName}" -w /home/${projectName} `;
         if (dockerInfo.portInfo !== undefined) {
             Object.keys(dockerInfo.portInfo).map((hostPort: string) => {
-                command += `-p ${hostPort}:${(dockerInfo.portInfo as TPortMappingData)[hostPort]} `;
+                command += `-p ${hostPort}:${
+                    (dockerInfo.portInfo as TPortMappingData)[hostPort]
+                } `;
             });
         }
         if (dockerInfo.linkContainer !== undefined) {
@@ -372,7 +464,9 @@ CMD ["./server-linux", "${socketPort}"]`;
                     : ``;
         }
 
-        command += `--name ${containerName} ${dockerInfo.image}:${dockerInfo.tag ?? "latest"}`;
+        command += `--name ${containerName} ${dockerInfo.image}:${
+            dockerInfo.tag ?? "latest"
+        }`;
 
         this.commandDockerAsync(
             command,
@@ -385,9 +479,13 @@ CMD ["./server-linux", "${socketPort}"]`;
                     image: dockerInfo.image,
                     tag: tag,
                     containerId: containerId.toString().replace("\n", ""),
-                    status: this.commandDockerSync(`docker inspect --format="{{.State.Status}}" ${containerName}`) as "created" | "running" | "exited",
+                    status: this.commandDockerSync(
+                        `docker inspect --format="{{.State.Status}}" ${containerName}`
+                    ) as "created" | "running" | "exited",
                     bridgeInfo: bridgeInfo,
-                    containers: dockerInfo.linkContainer ? [dockerInfo.linkContainer] : [],
+                    containers: dockerInfo.linkContainer
+                        ? [dockerInfo.linkContainer]
+                        : [],
                     portInfo: dockerInfo.portInfo,
                 });
 
@@ -407,17 +505,27 @@ CMD ["./server-linux", "${socketPort}"]`;
             },
             (error) => {
                 log.error(`${error}`);
-                if ((error.includes("Error") || error.includes("error")) && !error.includes("port")) {
-                    removeData(DataProjectManager.getProjectWorkPath(projectId));
-                    removeData(DataProjectManager.getProjectDataPath(projectId));
+                if (
+                    (error.includes("Error") || error.includes("error")) &&
+                    !error.includes("port")
+                ) {
+                    removeData(
+                        DataProjectManager.getProjectWorkPath(projectId)
+                    );
+                    removeData(
+                        DataProjectManager.getProjectDataPath(projectId)
+                    );
                     DataAlarmManager.create(userId, {
                         type: "workspace",
                         location: "",
                         content: `${userId} could not create workspace : ${projectName}, error is: ${error}`,
-                        checkAlarm: projectParticipants.reduce((list: { [ket in string]: boolean }, member) => {
-                            list[member] = true;
-                            return list;
-                        }, {}),
+                        checkAlarm: projectParticipants.reduce(
+                            (list: { [ket in string]: boolean }, member) => {
+                                list[member] = true;
+                                return list;
+                            },
+                            {}
+                        ),
                     });
                 }
             }
@@ -483,32 +591,70 @@ CMD ["./server-linux", "${socketPort}"]`;
             return false;
         }
         const newDockerInfo = this.getDockerInfo(projectId) as TDockerData;
-        if (dockerInfo.bridgeName !== undefined && Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeName) && dockerInfo.connect === false) {
+        if (
+            dockerInfo.bridgeName !== undefined &&
+            Object.keys(newDockerInfo.bridgeInfo).includes(
+                dockerInfo.bridgeName
+            ) &&
+            dockerInfo.connect === false
+        ) {
             delete newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string];
         }
-        if (dockerInfo.linkContainer !== undefined && dockerInfo.bridgeName !== undefined && !newDockerInfo.containers.includes(dockerInfo.linkContainer) && dockerInfo.connect === true) {
+        if (
+            dockerInfo.linkContainer !== undefined &&
+            dockerInfo.bridgeName !== undefined &&
+            !newDockerInfo.containers.includes(dockerInfo.linkContainer) &&
+            dockerInfo.connect === true
+        ) {
             const linkProjectId = fs
                 .readdirSync(DataProjectManager.getProjectDefaultPath())
                 .filter((Id) => {
                     return Id !== projectId;
                 })
                 .find((projectId) => {
-                    return (this.getDockerInfo(projectId) as TDockerData).containerName === dockerInfo.linkContainer;
+                    return (
+                        (this.getDockerInfo(projectId) as TDockerData)
+                            .containerName === dockerInfo.linkContainer
+                    );
                 });
             if (linkProjectId !== undefined) {
-                newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string] = dockerInfo.bridgeAlias ?? "";
+                newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string] =
+                    dockerInfo.bridgeAlias ?? "";
                 newDockerInfo.containers.push(dockerInfo.linkContainer);
-                const linkContainerInfo = this.getDockerInfo(linkProjectId) as TDockerData;
-                linkContainerInfo.containers.push(newDockerInfo.containerName), this.setDockerInfo(linkProjectId, linkContainerInfo);
+                const linkContainerInfo = this.getDockerInfo(
+                    linkProjectId
+                ) as TDockerData;
+                linkContainerInfo.containers.push(newDockerInfo.containerName),
+                    this.setDockerInfo(linkProjectId, linkContainerInfo);
             }
         }
-        if (dockerInfo.bridgeName !== undefined && dockerInfo.linkContainer === undefined && !Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeName) && dockerInfo.connect === true) {
-            log.debug(`docker Info : ${dockerInfo.bridgeName} : ${dockerInfo.bridgeAlias}`);
-            newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string] = dockerInfo.bridgeAlias ?? "";
-            log.debug(`docker Info : ${newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string]}}`);
+        if (
+            dockerInfo.bridgeName !== undefined &&
+            dockerInfo.linkContainer === undefined &&
+            !Object.keys(newDockerInfo.bridgeInfo).includes(
+                dockerInfo.bridgeName
+            ) &&
+            dockerInfo.connect === true
+        ) {
+            log.debug(
+                `docker Info : ${dockerInfo.bridgeName} : ${dockerInfo.bridgeAlias}`
+            );
+            newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string] =
+                dockerInfo.bridgeAlias ?? "";
+            log.debug(
+                `docker Info : ${
+                    newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string]
+                }}`
+            );
         }
 
-        if (dockerInfo.bridgeName !== undefined && Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeName) && dockerInfo.connect === false) {
+        if (
+            dockerInfo.bridgeName !== undefined &&
+            Object.keys(newDockerInfo.bridgeInfo).includes(
+                dockerInfo.bridgeName
+            ) &&
+            dockerInfo.connect === false
+        ) {
             this.commandDockerAsync(
                 `docker network disconnect ${dockerInfo.bridgeName} ${newDockerInfo.containerName}`,
                 () => {},
@@ -541,7 +687,9 @@ CMD ["./server-linux", "${socketPort}"]`;
                 });
             if (linkProjectId !== undefined) {
                 let command = `docker network connect --link ${dockerInfo.linkContainer} `;
-                command += dockerInfo.bridgeAlias ? `--alias ${dockerInfo.bridgeAlias} ` : ``;
+                command += dockerInfo.bridgeAlias
+                    ? `--alias ${dockerInfo.bridgeAlias} `
+                    : ``;
                 command += `${dockerInfo.bridgeName} ${newDockerInfo.containerName}`;
                 log.debug(`link container connect command : ${command}`);
                 this.commandDockerAsync(
@@ -559,7 +707,14 @@ CMD ["./server-linux", "${socketPort}"]`;
             }
         }
 
-        if (dockerInfo.bridgeName !== undefined && dockerInfo.linkContainer === undefined && !Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeName) && dockerInfo.connect === true) {
+        if (
+            dockerInfo.bridgeName !== undefined &&
+            dockerInfo.linkContainer === undefined &&
+            !Object.keys(newDockerInfo.bridgeInfo).includes(
+                dockerInfo.bridgeName
+            ) &&
+            dockerInfo.connect === true
+        ) {
             let command = `docker network connect `;
             command += dockerInfo.bridgeAlias
                 ? `--alias ${dockerInfo.bridgeAlias} `
@@ -601,7 +756,8 @@ CMD ["./server-linux", "${socketPort}"]`;
             );
         }
 
-        newDockerInfo.containerName = dockerInfo.containerName ?? newDockerInfo.containerName;
+        newDockerInfo.containerName =
+            dockerInfo.containerName ?? newDockerInfo.containerName;
 
         log.info(`docker update complete ${JSON.stringify({ newDockerInfo })}`);
         DataAlarmManager.create(userId, {
@@ -674,51 +830,95 @@ CMD ["./server-linux", "${socketPort}"]`;
     }
 
     static getDockerVisualizationInfo() {
-        const visualizationInfo = { container: [], port: [], network: [] } as TDockerVisualData;
-        fs.readdirSync(DataProjectManager.getProjectDefaultPath()).map((projectId) => {
-            const dockerInfo = this.getDockerInfo(projectId) as TDockerData;
+        const visualizationInfo = {
+            container: [],
+            port: [],
+            network: [],
+        } as TDockerVisualData;
+        fs.readdirSync(DataProjectManager.getProjectDefaultPath()).map(
+            (projectId) => {
+                const dockerInfo = this.getDockerInfo(projectId) as TDockerData;
 
-            visualizationInfo.container.push({
-                ...dockerInfo,
-                parent: Object.keys(dockerInfo.bridgeInfo).reduce((networkIdList: string[], bridgeName: string) => {
-                    networkIdList.push((this.getDockerNetworkInfo() as TDockerNetworkJsonData)[bridgeName].id);
-                    return networkIdList;
-                }, []),
-            }); // parent 정해지면 {...dockerInfo, parent: []}
-            if (dockerInfo.portInfo !== undefined) {
-                Object.keys(dockerInfo.portInfo as TPortMappingData).map((hostPortString: string) => {
-                    const hostPort = parseInt(hostPortString, 10);
-                    const containerPort = (dockerInfo.portInfo as TPortMappingData)[hostPortString];
-                    const portInfoIndex = visualizationInfo.port.findIndex((portInfo: TDockerPortVisualData) => {
-                        return portInfo.outBound === hostPort;
-                    });
-                    if (portInfoIndex !== -1) {
-                        visualizationInfo.port[portInfoIndex].inBound?.push(containerPort);
-                        dockerInfo.status === "running"
-                            ? (visualizationInfo.port[portInfoIndex].onContainer = dockerInfo.containerId)
-                            : visualizationInfo.port[portInfoIndex].connectedContainers?.push(dockerInfo.containerId);
-                    } else {
-                        const newPortInfo = {
-                            outBound: hostPort,
-                            inBound: [containerPort],
-                            onContainer: dockerInfo.status === "running" ? dockerInfo.containerId : "",
-                            connectedContainers: dockerInfo.status === "running" ? [] : [dockerInfo.containerId],
-                        } as TDockerPortVisualData;
-                        visualizationInfo.port.push(newPortInfo);
-                    }
-                });
+                visualizationInfo.container.push({
+                    ...dockerInfo,
+                    parent: Object.keys(dockerInfo.bridgeInfo).reduce(
+                        (networkIdList: string[], bridgeName: string) => {
+                            networkIdList.push(
+                                (
+                                    this.getDockerNetworkInfo() as TDockerNetworkJsonData
+                                )[bridgeName].id
+                            );
+                            return networkIdList;
+                        },
+                        []
+                    ),
+                }); // parent 정해지면 {...dockerInfo, parent: []}
+                if (dockerInfo.portInfo !== undefined) {
+                    Object.keys(dockerInfo.portInfo as TPortMappingData).map(
+                        (hostPortString: string) => {
+                            const hostPort = parseInt(hostPortString, 10);
+                            const containerPort = (
+                                dockerInfo.portInfo as TPortMappingData
+                            )[hostPortString];
+                            const portInfoIndex =
+                                visualizationInfo.port.findIndex(
+                                    (portInfo: TDockerPortVisualData) => {
+                                        return portInfo.outBound === hostPort;
+                                    }
+                                );
+                            if (portInfoIndex !== -1) {
+                                visualizationInfo.port[
+                                    portInfoIndex
+                                ].inBound?.push(containerPort);
+                                dockerInfo.status === "running"
+                                    ? (visualizationInfo.port[
+                                          portInfoIndex
+                                      ].onContainer = dockerInfo.containerId)
+                                    : visualizationInfo.port[
+                                          portInfoIndex
+                                      ].connectedContainers?.push(
+                                          dockerInfo.containerId
+                                      );
+                            } else {
+                                const newPortInfo = {
+                                    outBound: hostPort,
+                                    inBound: [containerPort],
+                                    onContainer:
+                                        dockerInfo.status === "running"
+                                            ? dockerInfo.containerId
+                                            : "",
+                                    connectedContainers:
+                                        dockerInfo.status === "running"
+                                            ? []
+                                            : [dockerInfo.containerId],
+                                } as TDockerPortVisualData;
+                                visualizationInfo.port.push(newPortInfo);
+                            }
+                        }
+                    );
+                }
             }
-        });
-        Object.values(this.getDockerNetworkInfo() as TDockerNetworkJsonData).map((networkInfo: TDockerNetworkData) => {
+        );
+        Object.values(
+            this.getDockerNetworkInfo() as TDockerNetworkJsonData
+        ).map((networkInfo: TDockerNetworkData) => {
             const newNetworkInfo = {
                 name: networkInfo.networkName,
                 networkId: networkInfo.id,
                 ip: networkInfo.subnet,
-                containers: fs.readdirSync(DataProjectManager.getProjectDefaultPath()).reduce((containerIdList: string[], projectId: string) => {
-                    const dockerInfo = this.getDockerInfo(projectId) as TDockerData;
-                    Object.keys(dockerInfo.bridgeInfo).includes(networkInfo.networkName) ? containerIdList.push(dockerInfo.containerId) : undefined;
-                    return containerIdList;
-                }, []),
+                containers: fs
+                    .readdirSync(DataProjectManager.getProjectDefaultPath())
+                    .reduce((containerIdList: string[], projectId: string) => {
+                        const dockerInfo = this.getDockerInfo(
+                            projectId
+                        ) as TDockerData;
+                        Object.keys(dockerInfo.bridgeInfo).includes(
+                            networkInfo.networkName
+                        )
+                            ? containerIdList.push(dockerInfo.containerId)
+                            : undefined;
+                        return containerIdList;
+                    }, []),
             } as TDockerNetworkVisualData;
             visualizationInfo.network.push(newNetworkInfo);
         });
