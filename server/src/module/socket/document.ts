@@ -8,7 +8,7 @@ const docuemntFunc: { [key in string]: (userId: string, packet: any) => void } =
         getDocument,
         createDocument,
         updateDocument,
-        deelteDocument,
+        deleteDocument,
     };
 
 function getDocument(userId: string, packet: any) {
@@ -44,7 +44,7 @@ function updateDocument(userId: string, packet: any) {
     getSocket(userId).send(sendData);
 }
 
-function deelteDocument(userId: string, packet: any) {
+function deleteDocument(userId: string, packet: any) {
     const sendData = JSON.stringify(
         makePacket(
             "document",

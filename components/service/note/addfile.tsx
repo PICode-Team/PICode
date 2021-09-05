@@ -42,46 +42,37 @@ export default function AddInput(props: IAddInput) {
 
                 setTmpFileName(e.target.value)
                 if (props.contextPosition !== undefined) {
-                    props.client.mutate({
-                        mutation: QueryCreate(`${props.contextPosition.path}/${e.target.value}`, props.ctx.session.userName, ""),
-                    });
-                } else {
-                    props.client.mutate({
-                        mutation: QueryCreate(`/${e.target.value}`, props.ctx.session.userName, ""),
-                    });
-                }
-                props.client
-                    .query({
-                        query: GetQuery(),
-                        fetchPolicy: "network-only",
-                    })
-                    .then((res: any) => {
-                        let tmpResult = [];
-                        for (let i of res.data.getDocument) {
-                            let node = props.fileView?.find((v) => v.documentId === i.documentId)
-                            if (node !== undefined) {
-                                if (node.open) {
-                                    let tmpNode = cloneDeep(node);
-                                    tmpNode.content = i.content;
-                                    tmpNode.path = i.path;
-                                    tmpResult.push(tmpNode)
-                                } else {
-                                    if (props.contextPosition !== undefined && props.contextPosition.target === node.documentId) {
-                                        let tmpNode = cloneDeep(node);
-                                        tmpNode.content = i.content;
-                                        tmpNode.path = i.path;
-                                        tmpNode.open = true;
-                                        tmpResult.push(tmpNode)
-                                    } else {
-                                        tmpResult.push(i)
-                                    }
-                                }
-                            } else {
-                                tmpResult.push(i)
-                            }
+                    props.ctx.ws.current.send(JSON.stringify({
+                        category: "document",
+                        type: "createDocument",
+                        data: {
+
+                            path: `${props.contextPosition.path}/${e.target.value}`,
+                            creator: props.ctx.session.userName,
+                            content: ""
+
                         }
-                        props.setFileView(tmpResult);
-                    });
+                    }))
+                } else {
+                    props.ctx.ws.current.send(JSON.stringify({
+                        category: "document",
+                        type: "createDocument",
+                        data: {
+
+                            path: `/${e.target.value}`,
+                            creator: props.ctx.session.userName,
+                            content: ""
+
+                        }
+                    }))
+                }
+                props.ctx.ws.current.send(JSON.stringify({
+                    category: "document",
+                    type: "getDocument",
+                    data: {
+                        userId: props.ctx.session.userId,
+                    }
+                }))
             }}
             onKeyDown={(e: any) => {
                 if (e.code === "Enter") {
@@ -99,46 +90,37 @@ export default function AddInput(props: IAddInput) {
 
                     setTmpFileName(e.target.value)
                     if (props.contextPosition !== undefined) {
-                        props.client.mutate({
-                            mutation: QueryCreate(`${props.contextPosition.path}/${e.target.value}`, props.ctx.session.userName, ""),
-                        });
-                    } else {
-                        props.client.mutate({
-                            mutation: QueryCreate(`/${e.target.value}`, props.ctx.session.userName, ""),
-                        });
-                    }
-                    props.client
-                        .query({
-                            query: GetQuery(),
-                            fetchPolicy: "network-only",
-                        })
-                        .then((res: any) => {
-                            let tmpResult = [];
-                            for (let i of res.data.getDocument) {
-                                let node = props.fileView?.find((v) => v.documentId === i.documentId)
-                                if (node !== undefined) {
-                                    if (node.open) {
-                                        let tmpNode = cloneDeep(node);
-                                        tmpNode.content = i.content;
-                                        tmpNode.path = i.path;
-                                        tmpResult.push(tmpNode)
-                                    } else {
-                                        if (props.contextPosition !== undefined && props.contextPosition.target === node.documentId) {
-                                            let tmpNode = cloneDeep(node);
-                                            tmpNode.content = i.content;
-                                            tmpNode.path = i.path;
-                                            tmpNode.open = true;
-                                            tmpResult.push(tmpNode)
-                                        } else {
-                                            tmpResult.push(i)
-                                        }
-                                    }
-                                } else {
-                                    tmpResult.push(i)
-                                }
+                        props.ctx.ws.current.send(JSON.stringify({
+                            category: "document",
+                            type: "createDocument",
+                            data: {
+
+                                path: `${props.contextPosition.path}/${e.target.value}`,
+                                creator: props.ctx.session.userName,
+                                content: ""
+
                             }
-                            props.setFileView(tmpResult);
-                        });
+                        }))
+                    } else {
+                        props.ctx.ws.current.send(JSON.stringify({
+                            category: "document",
+                            type: "createDocument",
+                            data: {
+
+                                path: `/${e.target.value}`,
+                                creator: props.ctx.session.userName,
+                                content: ""
+
+                            }
+                        }))
+                    }
+                    props.ctx.ws.current.send(JSON.stringify({
+                        category: "document",
+                        type: "getDocument",
+                        data: {
+                            userId: props.ctx.session.userId,
+                        }
+                    }))
 
                 }
             }}

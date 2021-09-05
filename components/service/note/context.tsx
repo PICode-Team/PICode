@@ -15,6 +15,7 @@ interface INoteContextProps {
     setFileView: React.Dispatch<React.SetStateAction<IFileView[] | undefined>>,
     setSelectFile: React.Dispatch<React.SetStateAction<IFileView | undefined>>,
     fileView: IFileView[] | undefined,
+    ctx: any,
     setAddFile: React.Dispatch<React.SetStateAction<boolean>>,
 }
 
@@ -25,8 +26,11 @@ export default function NoteContext({
     setOpenContext,
     setFileView,
     setSelectFile,
+    ctx,
     fileView,
     setAddFile }: INoteContextProps) {
+    if (ctx.ws === false) return <></>
+
     return <div
         onClick={(e) => {
             e.stopPropagation();
@@ -36,7 +40,7 @@ export default function NoteContext({
         className={classes.contextWrapper}
         style={{
             left: contextPosition.x,
-            top: contextPosition.y,
+            top: contextPosition.y - 40,
         }}
     >
         <div
@@ -58,20 +62,23 @@ export default function NoteContext({
                 if (node !== undefined) {
                     for (let i of fileView) {
                         if (i.path.includes(node.path)) {
-                            client.mutate({
-                                mutation: QueryDelete(i.documentId),
-                            });
+                            ctx.ws.current.send(JSON.stringify({
+                                category: "document",
+                                type: "deleteDocument",
+                                data: {
+                                    documentId: i.documentId,
+                                }
+                            }))
                         }
                     }
                 }
-                client
-                    .query({
-                        query: GetQuery(),
-                        fetchPolicy: "network-only",
-                    })
-                    .then((res: any) => {
-                        setFileView(res.data.getDocument);
-                    });
+                ctx.ws.current.send(JSON.stringify({
+                    category: "document",
+                    type: "getDocument",
+                    data: {
+                        userId: ctx.session.userId,
+                    }
+                }))
                 setSelectFile(undefined)
             }}
         >

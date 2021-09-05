@@ -89,7 +89,7 @@ export default function TestNote(ctx: any) {
     }, [dragEnd]);
 
     useEffect(() => {
-        if (selectFile === undefined) return;
+        if (selectFile === undefined || fileView === undefined) return;
         if (selectFile.documentId === undefined && selectFile.path === "") return;
         let path = selectFile?.path.split("/")
         if (selectFile.title === undefined) {
@@ -99,31 +99,21 @@ export default function TestNote(ctx: any) {
         path[path?.length - 1] = selectFile?.title;
         let tmpPath = path?.join("/");
         let content = test;
-        client.mutate({
-            mutation: QueryUpdate(selectFile?.documentId, tmpPath, content)
-        })
-        client
-            .query({
-                query: GetQuery(),
-                fetchPolicy: "network-only",
-            })
-            .then((res) => {
-                let tmpResult = [];
-                for (let i of res.data.getDocument) {
-                    let node = fileView?.find((v) => v.documentId === i.documentId)
-                    if (node !== undefined) {
-                        if (node.open) {
-                            let tmpNode = node;
-                            tmpNode.content = i.content;
-                            tmpNode.path = i.path;
-                            tmpResult.push(tmpNode)
-                        } else {
-                            tmpResult.push(i)
-                        }
-                    }
+        let tmpResult = [];
+        for (let i of fileView) {
+            let node = fileView?.find((v) => v.documentId === i.documentId)
+            if (node !== undefined) {
+                if (node.open) {
+                    let tmpNode = node;
+                    tmpNode.content = i.content;
+                    tmpNode.path = i.path;
+                    tmpResult.push(tmpNode)
+                } else {
+                    tmpResult.push(i)
                 }
-                setFileView(tmpResult);
-            });
+            }
+        }
+        setFileView(tmpResult);
 
 
         for (let i in test) {
@@ -133,16 +123,6 @@ export default function TestNote(ctx: any) {
             }
         }
     }, [selectFile]);
-
-    useEffect(() => {
-        client
-            .query({
-                query: GetQuery(),
-            })
-            .then((res) => {
-                setFileView(res.data.getDocument);
-            });
-    }, []);
 
     useEffect(() => {
         if (ctx.ws !== false) {
@@ -156,8 +136,30 @@ export default function TestNote(ctx: any) {
                     }
                 }
             })
+            ctx.ws.current.send(JSON.stringify({
+                category: "document",
+                type: "getDocument",
+                data: {
+                    userId: ctx.session.userId,
+                }
+            }))
         }
-    }, [ctx])
+    }, [ctx.ws])
+
+    useEffect(() => {
+        if (ctx.ws !== false && ctx.ws !== undefined && ctx.ws.current !== undefined && selectFile !== undefined) {
+            ctx.ws.current.send(JSON.stringify({
+                category: "document",
+                type: "updateDocument",
+                data: {
+                    documentId: selectFile.documentId,
+                    document: {
+                        content: test
+                    }
+                }
+            }))
+        }
+    }, [test])
 
     useEffect(() => {
         if (tmpFileName === "") return;
@@ -527,6 +529,7 @@ export default function TestNote(ctx: any) {
                 classes={classes}
                 contextPosition={contextPosition}
                 client={client}
+                ctx={ctx}
                 setOpenContext={setOpenContext}
                 setFileView={setFileView}
                 setSelectFile={setSelectFile}

@@ -48,6 +48,7 @@ const findNode = (data: IFileView[] | undefined, documentId: string) => {
 
 export default function NoteSidebar(props: INoteSidebar) {
     if (props.fileView === undefined) return <></>;
+    if (props.ctx.ws === false) return <></>
     const output: any = {}
     const pushToOutput = (path: any, obj: any, value: any): any => {
         const clone = { ...value }
@@ -108,32 +109,24 @@ export default function NoteSidebar(props: INoteSidebar) {
                         })
                         for (let i of nodeGroup) {
                             let name = i.path.split("/")
-                            props.client.mutate({
-                                mutation: QueryUpdate(i.documentId, dragEndNode.path + "/" + name[name.length - 1])
-                            })
-                        }
-                        props.client
-                            .query({
-                                query: GetQuery(),
-                                fetchPolicy: "network-only",
-                            })
-                            .then((res: any) => {
-                                let tmpResult = [];
-                                for (let i of res.data.getDocument) {
-                                    let node = props.fileView?.find((v) => v.documentId === i.documentId)
-                                    if (node !== undefined) {
-                                        if (node.open) {
-                                            let tmpNode = node;
-                                            tmpNode.content = i.content;
-                                            tmpNode.path = i.path;
-                                            tmpResult.push(tmpNode)
-                                        } else {
-                                            tmpResult.push(i)
-                                        }
+                            props.ctx.ws.current.send(JSON.stringify({
+                                category: "document",
+                                type: "updateDocument",
+                                data: {
+                                    documentId: i.documentId,
+                                    document: {
+                                        path: dragEndNode.path + "/" + name[name.length - 1]
                                     }
                                 }
-                                props.setFileView(tmpResult);
-                            });
+                            }))
+                            props.ctx.ws.current.send(JSON.stringify({
+                                category: "document",
+                                type: "getDocument",
+                                data: {
+                                    userId: props.ctx.session.userId,
+                                }
+                            }))
+                        }
                     }}
                     style={{ paddingLeft: `${16 * num}px` }}
                     onClick={(e) => {
@@ -152,8 +145,7 @@ export default function NoteSidebar(props: INoteSidebar) {
                         }
                         props.setSelectFile(tmpFile);
                         if (output[v].content) {
-                            let tmpTest: any = [{ text: output[v].content }];
-                            props.setTest(tmpTest);
+                            props.setTest(output[v].content);
                         } else {
                             props.setTest([]);
                         }
