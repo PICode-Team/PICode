@@ -45,5 +45,18 @@ export const containerStyle = makeStyles((theme: IThemeStyle) =>
             height: "1px",
             background: theme.backgroundColor.step3,
         },
+        context: {
+            width: "150px",
+            height: "160px",
+            position: "absolute",
+            background: theme.backgroundColor.step2,
+            zIndex: 99,
+            boxShadow: "0 5px 5px rgba(0, 0, 0, 0.2)",
+            padding: "5px",
+            color: theme.font.high.color,
+        },
+        icon: {
+            color: theme.font.high.color,
+        },
     })
 );
