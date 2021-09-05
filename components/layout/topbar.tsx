@@ -8,9 +8,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { toDark, toWhite } from "../../modules/theme";
 import { TopbarStyle } from "../../styles/layout/topbar";
 import AccountCircleRoundedIcon from "@material-ui/icons/AccountCircleRounded";
-import NotificationsIcon from '@material-ui/icons/Notifications';
+import NotificationsIcon from "@material-ui/icons/Notifications";
 import UserInfo from "./item/tooltip";
-import CreateIcon from '@material-ui/icons/Create';
+import CreateIcon from "@material-ui/icons/Create";
 import { useEffect } from "react";
 import { ISocket } from ".";
 import AlertDialog from "./item/alert";
@@ -49,33 +49,44 @@ export function Topbar(ctx: any) {
     if (openAlert && alarmData !== undefined) {
       for (let i of alarmData ?? []) {
         let node: any = i;
-        if (ctx.ws !== null && ctx.ws.current !== null && ctx.ws.current!.readyState === WebSocket.OPEN && !node.checkAlarm) {
-          ctx.ws.current.send(JSON.stringify({
-            category: "alarm",
-            type: "checkAlarm",
-            data: {
-              alarmId: node.alarmId,
-              alarmRoom: node.alarmRoom
-            }
-          }))
+        if (
+          ctx.ws !== null &&
+          ctx.ws.current !== null &&
+          ctx.ws.current!.readyState === WebSocket.OPEN &&
+          !node.checkAlarm
+        ) {
+          ctx.ws.current.send(
+            JSON.stringify({
+              category: "alarm",
+              type: "checkAlarm",
+              data: {
+                alarmId: node.alarmId,
+                alarmRoom: node.alarmRoom,
+              },
+            })
+          );
         }
       }
     }
-  }, [ctx, openAlert])
+  }, [ctx, openAlert]);
 
   useEffect(() => {
     getUserData();
-    if (ctx.ws !== null && ctx.ws.current !== null && ctx.ws.current!.readyState === WebSocket.OPEN) {
+    if (
+      ctx.ws !== null &&
+      ctx.ws.current !== null &&
+      ctx.ws.current!.readyState === WebSocket.OPEN
+    ) {
       ctx.ws.current.addEventListener("message", (msg: any) => {
         const message = JSON.parse(msg.data);
         if (message.category === "alarm") {
           switch (message.type) {
             case "getAlarm":
-              setAlarmData(message.data)
+              setAlarmData(message.data);
               break;
           }
         }
-      })
+      });
 
       ctx.ws.current!.send(
         JSON.stringify({
@@ -85,6 +96,17 @@ export function Topbar(ctx: any) {
       );
     }
   }, [ctx]);
+
+  let uuidv4 = () => {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+      /[xy]/g,
+      function (c) {
+        var r = (Math.random() * 16) | 0,
+          v = c == "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      }
+    );
+  };
 
   const makeUserInfo = (data: IUserWorkInfo[]) => {
     let returnData = [];
@@ -96,6 +118,7 @@ export function Topbar(ctx: any) {
       if (i.userId !== ctx.session.userId) {
         returnData.push(
           <div
+            key={uuidv4()}
             className={classes.userInfoData}
             style={{ zIndex: idx }}
             onClick={() => {
@@ -167,7 +190,19 @@ export function Topbar(ctx: any) {
           </IconButton>
         </div>
         <div className={classes.themeButton}>
-          {alarmData !== undefined && <div style={{ top: "10px", left: "30px", width: "10px", height: "10px", borderRadius: "10px", background: "red", position: "absolute" }} />}
+          {alarmData !== undefined && (
+            <div
+              style={{
+                top: "10px",
+                left: "30px",
+                width: "10px",
+                height: "10px",
+                borderRadius: "10px",
+                background: "red",
+                position: "absolute",
+              }}
+            />
+          )}
           <IconButton
             style={{ color: theme === "dark" ? "#fff" : "#121212" }}
             onClick={() => {
@@ -187,7 +222,11 @@ export function Topbar(ctx: any) {
         <UserInfo open={open} setOpen={setOpen} data={data} theme={theme} />
       )}
       {openAlert && (
-        <AlertDialog openAlert={openAlert} setOpenAlert={setOpenAlert} data={alarmData ?? []} />
+        <AlertDialog
+          openAlert={openAlert}
+          setOpenAlert={setOpenAlert}
+          data={alarmData ?? []}
+        />
       )}
     </React.Fragment>
   );

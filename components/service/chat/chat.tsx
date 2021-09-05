@@ -4,13 +4,10 @@ import {
   createChannelStyle,
 } from "../../../styles/service/chat/chat";
 import {
-  RadioButtonUnchecked,
-  ArrowDropDown,
   FiberManualRecord,
   Close,
   Search,
   Add,
-  Cancel,
   Clear,
   FormatBold,
   FormatItalic,
@@ -24,11 +21,9 @@ import {
   AlternateEmail,
   TextFormatOutlined,
   Send,
-  Comment,
   SmsOutlined,
   FavoriteBorderOutlined,
 } from "@material-ui/icons";
-import CustomButton from "../../items/input/button";
 
 interface IChat {
   user: string;
@@ -451,47 +446,49 @@ export default function Chat(ctx: any) {
         className={classes.messageBox}
         style={{ display: "flex", justifyContent: "flex-end" }}
       >
-        <div
-          className={classes.textWrapper}
-          style={{ display: "flex", flexDirection: "row-reverse" }}
-        >
-          <div className={classes.messageText}>{message}</div>
-          <span className={classes.time}>
-            <span>{timeText}</span>
-            <div className={classes.messageInteraction}>
-              <div
-                className={classes.interactionIcon}
-                onClick={() => {
-                  setThread({
-                    chatName: target,
-                    messages: threadList,
-                    parentId: chatId,
-                    parentMessage: message,
-                    parentTime: time,
-                    parentUser: user,
-                  });
-                }}
-              >
-                <SmsOutlined />
+        <div className={classes.messageInfo}>
+          <div
+            className={classes.textWrapper}
+            style={{ display: "flex", flexDirection: "row-reverse" }}
+          >
+            <div className={classes.messageText}>{message}</div>
+            <span className={classes.time}>
+              <span>{timeText}</span>
+              <div className={classes.messageInteraction}>
+                <div
+                  className={classes.interactionIcon}
+                  onClick={() => {
+                    setThread({
+                      chatName: target,
+                      messages: threadList,
+                      parentId: chatId,
+                      parentMessage: message,
+                      parentTime: time,
+                      parentUser: user,
+                    });
+                  }}
+                >
+                  <SmsOutlined />
+                </div>
+                <div className={classes.interactionDivider} />
+                <div className={classes.interactionIcon}>
+                  <FavoriteBorderOutlined />
+                </div>
               </div>
-              <div className={classes.interactionDivider} />
-              <div className={classes.interactionIcon}>
-                <FavoriteBorderOutlined />
-              </div>
-            </div>
-          </span>
+            </span>
+          </div>
+          {threadList.length > 0 && (
+            <Thread
+              parentUser={user}
+              parentMessage={message}
+              parentId={chatId}
+              particiapnts={[]}
+              messages={threadList}
+              lastTime={threadList.slice(-1)[0].time}
+              parentTime={time}
+            />
+          )}
         </div>
-        {threadList.length > 0 && (
-          <Thread
-            parentUser={user}
-            parentMessage={message}
-            parentId={chatId}
-            particiapnts={[]}
-            messages={threadList}
-            lastTime={threadList.slice(-1)[0].time}
-            parentTime={time}
-          />
-        )}
       </div>
     );
   }
@@ -912,7 +909,7 @@ export default function Chat(ctx: any) {
                           threadMessageRef.current.value !== ""
                         ) {
                           sendMessage(
-                            thread.parentId,
+                            thread.chatName,
                             threadMessageRef.current?.value ?? "",
                             thread.parentId
                           );

@@ -30,8 +30,8 @@ export function Layout(ctx: any) {
     React.useState<{ loginId: string; workInfo: ISocket }[]>();
   const [pageName, setPageName] = useState({
     name: "",
-    icon: undefined
-  })
+    icon: undefined,
+  });
   const [alertData, setAlertData] = React.useState();
 
   if (typeof window !== "undefined") {
