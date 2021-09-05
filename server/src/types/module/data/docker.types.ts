@@ -25,6 +25,7 @@ export type TDockerData = Omit<TDockerCreateData, "linkContainer" | "bridgeName"
     ramUsage?: string;
     containers: string[];
     socketPort?: number;
+    containerIP?: string;
 };
 
 export type TDockerNetworkCreateData = {

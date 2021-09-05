@@ -145,30 +145,27 @@ export default class DataDockerManager {
     }
 
     static updateStatus() {
-        fs.readdirSync(DataProjectManager.getProjectDefaultPath()).map(
-            (projectId) => {
-                const dockerInfo = isExists(
-                    this.getDockerPath(projectId, "dockerInfo.json")
-                )
-                    ? this.getDockerInfo(projectId)
-                    : undefined;
-                if (dockerInfo !== undefined) {
-                    this.commandDockerAsync(
-                        `docker inspect --format="{{.State.Status}}" ${dockerInfo.containerName}`,
-                        (state: Buffer) => {
-                            this.setDockerInfo(projectId, {
-                                ...dockerInfo,
-                                status: state.toString().replace(/\n/gi, "") as
-                                    | "created"
-                                    | "running"
-                                    | "exited",
-                            });
-                        },
-                        (error) => {
-                            log.error(error);
-                        }
-                    );
-                }
+        fs.readdirSync(DataProjectManager.getProjectDefaultPath()).map((projectId) => {
+            const dockerInfo = isExists(this.getDockerPath(projectId, "dockerInfo.json")) ? this.getDockerInfo(projectId) : undefined;
+            if (dockerInfo !== undefined) {
+                this.commandDockerAsync(
+                    `docker inspect --format="{{.State.Status}}" ${dockerInfo.containerName}`,
+                    (state: Buffer) => {
+                        this.setDockerInfo(projectId, { ...dockerInfo, status: state.toString().replace(/\n/gi, "") as "created" | "running" | "exited" });
+                    },
+                    (error) => {
+                        log.error(error);
+                    }
+                );
+                this.commandDockerAsync(
+                    `docker inspect --format="{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${dockerInfo.containerName}`,
+                    (ip: Buffer) => {
+                        this.setDockerInfo(projectId, { ...dockerInfo, containerIP: ip.toString().replace(/\n/gi, "") });
+                    },
+                    (error) => {
+                        log.error(error);
+                    }
+                );
             }
         );
     }
