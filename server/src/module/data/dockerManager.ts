@@ -121,6 +121,15 @@ export default class DataDockerManager {
                         log.error(error);
                     }
                 );
+                this.commandDockerAsync(
+                    `docker inspect --format="{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${dockerInfo.containerName}`,
+                    (ip: Buffer) => {
+                        this.setDockerInfo(projectId, { ...dockerInfo, containerIP: ip.toString().replace(/\n/gi, "") });
+                    },
+                    (error) => {
+                        log.error(error);
+                    }
+                );
             }
         });
     }
