@@ -23,6 +23,17 @@ export default function Issue(props: any) {
     checkedB: true,
   });
   const [node, setNode] = React.useState();
+  const [edit, setEdit] = useState<boolean>(false);
+  const [modalData, setModalData] = useState<any>({
+    title: "",
+    assigner: "",
+    content: "",
+    milestone: "",
+    label: "",
+    uuid: "",
+    column: "",
+  });
+  const [column, setColumn] = useState<string>("");
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setState({ ...state, [event.target.name]: event.target.checked });
@@ -112,10 +123,12 @@ export default function Issue(props: any) {
         <div
           style={{
             backgroundColor: "#1D2228",
-            height: "100px",
+            height: "60px",
             padding: "15px",
             borderTopLeftRadius: "8px",
             borderTopRightRadius: "8px",
+            display: "flex",
+            alignItems: "center",
           }}
         >
           <div
@@ -123,6 +136,7 @@ export default function Issue(props: any) {
               display: "flex",
               marginBottom: "6px",
               justifyContent: "space-between",
+              flex: 1,
             }}
           >
             <div style={{ display: "flex", alignItems: "flex-end" }}>
@@ -135,22 +149,12 @@ export default function Issue(props: any) {
               >
                 {title}
               </div>
-              <div style={{ fontSize: "13px" }}>last 5 issue</div>
+              <div style={{ fontSize: "13px" }}>
+                last {(issue ?? []).filter((v) => title === v.column).length}{" "}
+                issue
+              </div>
             </div>
             <div style={{ display: "flex", alignItems: "flex-end" }}>
-              <div
-                style={{
-                  cursor: "pointer",
-                  marginRight: "4px",
-                  display: "flex",
-                  alignItems: "center",
-                  width: "22px",
-                  height: "22px",
-                }}
-                onClick={() => {}}
-              >
-                <Edit style={{ width: "18px", height: "18px" }} />
-              </div>
               <div
                 style={{
                   cursor: "pointer",
@@ -158,6 +162,7 @@ export default function Issue(props: any) {
                   alignItems: "center",
                 }}
                 onClick={() => {
+                  setColumn(title);
                   setOpen(true);
                 }}
               >
@@ -165,14 +170,11 @@ export default function Issue(props: any) {
               </div>
             </div>
           </div>
-          <div style={{ fontSize: "13px" }}>
-            Lorem Ipsum is simply dummy text of the printin
-          </div>
         </div>
         <div
           style={{
             backgroundColor: "#3B434D",
-            height: "calc(100% - 100px)",
+            height: "calc(100% - 60px)",
             padding: "15px",
             borderBottomLeftRadius: "8px",
             borderBottomRightRadius: "8px",
@@ -190,12 +192,16 @@ export default function Issue(props: any) {
   }
 
   function Card({ node }: any) {
+    console.log(node);
+
     return (
       <div
         style={{
           backgroundColor: "#2C3239",
           padding: "15px",
           borderRadius: "6px",
+          height: "120px",
+          marginBottom: "15px",
         }}
         draggable
         onDragStart={(e) => {
@@ -251,42 +257,29 @@ export default function Issue(props: any) {
           ></div>
           <div>
             <div style={{ fontSize: "11px" }}>{node.title}</div>
-            <div style={{ fontSize: "11px" }}>#1 Issue</div>
+            <div style={{ fontSize: "11px" }}>#{node.issueId} Issue</div>
           </div>
         </div>
         <div style={{ fontSize: "11px", marginBottom: "14px" }}>
-          Lorem Ipsum is simply dummy text of the printin Lorem Ipsum is simply
-          dummy text
+          {node.content}
         </div>
         <div style={{ display: "flex" }}>
-          <div
-            style={{
-              fontSize: "10px",
-              textAlign: "center",
-              width: "50px",
-              height: "18px",
-              backgroundColor: "#475261",
-              marginRight: "6px",
-              borderRadius: "6px",
-              padding: "3px 0px",
-            }}
-          >
-            FE
-          </div>
-          <div
-            style={{
-              fontSize: "10px",
-              textAlign: "center",
-              width: "50px",
-              height: "18px",
-              backgroundColor: "#475261",
-              marginRight: "6px",
-              borderRadius: "6px",
-              padding: "3px 0px",
-            }}
-          >
-            DEV
-          </div>
+          {node.label !== undefined && (
+            <div
+              style={{
+                fontSize: "10px",
+                textAlign: "center",
+                width: "50px",
+                height: "18px",
+                backgroundColor: "#475261",
+                marginRight: "6px",
+                borderRadius: "6px",
+                padding: "3px 0px",
+              }}
+            >
+              {node.label}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -315,6 +308,10 @@ export default function Issue(props: any) {
           ws={props.ws.current}
           setOpen={setOpen}
           kanban={kanban}
+          edit={edit}
+          modalData={modalData}
+          column={column}
+          userId={props.session.userId}
         />
       </div>
     </>

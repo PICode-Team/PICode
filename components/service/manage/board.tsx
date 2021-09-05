@@ -12,6 +12,12 @@ export default function Board({ ctx, setCreate, kanban, setOpen, open }: any) {
   const classes = boardStyle();
   const router = useRouter();
   const [kanbanIssue, setKanbanIssue] = React.useState<string>("");
+  const [modalData, setModalData] = React.useState<any>({
+    title: "",
+    description: "",
+    milestone: "",
+  });
+  const [modal, setModal] = React.useState<boolean>(false);
 
   return (
     <div className={classes.wrapper}>
@@ -48,6 +54,12 @@ export default function Board({ ctx, setCreate, kanban, setOpen, open }: any) {
                           className={classes.icon}
                           onClick={(e) => {
                             e.stopPropagation();
+
+                            setModalData({
+                              title: v.title,
+                              uuid: v.uuid,
+                            });
+                            setModal(true);
                           }}
                         >
                           <Edit
@@ -91,7 +103,7 @@ export default function Board({ ctx, setCreate, kanban, setOpen, open }: any) {
                       >
                         <div
                           style={{
-                            width: "30%",
+                            width: "0%",
                             height: "10px",
                             backgroundColor: "#4078b8",
                             borderRadius: "6px",
@@ -108,6 +120,16 @@ export default function Board({ ctx, setCreate, kanban, setOpen, open }: any) {
               })}
           </div>
         </>
+      )}
+      {modal === true && (
+        <MakeKanban
+          userId={ctx.session.userId}
+          open={modal}
+          setOpen={setModal}
+          ws={ctx.ws.current}
+          modalData={modalData}
+          edit={true}
+        />
       )}
       {kanbanIssue !== "" && <Issue ctx={ctx} kanbanId={kanbanIssue} />}
     </div>

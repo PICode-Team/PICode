@@ -14,8 +14,18 @@ export default function MakeKanban(props: any) {
   const [title, setTitle] = React.useState<string>("");
   const [column, setColumn] = React.useState<string>("");
   const [projectName, setProjectName] = React.useState<string>("");
+  const [uuid, setUuid] = React.useState<string>("");
   const [milestone, setMilestone] = React.useState<string>("");
   const router = useRouter();
+
+  React.useEffect(() => {
+    if (props.modalData !== undefined) {
+      console.log(props.modalData.title);
+
+      setTitle(props.modalData.title);
+      setUuid(props.modalData.uuid);
+    }
+  }, [props.open]);
 
   return (
     <div>
@@ -35,7 +45,7 @@ export default function MakeKanban(props: any) {
           }}
           id="form-dialog-title"
         >
-          Make Kanban Board
+          {props.edit ? "Edit" : "Make"} Kanban Board
         </DialogTitle>
         <DialogContent
           style={{
@@ -55,6 +65,7 @@ export default function MakeKanban(props: any) {
             <div style={{ width: "80px" }}>title</div>
             <input
               placeholder={title}
+              value={title}
               style={{
                 background: "#3b434c",
                 padding: "4px 8px",
@@ -86,17 +97,33 @@ export default function MakeKanban(props: any) {
             <button
               className={classes.footerButton}
               onClick={() => {
-                let payload = {
-                  title: title,
-                  projectName: router.query.projectName,
-                };
-                props.ws.send(
-                  JSON.stringify({
-                    category: "kanban",
-                    type: "createKanban",
-                    data: payload,
-                  })
-                );
+                if (props.edit === true) {
+                  let payload = {
+                    title: title,
+                    projectName: router.query.projectName,
+                    uuid: props.modalData.uuid,
+                  };
+                  props.ws.send(
+                    JSON.stringify({
+                      category: "kanban",
+                      type: "updateKanban",
+                      data: payload,
+                    })
+                  );
+                } else {
+                  let payload = {
+                    title: title,
+                    projectName: router.query.projectName,
+                  };
+                  props.ws.send(
+                    JSON.stringify({
+                      category: "kanban",
+                      type: "createKanban",
+                      data: payload,
+                    })
+                  );
+                }
+
                 props.setOpen(false);
               }}
             >

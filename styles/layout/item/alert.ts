@@ -12,22 +12,23 @@ export const alertDialogStyle = makeStyles((theme: IThemeStyle) =>
       zIndex: 4,
       right: "185px",
       top: "30px",
-      padding: "10px",
-      overflow: "auto",
+      borderRadius: "6px",
     },
     header: {
       width: "100%",
-      height: "33px",
+      height: "43px",
       fontSize: "18px",
       lineHeight: "30px",
       color: theme.font.high.color,
       position: "relative",
       display: "flex",
       justifyContent: "space-between",
+      padding: "10px",
     },
     alarmContent: {
       width: "100%",
-      height: "calc(100% - 30px)",
+      height: "calc(100% - 63px)",
+      overflowY: "auto",
     },
   })
 );

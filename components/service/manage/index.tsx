@@ -22,10 +22,24 @@ export default function Manage(ctx: any) {
   const makeContent = () => {
     switch (menu) {
       case "Board":
-        return <Board ctx={ctx} setCreate={setCreate} kanban={kanban} />;
+        return (
+          <Board
+            ctx={ctx}
+            setCreate={setCreate}
+            kanban={kanban}
+            open={open}
+            setOpen={setOpen}
+          />
+        );
       default:
         return (
-          <Milestone ctx={ctx} setCreate={setCreate} milestone={milestone} />
+          <Milestone
+            ctx={ctx}
+            setCreate={setCreate}
+            milestone={milestone}
+            open={open}
+            setOpen={setOpen}
+          />
         );
     }
   };

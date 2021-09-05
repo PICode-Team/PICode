@@ -16,7 +16,30 @@ export default function MakeIssue(props: any) {
   const [column, setColumn] = React.useState<string>("");
   const [content, setContent] = React.useState<string>("");
   const [milestone, setMilestone] = React.useState<string>("");
+  const [label, setLabel] = React.useState<string>("");
+  const [mileList, setMileList] = React.useState<any[]>([]);
+  const [userList, setUserList] = React.useState<any[]>([]);
   const router = useRouter();
+
+  const getUserList = async () => {};
+
+  const getMileList = async () => {};
+
+  React.useEffect(() => {
+    setColumn(props.column);
+
+    if (props.edit === true) {
+      setTitle(props.modalData.title);
+      setContent(props.modalData.content);
+      setAssigner(props.modalData.assigner);
+      setColumn(props.modalData.column);
+      setMilestone(props.modalData.milestone);
+      setLabel(props.modalData.label);
+    }
+
+    getUserList();
+    getMileList();
+  }, []);
 
   return (
     <div>
@@ -36,7 +59,7 @@ export default function MakeIssue(props: any) {
           }}
           id="form-dialog-title"
         >
-          Make Kanban Board
+          Make Issue
         </DialogTitle>
         <DialogContent
           style={{
@@ -49,8 +72,7 @@ export default function MakeIssue(props: any) {
           <DialogContentText
             style={{ color: "#ffffff", paddingBottom: "20px" }}
           >
-            To subscribe to this website, please enter your email address here.
-            We will send updates occasionally.
+            Development for this Project
           </DialogContentText>
           <div style={{ marginBottom: "10px", display: "flex" }}>
             <div style={{ width: "80px" }}>title</div>
@@ -82,34 +104,23 @@ export default function MakeIssue(props: any) {
               onChange={(e) => setAssigner(e.target.value)}
             />
           </div>
-          <div style={{ marginBottom: "10px", display: "flex" }}>
-            <div style={{ width: "80px" }}>state</div>
-            <input
-              placeholder={column}
-              style={{
-                background: "#3b434c",
-                padding: "4px 8px",
-                border: "none",
-                outline: "none",
-                color: "#ffffff",
-                width: "300px",
-              }}
-              onChange={(e) => setColumn(e.target.value)}
-            />
-          </div>
-          <div style={{ marginBottom: "10px", display: "flex" }}>
+          <div style={{ marginBottom: "13px", display: "flex" }}>
             <div style={{ width: "80px" }}>content</div>
-            <input
+            <textarea
               placeholder={content}
               style={{
-                background: "#3b434c",
-                padding: "4px 8px",
-                border: "none",
-                outline: "none",
-                color: "#ffffff",
                 width: "300px",
+                background: "#3b434c",
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "2px",
+                color: "#ffffff",
+                lineHeight: "17px",
+                fontFamily: "Arial",
+                resize: "none",
+                outline: "none",
+                height: "100px",
               }}
-              multiple
               onChange={(e) => setContent(e.target.value)}
             />
           </div>
@@ -128,6 +139,21 @@ export default function MakeIssue(props: any) {
               onChange={(e) => setMilestone(e.target.value)}
             />
           </div>
+          <div style={{ marginBottom: "10px", display: "flex" }}>
+            <div style={{ width: "80px" }}>label</div>
+            <input
+              placeholder={label}
+              style={{
+                background: "#3b434c",
+                padding: "4px 8px",
+                border: "none",
+                outline: "none",
+                color: "#ffffff",
+                width: "300px",
+              }}
+              onChange={(e) => setLabel(e.target.value)}
+            />
+          </div>
         </DialogContent>
         <DialogActions
           style={{
@@ -141,7 +167,15 @@ export default function MakeIssue(props: any) {
           <div style={{ display: "flex" }}>
             <button
               className={classes.footerButton}
-              onClick={() => props.setOpen(false)}
+              onClick={() => {
+                setTitle("");
+                setContent("");
+                setAssigner("");
+                setColumn("");
+                setMilestone("");
+                setLabel("");
+                props.setOpen(false);
+              }}
             >
               CANCEL
             </button>
@@ -152,11 +186,15 @@ export default function MakeIssue(props: any) {
                   kanbanUUID: props.kanban,
                   issueData: {
                     title: title,
-                    assigner: "test",
+                    creator: props.userId,
+                    assigner: assigner,
                     column: column,
                     content: content,
+                    milestone: milestone,
+                    label: label,
                   },
                 };
+
                 props.ws.send(
                   JSON.stringify({
                     category: "issue",
@@ -165,7 +203,6 @@ export default function MakeIssue(props: any) {
                   })
                 );
                 props.setOpen(false);
-                // window.location.reload()
               }}
             >
               SUBMIT

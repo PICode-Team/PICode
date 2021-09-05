@@ -96,6 +96,15 @@ export default function MakeMile(props: any) {
   const router = useRouter();
   const classes = useStyles();
 
+  React.useEffect(() => {
+    if (props.modalData !== undefined) {
+      setTitle(props.modalData.title);
+      setContent(props.modalData.content);
+      setStartDate(props.modalData.startDate);
+      setEndDate(props.modalData.endDate);
+    }
+  }, [props.open]);
+
   return (
     <div>
       <Dialog
@@ -114,7 +123,7 @@ export default function MakeMile(props: any) {
           }}
           id="form-dialog-title"
         >
-          Make Kanban Board
+          {props.edit ? "Edit" : "Make"} Kanban Board
         </DialogTitle>
         <DialogContent
           style={{
@@ -135,6 +144,7 @@ export default function MakeMile(props: any) {
             <div style={{ width: "80px" }}>title</div>
             <input
               placeholder={title}
+              value={title}
               style={{
                 background: "#3b434c",
                 padding: "4px 8px",
@@ -148,22 +158,29 @@ export default function MakeMile(props: any) {
           </div>
           <div style={{ marginBottom: "13px", display: "flex" }}>
             <div style={{ width: "80px" }}>content</div>
-            <input
+            <textarea
+              placeholder={content}
+              value={content}
               style={{
-                background: "#3b434c",
-                padding: "4px 8px",
-                border: "none",
-                outline: "none",
-                color: "#ffffff",
                 width: "300px",
+                background: "#3b434c",
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "2px",
+                color: "#ffffff",
+                lineHeight: "17px",
+                fontFamily: "Arial",
+                resize: "none",
+                outline: "none",
+                height: "100px",
               }}
-              placeholder={"content"}
               onChange={(e) => setContent(e.target.value)}
             />
           </div>
           <TextField
             label="StartDate"
             type="date"
+            value={startDate}
             className={classes.textField}
             onChange={(e) => {
               setStartDate(e.target.value);
@@ -176,6 +193,7 @@ export default function MakeMile(props: any) {
           <TextField
             label="EndDate"
             type="date"
+            value={endDate}
             onChange={(e) => {
               setEndDate(e.target.value);
             }}
@@ -205,6 +223,38 @@ export default function MakeMile(props: any) {
             <button
               className={classes.footerButton}
               onClick={() => {
+                if (props.edit === true) {
+                  let payload = {
+                    title: title,
+                    content: content ?? "",
+                    startDate: startDate ?? "",
+                    endDate: endDate ?? "",
+                    uuid: props.modalData.uuid,
+                  };
+                  props.ws.send(
+                    JSON.stringify({
+                      category: "milestone",
+                      type: "updateMilestone",
+                      data: payload,
+                    })
+                  );
+                } else {
+                  let payload = {
+                    title: title,
+                    content: content ?? "",
+                    startDate: startDate ?? "",
+                    endDate: endDate ?? "",
+                  };
+                  console.log(payload);
+
+                  props.ws.send(
+                    JSON.stringify({
+                      category: "milestone",
+                      type: "createMilestone",
+                      data: payload,
+                    })
+                  );
+                }
                 let payload = {
                   title: title,
                   content: content ?? "",

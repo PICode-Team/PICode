@@ -9,16 +9,28 @@ import { DeleteForever, Edit } from "@material-ui/icons";
 
 export default function Milestone({ ctx, setCreate, milestone }: any) {
   const classes = boardStyle();
-  const [open, setOpen] = React.useState(false);
+  const [modal, setModal] = React.useState(false);
   const [kanbanIssue, setKanbanIssue] = React.useState<string>("");
+  const [modalData, setModalData] = React.useState<any>({
+    uuid: "",
+    title: "",
+    content: "",
+    startDate: "",
+    endDate: "",
+  });
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
+  function getPercentage(startData: string, endDate: string) {
+    const date = new Date();
+    const whole = Number(endDate.slice(8, 10)) - Number(startData.slice(8, 10));
+    const today = Number(date.getDate()) - Number(startData.slice(8, 10));
+    const percentage = today / whole;
 
-  const handleClose = () => {
-    setOpen(false);
-  };
+    if (percentage < 0) {
+      return 0;
+    }
+
+    return percentage * 100;
+  }
 
   return (
     <div className={classes.wrapper}>
@@ -34,7 +46,6 @@ export default function Milestone({ ctx, setCreate, milestone }: any) {
                     onClick={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
-                      setKanbanIssue(v.uuid);
                     }}
                   >
                     <div
@@ -51,6 +62,15 @@ export default function Milestone({ ctx, setCreate, milestone }: any) {
                           className={classes.icon}
                           onClick={(e) => {
                             e.stopPropagation();
+
+                            setModalData({
+                              uuid: v.uuid,
+                              title: v.title,
+                              content: v.content,
+                              startDate: v.startDate,
+                              endDate: v.endDate,
+                            });
+                            setModal(true);
                           }}
                         >
                           <Edit
@@ -94,7 +114,7 @@ export default function Milestone({ ctx, setCreate, milestone }: any) {
                       >
                         <div
                           style={{
-                            width: "30%",
+                            width: `${getPercentage(v.startDate, v.endDate)}%`,
                             height: "10px",
                             backgroundColor: "#4078b8",
                             borderRadius: "6px",
@@ -113,6 +133,15 @@ export default function Milestone({ ctx, setCreate, milestone }: any) {
               })}
           </div>
         </>
+      )}
+      {modal === true && (
+        <MakeMile
+          open={modal}
+          setOpen={setModal}
+          ws={ctx.ws.current}
+          modalData={modalData}
+          edit={true}
+        />
       )}
     </div>
   );

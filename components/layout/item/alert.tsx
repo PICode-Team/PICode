@@ -19,10 +19,10 @@ export default function AlertDialog(props: any) {
                   color: "#ffffff",
                   padding: "6px 14px",
                   backgroundColor: "#505965",
-                  margin: "0px -10px",
                   display: "flex",
                   fontSize: "12px",
                   justifyContent: "space-between",
+                  width: "100%",
                 }}
               >
                 <div
@@ -65,6 +65,7 @@ export default function AlertDialog(props: any) {
             );
           })}
       </div>
+      <div style={{ width: "100%", height: "20px" }}></div>
     </div>
   );
 }
