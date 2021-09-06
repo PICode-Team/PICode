@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import React, { useEffect, useRef, useState } from "react";
 import { messengerStyle } from "../../../styles/service/chat/messenger";
 import {

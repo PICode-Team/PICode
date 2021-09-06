@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { containerStyle } from "../../../styles/service/container/container";
 import * as d3 from "d3"
-import { Icon, IconButton } from "@material-ui/core";
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Icon, IconButton } from "@material-ui/core";
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import LockOpenOutlinedIcon from '@material-ui/icons/LockOpenOutlined';
 import AddOutlinedIcon from '@material-ui/icons/AddOutlined';
@@ -14,145 +14,106 @@ import SettingsBackupRestoreOutlinedIcon from '@material-ui/icons/SettingsBackup
 import PowerOffOutlinedIcon from '@material-ui/icons/PowerOffOutlined';
 import { DeleteForeverOutlined } from "@material-ui/icons";
 
-const tmpData: any = {
+let tmpData = {
     "container": [
+        {
+            "containerName": "testProject",
+            "image": "ubuntu",
+            "tag": "18.04",
+            "containerId": "00be311ecf163ede494dcda48e626d05588ef4f5f2ac72c4f12885a3a4fff34f",
+            "status": "running",
+            "bridgeInfo": { "bridge": "bridgeAlias" },
+            "containers": [],
+            "portInfo": {},
+            "ramUsage": "0.00%",
+            "parent": ["654e42dbc4b5a77948e5dfd6b1a045b63223c4c7fa5d69579d53be510d0b5c8d"]
+        },
         {
             "containerName": "testProject2",
             "image": "ubuntu",
             "tag": "latest",
-            "containerId": "f8f244355925bf9b43beeb2ec93a6b4d96f7e1752e04b448372573a92346ddef",
-            "status": "running",
-            "bridgeInfo": { "testBridge": "testAlias" },
-            "containers": [],
-            "portInfo": { "1111": 2222, "3333": 4444 },
-            "socketPort": 63428,
-            "ramUsage": "0.00%\u001b[H0.00%",
-            "parent": ["8c3f514d9dbd2216991d6b60c18bcbf524bd721c5a2d40140d72d39996db4f00"]
-        },
-        {
-            "containerName": "testProject4",
-            "image": "ubuntu",
-            "tag": "latest",
-            "containerId": "815e7d0b51a44897476e99edc5348a45c657dd9115c9d83220960cd943c1d813",
+            "containerId": "452051b103e48995962331a9682b98ed20ed043bab91ce22fd71f39cdbaa23ea",
             "status": "running",
             "bridgeInfo": { "bridge": "" },
             "containers": [],
-            "portInfo": { "1313": 1414 },
-            "socketPort": 62083,
-            "ramUsage": "0.00%\u001b[H0.00%",
-            "parent": ["70ecdf273ef360e4036390ff870c84db1115b8ffcb494597e9384e480afe5442"]
-        },
-        {
-            "containerName": "testProject",
-            "image": "ubuntu",
-            "tag": "latest",
-            "containerId": "1dd43d7d93d5acf7a7747a2cd946b01b66dadb9af263d0f001ffba36ee2ca8df",
-            "status": "exited",
-            "bridgeInfo": { "testBridge": "testAlias" },
-            "containers": ["testProject3"],
-            "portInfo": { "1111": 2222 },
-            "socketPort": 62321,
-            "ramUsage": "0.00%",
-            "parent": ["8c3f514d9dbd2216991d6b60c18bcbf524bd721c5a2d40140d72d39996db4f00"]
-        },
-        {
-            "containerName": "testProject6",
-            "image": "ubuntu",
-            "tag": "latest",
-            "containerId": "fbe9ed75526f1e62e8404f2a594287ab59865ec289990061a185e74e54d35973",
-            "status": "running",
-            "bridgeInfo": { "bridge": "" },
-            "containers": [],
-            "portInfo": { "12345": 54321, "22222": 33333 },
-            "socketPort": 62990,
-            "ramUsage": "0.00%",
-            "parent": ["70ecdf273ef360e4036390ff870c84db1115b8ffcb494597e9384e480afe5442"]
-        },
-        {
-            "containerName": "testProject5",
-            "image": "ubuntu",
-            "tag": "latest",
-            "containerId": "282d89de768d5772238b333dc5eb8f12d86adaa1b42c5de64c8b17d04708f7c4",
-            "status": "running",
-            "bridgeInfo": { "bridge": "" },
-            "containers": [],
-            "portInfo": { "12222": 12222, "13131": 13131 },
-            "socketPort": 61816,
-            "parent": ["70ecdf273ef360e4036390ff870c84db1115b8ffcb494597e9384e480afe5442"]
-        },
-        {
-            "containerName": "testProject3",
-            "image": "ubuntu",
-            "tag": "latest",
-            "containerId": "ab3b8c35a7eed628a03802787dd41b7558410f4195d00e912f291da0e6cd155b",
-            "status": "running",
-            "bridgeInfo": { "testBridge": "testAlias" },
-            "containers": ["testProject"],
-            "portInfo": { "1234": 4321 },
-            "socketPort": 61329,
-            "ramUsage": "0.00%",
-            "parent": ["8c3f514d9dbd2216991d6b60c18bcbf524bd721c5a2d40140d72d39996db4f00"]
+            "portInfo": { "1234": 1234 },
+            "containerIP": "172.17.0.3",
+            "ramUsage": "0.02%",
+            "parent": ["654e42dbc4b5a77948e5dfd6b1a045b63223c4c7fa5d69579d53be510d0b5c8d"]
         }
     ],
-    "port": [
-        {
-            "outBound": 1111,
-            "inBound": [2222, 2222],
-            "onContainer": "f8f244355925bf9b43beeb2ec93a6b4d96f7e1752e04b448372573a92346ddef",
-            "connectedContainers": ["1dd43d7d93d5acf7a7747a2cd946b01b66dadb9af263d0f001ffba36ee2ca8df"]
-        },
-        { "outBound": 3333, "inBound": [4444], "onContainer": "f8f244355925bf9b43beeb2ec93a6b4d96f7e1752e04b448372573a92346ddef", "connectedContainers": [] },
-        { "outBound": 1313, "inBound": [1414], "onContainer": "815e7d0b51a44897476e99edc5348a45c657dd9115c9d83220960cd943c1d813", "connectedContainers": [] },
-        { "outBound": 12345, "inBound": [54321], "onContainer": "fbe9ed75526f1e62e8404f2a594287ab59865ec289990061a185e74e54d35973", "connectedContainers": [] },
-        { "outBound": 22222, "inBound": [33333], "onContainer": "fbe9ed75526f1e62e8404f2a594287ab59865ec289990061a185e74e54d35973", "connectedContainers": [] },
-        { "outBound": 12222, "inBound": [12222], "onContainer": "282d89de768d5772238b333dc5eb8f12d86adaa1b42c5de64c8b17d04708f7c4", "connectedContainers": [] },
-        { "outBound": 13131, "inBound": [13131], "onContainer": "282d89de768d5772238b333dc5eb8f12d86adaa1b42c5de64c8b17d04708f7c4", "connectedContainers": [] },
-        { "outBound": 1234, "inBound": [4321], "onContainer": "ab3b8c35a7eed628a03802787dd41b7558410f4195d00e912f291da0e6cd155b", "connectedContainers": [] }
-    ],
+    "port": [{ "outBound": 1234, "inBound": [1234], "onContainer": "452051b103e48995962331a9682b98ed20ed043bab91ce22fd71f39cdbaa23ea", "connectedContainers": [] }],
     "network": [
-        { "name": "host", "networkId": "51451691d45e04223b4da5da2bfcf40557f1d78504b7f6881126809d91988651", "containers": [] },
-        { "name": "none", "networkId": "2d07c58758e07d3c84fc8e2df4269bd00432745492163ead657effba81742b98", "containers": [] },
         {
             "name": "bridge",
-            "networkId": "70ecdf273ef360e4036390ff870c84db1115b8ffcb494597e9384e480afe5442",
+            "networkId": "654e42dbc4b5a77948e5dfd6b1a045b63223c4c7fa5d69579d53be510d0b5c8d",
             "ip": "172.17.0.0/16",
-            "containers": [
-                "815e7d0b51a44897476e99edc5348a45c657dd9115c9d83220960cd943c1d813",
-                "fbe9ed75526f1e62e8404f2a594287ab59865ec289990061a185e74e54d35973",
-                "282d89de768d5772238b333dc5eb8f12d86adaa1b42c5de64c8b17d04708f7c4"
-            ]
+            "containers": ["00be311ecf163ede494dcda48e626d05588ef4f5f2ac72c4f12885a3a4fff34f", "452051b103e48995962331a9682b98ed20ed043bab91ce22fd71f39cdbaa23ea"]
         },
-        {
-            "name": "testBridge",
-            "networkId": "8c3f514d9dbd2216991d6b60c18bcbf524bd721c5a2d40140d72d39996db4f00",
-            "ip": "172.19.0.0/16",
-            "containers": [
-                "f8f244355925bf9b43beeb2ec93a6b4d96f7e1752e04b448372573a92346ddef",
-                "1dd43d7d93d5acf7a7747a2cd946b01b66dadb9af263d0f001ffba36ee2ca8df",
-                "ab3b8c35a7eed628a03802787dd41b7558410f4195d00e912f291da0e6cd155b"
-            ]
-        }
+        { "name": "host", "networkId": "51451691d45e04223b4da5da2bfcf40557f1d78504b7f6881126809d91988651", "containers": [] },
+        { "name": "none", "networkId": "2d07c58758e07d3c84fc8e2df4269bd00432745492163ead657effba81742b98", "containers": [] },
+        { "name": "testNetwork", "networkId": "3edf989cca3331f188d673cca6515a4b31a83a2f4aa8fb9d9392fc1596a8468e", "ip": "172.19.0.0/16", "containers": [] }
     ]
-} // 추후 fetch 로 변경
+}
 
 
 export default function Contatiner(props: any) {
     const classes = containerStyle();
     const [zoomLock, setZoomLock] = React.useState<boolean>(false);
-    const [mouseDown, setMouseDown] = React.useState();
-    const [mouseUp, setMouseUp] = React.useState();
-    const [dockerData, setDockerData] = React.useState();
+    const [mouseDown, setMouseDown] = React.useState<any>();
+    const [mouseUp, setMouseUp] = React.useState<any>();
+    const [dockerData, setDockerData] = React.useState<any>();
     const [openContext, setOpenContext] = React.useState(false);
     const [contextPosition, setContextPosition] = React.useState({
         x: 0, y: 0
     })
-    const [contextInformation, setContextInformation] = React.useState();
+    const [contextInformation, setContextInformation] = React.useState<any>();
+    const [modal, setModal] = React.useState<boolean>(false)
+    const [networkList, setNetworkList] = React.useState<any[]>([])
+    const dataConvertor: any = {
+        container: {
+            padding: 240,
+            r: 60,
+            y: 420,
+            name: "containerName",
+            id: "containerId",
+        },
+        port: {
+            padding: 200,
+            r: 50,
+            y: 820,
+            name: "outBound",
+            id: "outBound"
+        },
+        network: {
+            padding: 200,
+            r: 50,
+            y: 0,
+            name: "name",
+            id: "networkId"
+        }
+    }
+
+    const getNetworkList = async () => {
+        await fetch("http://localhost:8000/api/docker/network", {
+            method: "GET",
+            mode: "cors",
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                setNetworkList(res.networkList)
+            });
+    };
+
+    React.useEffect(() => {
+        getNetworkList();
+    }, [modal]);
 
     const getDockerData = async () => {
-        let data = await fetch(`http://localhost:8000/api/docker/network`, {
-            method: "GET"
-        }).then((res) => res.json())
-        setDockerData(data.networkList);
+        // let data = await fetch(`http://localhost:8000/api/docker/visualization`, {
+        //     method: "GET"
+        // }).then((res) => res.json())
+        setDockerData(tmpData);
     }
 
     useEffect(() => {
@@ -167,14 +128,23 @@ export default function Contatiner(props: any) {
         highlightOnNode();
         d3.selectAll("#checkCircle")
             .on("click", (e, d: any) => {
+                if (d.type === "port") return;
                 if (mouseDown === undefined) {
-                    setMouseDown(d.id)
+                    setMouseDown({ ...d, id: d[dataConvertor[d.type].id] })
                 } else {
-                    setMouseUp(d.id)
+                    if (mouseDown.id === d[dataConvertor[d.type].id]) {
+                        setMouseDown(undefined)
+                    } else {
+                        if (mouseDown.type === "network" && mouseUp.type === "network") return
+                        setMouseUp({ ...d, id: d[dataConvertor[d.type].id] })
+                    }
                 }
             })
             .attr("fill", (d: any) => {
-                if (mouseDown === d.id || mouseUp === d.id) {
+                if (mouseDown !== undefined && d[dataConvertor[d.type].id] === mouseDown.id) {
+                    return "black"
+                }
+                if (mouseUp !== undefined && d[dataConvertor[d.type].id] === mouseUp.id) {
                     return "black"
                 }
                 return "grey"
@@ -192,8 +162,55 @@ export default function Contatiner(props: any) {
         let container = d3.select("#containerView").select("g")
     }, [zoomLock])
 
+    const connectContainer = async (payload: any) => {
+        let data = await fetch(`http://localhost:8000/api/docker/visualization`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            mode: "cors",
+            body: JSON.stringify(payload)
+        }).then((res) => res.json())
+        if (data.code === 200) {
+            getDockerData();
+        }
+    }
+
     useEffect(() => {
         if (mouseDown !== undefined && mouseUp !== undefined) {
+            let payload;
+            if (mouseDown.type === "network" && mouseUp.type === "container") {
+                payload = {
+                    "containerId": `${mouseUp.containerId}`,
+                    "dockerInfo": {
+                        "bridgeName": `${mouseDown.name}`,
+                        "bridgeAlias": "testBridge",
+                        "connect": true
+                    }
+                }
+            } else if (mouseDown.type === "container" && mouseUp.type === "network") {
+                payload = {
+                    "containerId": `${mouseDown.containerId}`,
+                    "dockerInfo": {
+                        "bridgeName": `${mouseUp.name}`,
+                        "bridgeAlias": "testBridge",
+                        "connect": true
+                    }
+                }
+            } else {
+                payload = {
+                    "containerId": mouseDown.containerId,
+                    "dockerInfo":
+                    {
+                        "bridgeName": mouseDown.containerId,
+                        "bridgeAlias": "TestConnectContainer",
+                        "linkConatiner": mouseUp.containerId,
+                        "connect": true
+                    }
+                }
+
+            }
+            connectContainer(payload);
             setMouseDown(undefined)
             setMouseUp(undefined)
             //선 연결 코드
@@ -201,19 +218,23 @@ export default function Contatiner(props: any) {
         else {
             d3.selectAll("#checkCircle")
                 .on("click", (e, d: any) => {
+                    if (d.type === "port") return;
                     if (mouseDown === undefined) {
-                        setMouseDown(d.id)
+                        setMouseDown({ ...d, id: d[dataConvertor[d.type].id] })
                     } else {
-                        console.log(d, mouseDown)
-                        if (mouseDown === d.id) {
+                        if (mouseDown.id === d[dataConvertor[d.type].id]) {
                             setMouseDown(undefined)
                         } else {
-                            setMouseUp(d.id)
+                            if (mouseDown.type === "network" && mouseUp.type === "network") return
+                            setMouseUp({ ...d, id: d[dataConvertor[d.type].id] })
                         }
                     }
                 })
                 .attr("fill", (d: any) => {
-                    if (mouseDown === d.id || mouseUp === d.id) {
+                    if (mouseDown !== undefined && d[dataConvertor[d.type].id] === mouseDown.id) {
+                        return "black"
+                    }
+                    if (mouseUp !== undefined && d[dataConvertor[d.type].id] === mouseUp.id) {
                         return "black"
                     }
                     return "grey"
@@ -240,31 +261,6 @@ export default function Contatiner(props: any) {
             return result === undefined ? "/images/serverImage/computer.svg" : result
         }
     }
-
-    const dataConvertor: any = {
-        container: {
-            padding: 240,
-            r: 60,
-            y: 420,
-            name: "containerName",
-            id: "containerId",
-        },
-        port: {
-            padding: 200,
-            r: 50,
-            y: 820,
-            name: "outBound",
-            id: "outBound"
-        },
-        network: {
-            padding: 200,
-            r: 50,
-            y: 0,
-            name: "name",
-            id: "networkId"
-        }
-    }
-
     let zoom = d3.zoom().scaleExtent([0.25, 10])
         .on('zoom', handleZoom)
 
@@ -300,7 +296,7 @@ export default function Contatiner(props: any) {
             .attr('markerHeight', 10)
             .attr('orient', 'auto-start-reverse')
             .append('path')
-            .attr('d', d3.line()([[0, 0], [0, 10], [10, 5]]))
+            .attr('d', (d3 as any).line()([[0, 0], [0, 10], [10, 5]]))
             .attr('stroke', '#fff')
             .attr("fill", "#fff");
 
@@ -347,10 +343,11 @@ export default function Contatiner(props: any) {
                             }
                         }
 
-                        d3.selectAll("line").filter((tmp: any, i: any) => {
+                        d3.selectAll("line").filter((tmp: any) => {
                             if (tmp.source === String(d[dataConvertor[type].id]) || tmp.target === String(d[dataConvertor[type].id])) {
                                 return true;
                             }
+                            return false;
                         }).attr("opacity", 1)
                     })
                     .on("contextmenu", (e, d) => {
@@ -378,6 +375,7 @@ export default function Contatiner(props: any) {
                     .attr("y", () => {
                         return y - r / 2
                     })
+
                 conCircle.append("circle")
                     .attr("id", "nodeCircle")
                     .attr("r", r)
@@ -399,7 +397,7 @@ export default function Contatiner(props: any) {
 
                 conCircle.append("circle")
                     .attr("id", `checkCircle`)
-                    .datum({ id: node[dataConvertor[type].id] })
+                    .datum({ ...node, type: type })
                     .attr("r", 5)
                     .attr("cx", x)
                     .attr("cy", () => {
@@ -410,7 +408,7 @@ export default function Contatiner(props: any) {
 
                 conCircle.append("circle")
                     .attr("id", `checkCircle`)
-                    .datum({ id: node[dataConvertor[type].id] })
+                    .datum({ ...node, type: type })
                     .attr("r", 5)
                     .attr("cx", x)
                     .attr("cy", () => {
@@ -434,7 +432,7 @@ export default function Contatiner(props: any) {
             .attr('markerHeight', 10)
             .attr('orient', 'auto-start-reverse')
             .append('path')
-            .attr('d', d3.line()([[0, 0], [0, 10], [10, 5]]))
+            .attr('d', (d3 as any).line()([[0, 0], [0, 10], [10, 5]]))
             .attr('stroke', color !== undefined ? color : "#fff")
             .attr("fill", color !== undefined ? color : "#fff");
     }
@@ -498,11 +496,11 @@ export default function Contatiner(props: any) {
                         .attr("id", `${port}:${node.containerId}`)
                         .style("stroke", "#fff")
                         .style("stroke-width", 1.5)
-                        .attr("x1", startPoint.getBoundingClientRect().x - 30)
-                        .attr("y1", startPoint.getBoundingClientRect().y - 120)
-                        .attr("x2", endPoint.getBoundingClientRect().x - 30)
+                        .attr("x1", (startPoint as any).getBoundingClientRect().x - 30)
+                        .attr("y1", (startPoint as any).getBoundingClientRect().y - 120)
+                        .attr("x2", (endPoint as any).getBoundingClientRect().x - 30)
                         .style("stroke-dasharray", ("10, 4"))
-                        .attr("y2", endPoint.getBoundingClientRect().y + 40)
+                        .attr("y2", (endPoint as any).getBoundingClientRect().y + 40)
                         .attr("marker-end", "url(#arrow)").attr("marker-start", "url(#arrow)");
                 }
             }
@@ -524,10 +522,10 @@ export default function Contatiner(props: any) {
                             .style("stroke", "#fff")
                             .style("stroke-dasharray", ("10, 4"))
                             .style("stroke-width", 1)
-                            .attr("x1", startPoint.getBoundingClientRect().x - 30)
-                            .attr("y1", startPoint.getBoundingClientRect().y + 20)
-                            .attr("x2", endPoint.getBoundingClientRect().x - 30)
-                            .attr("y2", endPoint.getBoundingClientRect().y - 120)
+                            .attr("x1", (startPoint as any).getBoundingClientRect().x - 30)
+                            .attr("y1", (startPoint as any).getBoundingClientRect().y + 20)
+                            .attr("x2", (endPoint as any).getBoundingClientRect().x - 30)
+                            .attr("y2", (endPoint as any).getBoundingClientRect().y - 120)
                             .attr("marker-end", "url(#arrow)")
                             .attr("marker-start", "url(#arrow)");
                     }
@@ -549,7 +547,7 @@ export default function Contatiner(props: any) {
                     if (startPoint !== null && endPoint !== null) {
                         makeLine.push({ source: tmpNode.containerId, target: node.containerId })
                         let lineGenrator = d3.line().curve(d3.curveNatural)
-                        const points = [[startPoint.getBoundingClientRect().x - 175, startPoint.getBoundingClientRect().y], [endPoint.getBoundingClientRect().x - 200, endPoint.getBoundingClientRect().y],];
+                        const points: any = [[(startPoint as any).getBoundingClientRect().x - 175, (startPoint as any).getBoundingClientRect().y], [(endPoint as any).getBoundingClientRect().x - 200, (endPoint as any).getBoundingClientRect().y],];
                         let pathData = lineGenrator(points)
                         d3.select("#containerView")
                             .select("g")
@@ -560,10 +558,10 @@ export default function Contatiner(props: any) {
                             .style("stroke", "#fff")
                             .style("stroke-dasharray", ("10, 4"))
                             .style("stroke-width", 1)
-                            .attr("x1", startPoint.getBoundingClientRect().x - 100)
-                            .attr("y1", startPoint.getBoundingClientRect().y - 40)
-                            .attr("x2", endPoint.getBoundingClientRect().x + 40)
-                            .attr("y2", endPoint.getBoundingClientRect().y - 65)
+                            .attr("x1", (startPoint as any).getBoundingClientRect().x - 100)
+                            .attr("y1", (startPoint as any).getBoundingClientRect().y - 40)
+                            .attr("x2", (endPoint as any).getBoundingClientRect().x + 40)
+                            .attr("y2", (endPoint as any).getBoundingClientRect().y - 65)
                             .attr("marker-end", "url(#arrow)")
                             .attr("marker-start", "url(#arrow)");
                     }
@@ -579,7 +577,7 @@ export default function Contatiner(props: any) {
                 .duration(1000)
                 .ease(d3.easeLinear)
                 .styleTween("stroke-dashoffset", () => {
-                    return d3.interpolate(0, 14);
+                    return d3.interpolate(0, 14) as any;
                 })
                 .on("end", animate);
 
@@ -658,36 +656,195 @@ export default function Contatiner(props: any) {
                 </div>
             </div>
         </div>
-        {(openContext && contextInformation !== undefined) && < div
+        {(openContext && contextInformation !== undefined && contextInformation.type !== "port") && < div
             className={classes.context}
             onBlur={() => { setOpenContext(false) }}
-            style={{ top: contextPosition.y, left: contextPosition.x }}>
+            style={{
+                top: contextPosition.y, left: contextPosition.x,
+            }}>
             <div style={{ width: "100%", fontSize: "18px", lineHeight: "30px", height: "30px", borderBottom: "1px solid #fff" }}>
                 {contextInformation[dataConvertor[contextInformation.type].name]}
             </div>
-            <div style={{ height: "30px", padding: "0 10px", fontSize: "15px", lineHeight: "30px" }}>
-                Power Setting
-            </div>
-            <div style={{ height: "45px", width: "100%", lineHeight: "45px", display: "flex", borderBottom: "1px solid #fff" }}>
-                <IconButton>
-                    <PowerOutlinedIcon className={classes.icon} />
-                </IconButton>
-                <IconButton>
-                    <PowerOffOutlinedIcon className={classes.icon} />
-                </IconButton>
-                <IconButton>
-                    <SettingsBackupRestoreOutlinedIcon className={classes.icon} />
-                </IconButton>
-            </div>
-            <div style={{ height: "45px", width: "100%", padding: "0 10px", lineHeight: "45px", display: "flex", justifyContent: "space-between" }}>
+            {contextInformation.type === "container" && <div style={{ display: "flex", height: "45px", padding: "0 10px", fontSize: "15px", lineHeight: "45px", justifyContent: "space-around" }}>
+                <div style={{ height: "45px", fontSize: "15px", lineHeight: "45px", display: "inline-block" }}>
+                    Power
+                </div>
+                <div style={{ height: "45px", width: "100%", lineHeight: "45px", display: "flex", justifyContent: "flex-end" }}>
+                    {contextInformation.status === "exited" &&
+                        <IconButton style={{ padding: 0 }} onClick={async () => {
+                            let payload = {
+                                containerId: contextInformation.containerId,
+                                dockerCommand: "start"
+                            }
+                            let data = await fetch(`http://localhost:8000/api/docker`, {
+                                method: "POST",
+                                mode: "cors",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify(payload),
+                            }).then((res) => res.json());
+                            if (data.code === 200) {
+                                getDockerData()
+                            }
+                        }}>
+                            <PowerOutlinedIcon className={classes.icon} />
+                        </IconButton>}
+                    {contextInformation.status === "running" &&
+                        <IconButton style={{ padding: 0 }} onClick={async () => {
+                            let payload = {
+                                containerId: contextInformation.containerId,
+                                dockerCommand: "stop"
+                            }
+                            let data = await fetch(`http://localhost:8000/api/docker`, {
+                                method: "POST",
+                                mode: "cors",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify(payload),
+                            }).then((res) => res.json());
+                            if (data.code === 200) {
+                                getDockerData()
+                            }
+                        }}>
+                            <PowerOffOutlinedIcon className={classes.icon} />
+                        </IconButton>
+                    }
+                    <IconButton style={{ padding: 0 }} onClick={async () => {
+                        let payload = {
+                            containerId: contextInformation.containerId,
+                            dockerCommand: "restart"
+                        }
+                        let data = await fetch(`http://localhost:8000/api/docker`, {
+                            method: "POST",
+                            mode: "cors",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(payload),
+                        }).then((res) => res.json());
+                        if (data.code === 200) {
+                            getDockerData()
+                        }
+                    }}>
+                        <SettingsBackupRestoreOutlinedIcon className={classes.icon} />
+                    </IconButton>
+                </div>
+            </div>}
+            {contextInformation.type === "network" && <div style={{ height: "45px", width: "100%", padding: "0 10px", lineHeight: "45px", display: "flex", justifyContent: "space-between" }}>
                 <div style={{ height: "45px", fontSize: "15px", lineHeight: "45px" }}>
                     Delete
                 </div>
-                <IconButton>
+                <IconButton onClick={async () => {
+                    let data = await fetch(`http://localhost:8000/api/docker/network?networkName=${contextInformation.name}`, {
+                        method: "DELETE",
+                        mode: "cors",
+                    }).then((res) => res.json());
+                    if (data.code === 200) {
+                        getDockerData()
+                    }
+                }}>
                     <DeleteForeverOutlined className={classes.icon} />
                 </IconButton>
             </div>
+            }
         </div>
         }
+        <button onClick={() => {
+            setModal(true)
+        }}> test </button>
+        <div>
+            <Dialog
+                className={classes.overlay}
+                open={modal}
+                onClose={() => setModal(false)}
+                aria-labelledby="form-dialog-title"
+            >
+                <DialogTitle
+                    style={{
+                        backgroundColor: "#2c3239",
+                        color: "#ffffff",
+                        padding: "30px 30px 0px 30px",
+                        borderTopLeftRadius: "8px",
+                        borderTopRightRadius: "8px",
+                    }}
+                    id="form-dialog-title"
+                >
+                    Connect Network
+                </DialogTitle>
+                <DialogContent
+                    style={{
+                        backgroundColor: "#2c3239",
+                        color: "#ffffff",
+                        padding: "20px 30px",
+                        paddingTop: "10px",
+                    }}
+                >
+                    <DialogContentText
+                        style={{ color: "#ffffff", paddingBottom: "20px" }}
+                    >
+                        To subscribe to this website, please enter your email address here.
+                        We will send updates occasionally.
+                    </DialogContentText>
+                    <div
+                        className={classes.select}
+                        style={{ marginBottom: "10px", display: "flex" }}
+                    >
+                        <span
+                            style={{ width: "105px", display: "flex", alignItems: "center" }}
+                        >
+                            network bridge
+                        </span>
+                        <select
+                            style={{
+                                flex: 1,
+                                borderRadius: "2px",
+                                color: "#ffffff",
+                                background: "#3b434c",
+                                padding: "4px 8px",
+                                width: "100%",
+                                height: "32px",
+                                outline: "none",
+                                border: "none",
+                            }}
+                        >
+                            <option value="default">default</option>
+                            {networkList.map((v, i) => (
+                                <option key={`network-option-${i}`} value={v}>
+                                    {v}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </DialogContent>
+                <DialogActions
+                    style={{
+                        backgroundColor: "#2c3239",
+                        color: "#ffffff",
+                        padding: "0px 30px 30px 30px",
+                        borderBottomLeftRadius: "8px",
+                        borderBottomRightRadius: "8px",
+                    }}
+                >
+                    <div style={{ display: "flex" }}>
+                        <button
+                            className={classes.footerButton}
+                            onClick={() => setModal(false)}
+                        >
+                            CANCEL
+                        </button>
+                        <button
+                            className={classes.footerButton}
+                            onClick={() => {
+                                setModal(false);
+                            }}
+                        >
+                            SUBMIT
+                        </button>
+                    </div>
+                </DialogActions>
+            </Dialog>
+        </div>
     </div >
 }
