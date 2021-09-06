@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from "react";
 import {
   chatStyle,
@@ -382,11 +383,10 @@ export default function Chat(ctx: any) {
           style={{
             backgroundImage:
               userList.find((v) => v.userId === user)?.userThumbnail ===
-              undefined
+                undefined
                 ? "none"
-                : ` url('http://localhost:8000/api/temp/${
-                    userList.find((v) => v.userId === user)?.userThumbnail
-                  }')`,
+                : ` url('http://localhost:8000/api/temp/${userList.find((v) => v.userId === user)?.userThumbnail
+                }')`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
@@ -575,7 +575,7 @@ export default function Chat(ctx: any) {
         i === 0 ||
         (messages[i].time !== undefined &&
           messages[i - 1].time.split(" ")[0] !==
-            messages[i].time.split(" ")[0]);
+          messages[i].time.split(" ")[0]);
 
       if (!isThread && dayCheck === true) {
         value.push(<DayBoundary text={messages[i].time.split(" ")[0]} />);
@@ -764,10 +764,9 @@ export default function Chat(ctx: any) {
                       userList.find((user) => user.userId === v.chatName)
                         ?.userThumbnail === undefined
                         ? "url('/images/picode-7.svg')"
-                        : `url('http://localhost:8000/api/temp/${
-                            userList.find((user) => user.userId === v.chatName)
-                              ?.userThumbnail
-                          }')`,
+                        : `url('http://localhost:8000/api/temp/${userList.find((user) => user.userId === v.chatName)
+                          ?.userThumbnail
+                        }')`,
                     backgroundSize:
                       userList.find((user) => user.userId === v.chatName)
                         ?.userThumbnail === undefined

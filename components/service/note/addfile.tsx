@@ -32,7 +32,7 @@ export default function AddInput(props: IAddInput) {
                 props.setAddFile(false)
                 if (e.target.value === "") return;
                 if (props.contextPosition !== undefined) {
-                    if (props.fileView?.find((v) => v.path === `${props.contextPosition.path}/${e.target.value}`)) {
+                    if (props.fileView?.find((v) => v.path === `${props.contextPosition!.path}/${e.target.value}`)) {
                         return;
                     }
                 } else {
@@ -80,7 +80,7 @@ export default function AddInput(props: IAddInput) {
                     props.setAddFile(false);
                     if (e.target.value === "") return;
                     if (props.contextPosition !== undefined) {
-                        if (props.fileView?.find((v) => v.path === `${props.contextPosition.path}/${e.target.value}`)) {
+                        if (props.fileView?.find((v) => v.path === `${props.contextPosition!.path}/${e.target.value}`)) {
                             return;
                         }
                     } else {

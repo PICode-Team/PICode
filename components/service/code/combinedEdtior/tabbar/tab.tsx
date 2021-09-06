@@ -33,7 +33,7 @@ export function Tab({
   focus: boolean;
   codeId: number;
 }): JSX.Element {
-  const classes = tabStyle();
+  const classes: any = tabStyle();
   const [lastPath, setLastPath] = useState<string>("");
   const { code, setCode } = useCode();
   const { drag, setDragInfo, deleteDragInfo } = useDrag();
@@ -178,7 +178,7 @@ export function Tab({
       tabCount:
         (drag.tabId === -1 &&
           checkTabDuplicating(code.root, codeId, drag.path)) ||
-        (drag.tabId !== -1 && tabOrderStack.includes(existingTabId))
+          (drag.tabId !== -1 && tabOrderStack.includes(existingTabId))
           ? code.tabCount
           : code.tabCount + 1,
     });
@@ -187,9 +187,8 @@ export function Tab({
   return (
     <div
       id={`tab-${tabId}`}
-      className={`${classes.tab} ${
-        tabId === tabOrderStack[0] ? classes.active : ""
-      }`}
+      className={`${classes.tab} ${tabId === tabOrderStack[0] ? classes.active : ""
+        }`}
       onClick={handleTabActive}
       draggable={true}
       onDragStart={handleDragStartTab}
