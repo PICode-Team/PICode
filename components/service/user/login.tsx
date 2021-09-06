@@ -1,4 +1,7 @@
 /* eslint-disable @next/next/no-html-link-for-pages */
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable jsx-a11y/alt-text */
 import { IconButton } from "@material-ui/core";
 import React from "react"
 import Brightness7Icon from '@material-ui/icons/Brightness7';
@@ -46,35 +49,38 @@ export default function Login() {
                 </IconButton>}
             </div>
             <div className={classes.loginForm}>
-                <div className={classes.loginImage}>
-                    <AccountCircleRoundedIcon style={{ width: "60%", height: "100%", minWidth: "140px" }} />
-                </div>
-
-                <div className={classes.inputForm}>
-                    <div className={classes.subject}>
-                        <span>
-                            Login
-                        </span>
+                <div style={{ width: "100%", height: "449px", textAlign: "center" }}>
+                    <img src={"http://localhost:8000/images/picode-7.svg"} width={"110px"} draggable={false} />
+                    <div className={classes.titleText}>
+                        PICODE
                     </div>
-                    <div className={classes.inputBox}>
-                        <CustomTextField label="Email" type="email" onChange={(e: any) => setUserId(e.target.value)} />
-                        <CustomTextField label="Password" type="password" onChange={(e: any) => setPasswd(e.target.value)} onKeyPress={(e: any) => {
-                            if (e.key === "Enter") {
+                    <div style={{ marginTop: "50px" }}>
+                        <CustomTextField
+                            label="ID"
+                            onChange={(e: any) => setUserId(e.target.value)} />
+                        <CustomTextField
+                            label="PW"
+                            type="password"
+                            onChange={(e: any) => setPasswd(e.target.value)}
+                            onKeyPress={(e: any) => {
+                                if (e.key === "Enter") {
+                                    submitLogin();
+                                }
+                            }}
+                        />
+                        <div
+                            className={classes.button}
+                            style={{ marginTop: "40px" }}
+                            onClick={() => {
+                                if (userId === "") return;
+                                if (passwd === "") return;
                                 submitLogin();
-
-                            }
-                        }} />
-                    </div>
-                    <div className={classes.buttonBox}>
-                        <CustomButton text="login" onClick={() => {
-                            if (userId === "") return;
-                            if (passwd === "") return;
-                            submitLogin();
-                        }} />
-                        <a href="#">Forgot Username / Password?</a>
-                    </div>
-                    <div className={classes.buttonBox}>
-                        <a href="/signup">Create Your Account&nbsp;&nbsp;→</a>
+                            }}>
+                            Login
+                        </div>
+                        <div className={classes.signUpbutton} style={{ marginTop: "20px" }}>
+                            If you don't have a account, <a href="/signup" style={{ color: "#609FF3" }}>Sign up</a>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -57,15 +57,16 @@ export default function RecentWork() {
             </div>
         </div>];
         for (let i of projectData) {
-            tmpContent.push(<div key={"addProject"} style={{ padding: "20px", width: col + "px", height: "200px", display: "inline-block" }}>
-                <div className={classes.carouselContent}>
-                    <div style={{ textAlign: "center" }}>
-                        <span className={classes.tableContent}>{i.projectDescription}</span>
-                        <span className={classes.tableContent} >{i.projectName}</span>
-                        <span className={classes.tableContent} >{i.projectCreator}</span>
+            tmpContent.push(
+                <div key={"addProject"} style={{ padding: "20px", width: col + "px", height: "200px", display: "inline-block" }}>
+                    <div className={classes.carouselContent}>
+                        <div style={{ textAlign: "center" }}>
+                            <span className={classes.tableContent}>{i.projectDescription}</span>
+                            <span className={classes.tableContent} >{i.projectName}</span>
+                            <span className={classes.tableContent} >{i.projectCreator}</span>
+                        </div>
                     </div>
-                </div>
-            </div>)
+                </div>)
         }
         return tmpContent;
     }
@@ -111,100 +112,77 @@ export default function RecentWork() {
 
             tmpContent.push(
                 <div style={{ padding: "0px 20px", height: "100%" }}>
-                    <div style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center", borderRadius: "12px" }} className={classes.carouselContent}>
-                        <div style={{ padding: "30px" }}>
-                            <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                <div style={{ cursor: "pointer" }} onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    window.location.href = `/manage?projectName=${i.projectName}`
-                                }}>
-                                    To Issue
-                                </div>
-                                <div style={{ cursor: "pointer" }} onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    window.location.href = `/code?projectName=${i.projectName}`
-                                }}>
-                                    To Cord
-                                </div>
+                    <div className={classes.carouselContent}>
+                        <div style={{ width: "100%", height: "100%" }}>
+                            <div className={classes.projectName}>
+                                {i.projectName}
                             </div>
-                            {i.projectThumbnail === undefined ?
-                                <img alt="logo" style={{ maxWidth: "128px", paddingBottom: "20px", maxHeight: "128px" }} src={`/images/picode-7.svg`} />
-                                : <img alt="logo" style={{ maxWidth: "128px", paddingBottom: "20px", maxHeight: "128px" }} src={`/api/temp/${i.projectThumbnail}`} />
-                            }
-                            <div style={{ display: "block" }}>
-                                <span className={classes.tableContent}>Project Name : </span>
-                                <span className={classes.tableContent}>{i.projectName}</span>
-                            </div>
-                            <div style={{ display: "block" }}>
-                                <span className={classes.tableContent}>Project Description : </span>
-                                <span className={classes.tableContent}>{i.projectDescription}</span>
-                            </div>
-                            <div style={{ display: "block" }}>
-                                <span className={classes.tableContent}>Project Creator : </span>
-                                <span className={classes.tableContent}>{i.projectCreator}</span>
-                            </div>
-                            <div style={{ display: "block" }}>
-                                <span className={classes.tableContent}>Project Participants : </span>
-                                <span className={classes.tableContent}>{participantsInfo ?? "No one"}</span>
-                            </div>
-                            <IconButton className={classes.carouselButton}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    window.location.href = `/project/edit?projectName=${i.projectName}`
-                                }}
-                            >
-                                <EditIcon />
-                            </IconButton>
-                            <IconButton className={classes.carouselButton} onClick={async (e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                let result = await Swal.fire({
-                                    title: "Delete Project",
-                                    text: `Are you sure delete ${i.projectName} Project?`,
-                                    icon: 'warning',
-                                    heightAuto: false,
-                                    showCancelButton: true,
-                                    confirmButtonText: 'Yes',
-                                    cancelButtonText: 'No'
-                                })
-                                if (result.isConfirmed) {
-                                    let resultData = await fetch(`/api/project?projectName=${i.projectName}`, {
-                                        method: "DELETE",
-                                        mode: "cors",
-                                        credentials: 'same-origin',
-                                        headers: {
-                                            'Content-Type': 'application/json'
-                                        },
-                                    }).then((res) => res.json())
-
-                                    if (resultData.code / 100 === 2) {
-                                        Swal.fire({
-                                            title: "SUCCESS",
-                                            text: `DELETE ${i.projectName}`,
-                                            icon: 'success',
-                                            heightAuto: false,
-                                        }).then(() => {
-                                            window.location.reload();
-                                        })
-                                    } else {
-                                        Swal.fire({
-                                            title: "ERROR",
-                                            html: `
-                                                ERROR in DELETE ${i.projectName}
-                                                <br />
-                                                <span>${resultType[resultData.code]}</span>
-                                            `,
-                                            icon: 'error',
-                                            heightAuto: false,
-                                        })
-                                    }
-                                }
+                            <div className={classes.imageContent} style={{
+                                top: "20%",
                             }}>
-                                <DeleteIcon />
-                            </IconButton>
+                                {i.projectThumbnail === undefined ?
+                                    <img alt="logo" style={{ maxWidth: "80px", maxHeight: "80px" }} src={`/images/picode-7.svg`} />
+                                    : <img alt="logo" style={{ maxWidth: "80px", maxHeight: "80px" }} src={`/api/temp/${i.projectThumbnail}`} />
+                                }
+                            </div>
+                            <div style={{ width: "100%", height: "35%" }}>
+                            </div>
+                            <div className={classes.textContent} id="textcontent">
+                                <div style={{ width: "100%", padding: "0 25%", height: "calc(100% - 56px)" }}>
+                                    <div style={{ width: "100%", height: "25%", display: "flex", textAlign: "left" }}>
+                                        <div style={{ width: "40%", fontSize: "16px" }}>
+                                            Author
+                                        </div>
+                                        <div style={{ width: "60%", fontSize: "14px" }}>
+                                            {participantsInfo ?? "No one"}
+                                        </div>
+                                    </div>
+                                    <div style={{ width: "100%", height: "25%", display: "flex", textAlign: "left" }}>
+                                        <div style={{ width: "40%", fontSize: "16px" }}>
+                                            Creator
+                                        </div>
+                                        <div style={{ width: "60%", fontSize: "14px" }}>
+                                            {i.projectCreator}
+                                        </div>
+                                    </div>
+                                    <div style={{ width: "100%", height: "25%", display: "flex", textAlign: "left" }}>
+                                        <div style={{ width: "40%", fontSize: "16px" }}>
+                                            Create time
+                                        </div>
+                                        <div style={{ width: "60%", fontSize: "14px" }}>
+                                            2021-08-28
+                                        </div>
+                                    </div>
+                                    <div style={{ width: "100%", height: "25%", display: "flex", textAlign: "left" }}>
+                                        <div style={{ width: "40%", fontSize: "16px" }}>
+                                            Project Description
+                                        </div>
+                                        <div style={{ width: "60%", fontSize: "14px" }}>
+                                            {i.projectDescription}
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div style={{ width: "100%", padding: "0 100px", paddingBottom: "16px", height: "56px" }}>
+                                    <div className={classes.buttonGroup}>
+                                        <div
+                                            className={classes.button}
+                                            onClick={() => {
+                                                window.location.href = `/code?projectName=${i.projectName}`
+                                            }}>
+                                            To Code
+                                        </div>
+                                        <div
+                                            className={classes.button}
+                                            onClick={() => {
+                                                window.location.href = `/manage?projectName=${i.projectName}`
+                                            }}>
+                                            To Issue
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -242,7 +220,6 @@ export default function RecentWork() {
                     <Grid item>Slider</Grid>
                 </Grid>
             </div>
-
             <div className={classes.view} id="view">
                 {state && <>
                     {openProject && <div className={classes.menuDialog}>
@@ -279,7 +256,7 @@ export default function RecentWork() {
                         showStatus={false}
                         showThumbs={false}
                         showIndicators={false}
-                        centerSlidePercentage={60}
+                        centerSlidePercentage={50}
                         centerMode={true}
                         autoPlay={false}
                         dynamicHeight={true}

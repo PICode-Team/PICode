@@ -22,6 +22,7 @@ export const TopbarStyle = makeStyles((theme: IThemeStyle) =>
         themeButton: {
             lineHeight: "50px",
             float: "right",
+            position: "relative",
             display: "inline-block",
             color: theme.font.high.color,
         },
