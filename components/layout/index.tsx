@@ -30,8 +30,8 @@ export function Layout(ctx: any) {
     React.useState<{ loginId: string; workInfo: ISocket }[]>();
   const [pageName, setPageName] = useState({
     name: "",
-    icon: undefined
-  })
+    icon: undefined,
+  });
   const [alertData, setAlertData] = React.useState();
 
   if (typeof window !== "undefined") {
@@ -59,30 +59,37 @@ export function Layout(ctx: any) {
       }
     };
 
-    ws.current.onmessage = (msg: any) => {
+    ws.current.addEventListener("message", (msg: any) => {
       let loginUserData = JSON.parse(msg.data);
 
       if (loginUserData.type === "getWorkingPath") {
         setLoginUser(loginUserData.data);
       }
-    };
+    });
   };
 
   React.useEffect(() => {
     getLoginUserData();
-    console.log(route)
     for (let i in pageData) {
       if (pageData[i].url === route.route) {
         setPageName({
-          name: i,
+          name: pageData[i].title,
           icon: pageData[i].icon
         })
       } else {
         if (pageData[i].subUrl !== undefined && pageData[i].subUrl.some((v: any) => v === route.route)) {
-          setPageName({
-            name: i,
-            icon: pageData[i].icon
-          })
+          if (pageData[i].children !== undefined) {
+            let realTile = pageData[i].children.find((v1: any) => v1.url === route.route || v1.subUrl.some((v2: any) => v2 === route.route))
+            setPageName({
+              name: realTile.title,
+              icon: realTile.icon
+            })
+          } else {
+            setPageName({
+              name: pageData[i].title,
+              icon: pageData[i].icon
+            })
+          }
         }
       }
     }

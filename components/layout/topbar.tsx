@@ -8,9 +8,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { toDark, toWhite } from "../../modules/theme";
 import { TopbarStyle } from "../../styles/layout/topbar";
 import AccountCircleRoundedIcon from "@material-ui/icons/AccountCircleRounded";
-import NotificationsIcon from '@material-ui/icons/Notifications';
+import NotificationsIcon from "@material-ui/icons/Notifications";
 import UserInfo from "./item/tooltip";
-import CreateIcon from '@material-ui/icons/Create';
+import CreateIcon from "@material-ui/icons/Create";
 import { useEffect } from "react";
 import { ISocket } from ".";
 import AlertDialog from "./item/alert";
@@ -18,6 +18,7 @@ import AlertDialog from "./item/alert";
 interface IUserWorkInfo {
   userId: string;
   workInfo: ISocket;
+  userThumbnail: string;
 }
 
 export function Topbar(ctx: any) {
@@ -26,13 +27,14 @@ export function Topbar(ctx: any) {
   const classes = TopbarStyle();
   const [open, setOpen] = React.useState<boolean>(false);
   const [openAlert, setOpenAlert] = React.useState<boolean>(false);
-  const [alarmData, setAlarmData] = React.useState();
+  const [alarmData, setAlarmData] = React.useState<any[]>([]);
   const [data, setData] = React.useState<{
     userId: string;
     userName: string;
   }>({ userId: "", userName: "" });
-
+  const [userList, setUserList] = React.useState<any[]>([]);
   const [overData, setOverData] = React.useState<IUserWorkInfo[]>();
+  const [toastData, setToastData] = React.useState<any[]>([]);
 
   const getUserData = async () => {
     let data = await fetch(`http://localhost:8000/api/user`, {
@@ -43,49 +45,79 @@ export function Topbar(ctx: any) {
       },
     }).then((res) => res.json());
     setData(data.user);
-    console.log(data.user)
+  };
+
+  const getParticipantList = async () => {
+    await fetch(`http://localhost:8000/api/userList`, {
+      method: "GET",
+      mode: "cors",
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.code === 200) {
+          setUserList(res.user);
+        }
+      });
   };
 
   useEffect(() => {
-    if (openAlert && alarmData !== undefined) {
-      for (let i of alarmData ?? []) {
-        let node: any = i;
-        if (ctx.ws !== null && ctx.ws.current !== null && ctx.ws.current!.readyState === WebSocket.OPEN && !node.checkAlarm) {
-          ctx.ws.current.send(JSON.stringify({
-            category: "alarm",
-            type: "checkAlarm",
-            data: {
-              alarmId: node.alarmId,
-              alarmRoom: node.alarmRoom
-            }
-          }))
-        }
-      }
-    }
-  }, [ctx, openAlert])
+    getParticipantList();
+  }, []);
 
   useEffect(() => {
     getUserData();
-    if (ctx.ws !== null && ctx.ws.current !== null && ctx.ws.current!.readyState === WebSocket.OPEN) {
+  }, []);
+
+  useEffect(() => {
+    if (
+      ctx.ws !== null &&
+      ctx.ws.current !== null &&
+      ctx.ws.current!.readyState === WebSocket.OPEN
+    ) {
       ctx.ws.current.addEventListener("message", (msg: any) => {
         const message = JSON.parse(msg.data);
         if (message.category === "alarm") {
           switch (message.type) {
             case "getAlarm":
-              setAlarmData(message.data)
+              setAlarmData(message.data.filter((v: any) => v.checkAlarm));
+              break;
+            case "checkAlarm":
+              setAlarmData(
+                alarmData.filter((v) => v.alarmId !== message.data.alarmId)
+              );
+              break;
+            case "createAlarm":
+              console.log("createAlarm");
+
+              console.log(message.data);
+
+              // setToastData()
               break;
           }
         }
-      })
+      });
 
-      ctx.ws.current!.send(
-        JSON.stringify({
-          category: "alarm",
-          type: "getAlarmData",
-        })
-      );
+      if (alarmData.length === 0) {
+        ctx.ws.current!.send(
+          JSON.stringify({
+            category: "alarm",
+            type: "getAlarmData",
+          })
+        );
+      }
     }
   }, [ctx]);
+
+  let uuidv4 = () => {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+      /[xy]/g,
+      function (c) {
+        var r = (Math.random() * 16) | 0,
+          v = c == "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      }
+    );
+  };
 
   const makeUserInfo = (data: IUserWorkInfo[]) => {
     let returnData = [];
@@ -97,19 +129,27 @@ export function Topbar(ctx: any) {
       if (i.userId !== ctx.session.userId) {
         returnData.push(
           <div
+            key={uuidv4()}
             className={classes.userInfoData}
-            style={{ zIndex: idx }}
+            style={{
+              zIndex: idx,
+              backgroundImage:
+                i.userThumbnail === undefined
+                  ? "none"
+                  : ` url('http://localhost:8000/api/temp/${i.userThumbnail}')`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              border:
+                i.userThumbnail === undefined ? "1px solid #ffffff" : "none ",
+            }}
             onClick={() => {
               window.location.href = i.workInfo.workingPath;
             }}
             title={i.workInfo.workingPath}
-            onMouseOver={() => {
-              if (ctx.loginUser !== undefined && ctx.loginUser !== undefined) {
-                setOverData([i]);
-              }
-            }}
           >
-            <span>{i.userId.substring(0, 1)}</span>
+            {userList.find((v) => v.userId === i.userId)?.userThumbnail ===
+              undefined && <span>{i.userId.substring(0, 1)}</span>}
           </div>
         );
       }
@@ -168,7 +208,19 @@ export function Topbar(ctx: any) {
           </IconButton>
         </div>
         <div className={classes.themeButton}>
-          {alarmData !== undefined && <div style={{ top: "10px", left: "30px", width: "10px", height: "10px", borderRadius: "10px", background: "red", position: "absolute" }} />}
+          {alarmData.length > 0 && (
+            <div
+              style={{
+                top: "10px",
+                left: "30px",
+                width: "10px",
+                height: "10px",
+                borderRadius: "10px",
+                background: "red",
+                position: "absolute",
+              }}
+            />
+          )}
           <IconButton
             style={{ color: theme === "dark" ? "#fff" : "#121212" }}
             onClick={() => {
@@ -188,7 +240,12 @@ export function Topbar(ctx: any) {
         <UserInfo open={open} setOpen={setOpen} data={data} theme={theme} />
       )}
       {openAlert && (
-        <AlertDialog openAlert={openAlert} setOpenAlert={setOpenAlert} data={alarmData ?? []} />
+        <AlertDialog
+          openAlert={openAlert}
+          setOpenAlert={setOpenAlert}
+          data={alarmData}
+          ctx={ctx}
+        />
       )}
     </React.Fragment>
   );

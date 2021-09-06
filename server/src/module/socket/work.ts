@@ -17,7 +17,11 @@ function getWorkingPath(userId: string, workInfo: TWorkInfo) {
     Object.keys(userWorkInfo)
         .filter((userIdElement) => Object.keys(SocketInfo).includes(userIdElement))
         .forEach((userIdElement) => {
-            const otherWorkInfo = { userId: userIdElement, workInfo: getUserWork(userIdElement), userThumbnail: DataUserManager.get(userIdElement)?.userThumbnail };
+            const otherWorkInfo = {
+                userId: userIdElement,
+                workInfo: getUserWork(userIdElement),
+                userThumbnail: DataUserManager.get(userIdElement)?.userThumbnail,
+            };
             sendData.push(otherWorkInfo);
         });
     Object.keys(userWorkInfo)

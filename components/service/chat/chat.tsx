@@ -4,13 +4,10 @@ import {
   createChannelStyle,
 } from "../../../styles/service/chat/chat";
 import {
-  RadioButtonUnchecked,
-  ArrowDropDown,
   FiberManualRecord,
   Close,
   Search,
   Add,
-  Cancel,
   Clear,
   FormatBold,
   FormatItalic,
@@ -24,11 +21,10 @@ import {
   AlternateEmail,
   TextFormatOutlined,
   Send,
-  Comment,
   SmsOutlined,
   FavoriteBorderOutlined,
 } from "@material-ui/icons";
-import CustomButton from "../../items/input/button";
+import moment from "moment";
 
 interface IChat {
   user: string;
@@ -145,7 +141,7 @@ function CreateChannel({
             type="text"
             placeholder={isDirect === false ? "Channel Name" : "User Name"}
             ref={nameRef}
-            value={name}
+            value={name || ""}
             className={classes.input}
             onChange={(event: any) => {
               setName(event.currentTarget.value);
@@ -155,7 +151,7 @@ function CreateChannel({
             type="text"
             placeholder="Description"
             ref={descriptionRef}
-            value={description}
+            value={description || ""}
             className={classes.input}
             onChange={(event: any) => {
               setDescription(event.currentTarget.value);
@@ -172,7 +168,7 @@ function CreateChannel({
             is Direct Message?
             <input
               type="checkbox"
-              checked={isDirect}
+              defaultChecked={isDirect}
               onClick={(e) => {
                 setIsDirect(!isDirect);
               }}
@@ -236,6 +232,16 @@ export default function Chat(ctx: any) {
   const threadMessageRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLInputElement>(null);
   const threadEndRef = useRef<HTMLInputElement>(null);
+  const [userList, setUserList] = React.useState<any[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== undefined) {
+      const pathList = window.location.href.split("target=");
+      if (pathList.length > 1) {
+        setTarget(pathList[pathList.length - 1]);
+      }
+    }
+  });
 
   function enterEvent(event: KeyboardEvent) {
     if (event.key === "Enter") {
@@ -371,7 +377,21 @@ export default function Chat(ctx: any) {
 
     return (
       <div className={classes.messageBox}>
-        <div className={classes.thumbnail}></div>
+        <div
+          className={classes.thumbnail}
+          style={{
+            backgroundImage:
+              userList.find((v) => v.userId === user)?.userThumbnail ===
+              undefined
+                ? "none"
+                : ` url('http://localhost:8000/api/temp/${
+                    userList.find((v) => v.userId === user)?.userThumbnail
+                  }')`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        ></div>
         <div className={classes.messageInfo}>
           <div className={classes.target}>{user}</div>
           <div className={classes.textWrapper}>
@@ -451,47 +471,49 @@ export default function Chat(ctx: any) {
         className={classes.messageBox}
         style={{ display: "flex", justifyContent: "flex-end" }}
       >
-        <div
-          className={classes.textWrapper}
-          style={{ display: "flex", flexDirection: "row-reverse" }}
-        >
-          <div className={classes.messageText}>{message}</div>
-          <span className={classes.time}>
-            <span>{timeText}</span>
-            <div className={classes.messageInteraction}>
-              <div
-                className={classes.interactionIcon}
-                onClick={() => {
-                  setThread({
-                    chatName: target,
-                    messages: threadList,
-                    parentId: chatId,
-                    parentMessage: message,
-                    parentTime: time,
-                    parentUser: user,
-                  });
-                }}
-              >
-                <SmsOutlined />
+        <div className={classes.messageInfo}>
+          <div
+            className={classes.textWrapper}
+            style={{ display: "flex", flexDirection: "row-reverse" }}
+          >
+            <div className={classes.messageText}>{message}</div>
+            <span className={classes.time}>
+              <span>{timeText}</span>
+              <div className={classes.messageInteraction}>
+                <div
+                  className={classes.interactionIcon}
+                  onClick={() => {
+                    setThread({
+                      chatName: target,
+                      messages: threadList,
+                      parentId: chatId,
+                      parentMessage: message,
+                      parentTime: time,
+                      parentUser: user,
+                    });
+                  }}
+                >
+                  <SmsOutlined />
+                </div>
+                <div className={classes.interactionDivider} />
+                <div className={classes.interactionIcon}>
+                  <FavoriteBorderOutlined />
+                </div>
               </div>
-              <div className={classes.interactionDivider} />
-              <div className={classes.interactionIcon}>
-                <FavoriteBorderOutlined />
-              </div>
-            </div>
-          </span>
+            </span>
+          </div>
+          {threadList.length > 0 && (
+            <Thread
+              parentUser={user}
+              parentMessage={message}
+              parentId={chatId}
+              particiapnts={[]}
+              messages={threadList}
+              lastTime={threadList.slice(-1)[0].time}
+              parentTime={time}
+            />
+          )}
         </div>
-        {threadList.length > 0 && (
-          <Thread
-            parentUser={user}
-            parentMessage={message}
-            parentId={chatId}
-            particiapnts={[]}
-            messages={threadList}
-            lastTime={threadList.slice(-1)[0].time}
-            parentTime={time}
-          />
-        )}
       </div>
     );
   }
@@ -540,7 +562,12 @@ export default function Chat(ctx: any) {
     );
   }
 
-  function renderMessage(messages: IChat[], classes: any, userId: string) {
+  function renderMessage(
+    messages: IChat[],
+    classes: any,
+    userId: string,
+    isThread: boolean
+  ) {
     const value = [];
 
     for (let i = 0; i < messages.length; i++) {
@@ -550,7 +577,7 @@ export default function Chat(ctx: any) {
           messages[i - 1].time.split(" ")[0] !==
             messages[i].time.split(" ")[0]);
 
-      if (dayCheck === true) {
+      if (!isThread && dayCheck === true) {
         value.push(<DayBoundary text={messages[i].time.split(" ")[0]} />);
       }
 
@@ -580,7 +607,21 @@ export default function Chat(ctx: any) {
     }
   }, [target]);
 
+  const getParticipantList = async () => {
+    await fetch(`http://localhost:8000/api/userList`, {
+      method: "GET",
+      mode: "cors",
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.code === 200) {
+          setUserList(res.user);
+        }
+      });
+  };
+
   useEffect(() => {
+    getParticipantList();
     window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
@@ -598,93 +639,104 @@ export default function Chat(ctx: any) {
     if (ctx.ws === null) return;
 
     if (ctx.ws.current) {
-      if (channelList.length === 0) getChat();
+      if (channelList.length === 0) {
+        getChat();
+      }
 
-      ctx.ws.current.onmessage = (msg: any) => {
-        const message = JSON.parse(msg.data);
-
-        if (message.category === "chat") {
-          switch (message.type) {
-            case "createChannel":
-              getChat();
-              break;
-            case "getChat":
-              const channelList: IChannel[] = [];
-
-              message.data.forEach((v: any) => {
-                channelList.push(v);
-              });
-
-              setChannelList(channelList);
-              break;
-
-            case "getChatLog":
-              const messageList: IChat[] = [];
-              message.data.forEach((v: any) => {
-                messageList.push({
-                  user: v.sender,
-                  message: v.message,
-                  time: v.time,
-                  chatId: v.chatId ?? "",
-                  threadList: v.threadList ?? [],
-                });
-              });
-              setMessages([...messages, ...messageList]);
-              break;
-            case "getChatLogList":
-              message.data.forEach((v: string) => {
-                getChatLog(target, v);
-              });
-              break;
-            case "sendMessage":
-              if (message.data.parentChatId !== undefined) {
-                const messageList: IChat[] = messages.map((v) => {
-                  if (v.chatId === message.data.parentChatId) {
-                    return {
-                      ...v,
-                      threadList: [
-                        ...v.threadList,
-                        {
-                          user: message.data.sender,
-                          message: message.data.message,
-                          time: message.data.time ?? "2021-08-26 11:32:14",
-                          chatId: message.data.chatId ?? "",
-                          threadList: message.data.threadList ?? [],
-                        },
-                      ],
-                    };
-                  }
-
-                  return v;
-                });
-
-                setMessages(messageList);
-              } else {
-                if (message.data.sender !== ctx.session.userId) {
-                  setNewMessage(true);
-                  setTimeout(() => {
-                    setNewMessage(false);
-                  }, 3000);
-                }
-
-                setMessages([
-                  ...messages,
-                  {
-                    user: message.data.sender,
-                    message: message.data.message,
-                    time: message.data.time ?? "2021-08-26 11:32:14",
-                    chatId: message.data.chatId ?? "",
-                    threadList: message.data.threadList ?? [],
-                  },
-                ]);
-              }
-
-              break;
-          }
-        }
-      };
+      ctx.ws.current.addEventListener("message", onMessageHandler);
     }
   }, [ctx.ws.current, messages]);
+
+  const onMessageHandler = (msg: any) => {
+    const message = JSON.parse(msg.data);
+
+    if (message.category === "chat") {
+      switch (message.type) {
+        case "createChannel":
+          getChat();
+          break;
+        case "getChat":
+          const channelList: IChannel[] = [];
+
+          message.data.forEach((v: any) => {
+            channelList.push(v);
+          });
+
+          setChannelList(channelList);
+          break;
+
+        case "getChatLog":
+          const messageList: IChat[] = [];
+          message.data.forEach((v: any) => {
+            messageList.push({
+              user: v.sender,
+              message: v.message,
+              time: v.time,
+              chatId: v.chatId ?? "",
+              threadList: v.threadList ?? [],
+            });
+          });
+          setMessages([...messages, ...messageList]);
+          break;
+        case "getChatLogList":
+          message.data.forEach((v: string) => {
+            getChatLog(target, v);
+          });
+          break;
+        case "sendMessage":
+          if (message.data.parentChatId !== undefined) {
+            const messageList: IChat[] = messages.map((v) => {
+              if (v.chatId === message.data.parentChatId) {
+                return {
+                  ...v,
+                  threadList: [
+                    ...v.threadList,
+                    {
+                      user: message.data.sender,
+                      message: message.data.message,
+                      time: message.data.time ?? "2021-08-26 11:32:14",
+                      chatId: message.data.chatId ?? "",
+                      threadList: message.data.threadList ?? [],
+                    },
+                  ],
+                };
+              }
+
+              return v;
+            });
+
+            setMessages(messageList);
+          } else {
+            if (message.data.sender !== ctx.session.userId) {
+              setNewMessage(true);
+              setTimeout(() => {
+                setNewMessage(false);
+              }, 3000);
+            }
+
+            setMessages([
+              ...messages,
+              {
+                user: message.data.sender,
+                message: message.data.message,
+                time: message.data.time ?? getTime(),
+                chatId: message.data.chatId ?? "",
+                threadList: message.data.threadList ?? [],
+              },
+            ]);
+          }
+
+          break;
+      }
+    }
+  };
+
+  function getTime(
+    time: Date | string | undefined = undefined,
+    format: string = "YYYY-MM-DD HH:mm:ss"
+  ) {
+    return moment(time).format(format);
+  }
 
   return (
     <div className={classes.root}>
@@ -705,7 +757,26 @@ export default function Chat(ctx: any) {
                   setTarget(v.chatName ?? v.userId!);
                 }}
               >
-                <div className={classes.channelThumbnail}></div>
+                <div
+                  className={classes.channelThumbnail}
+                  style={{
+                    backgroundImage:
+                      userList.find((user) => user.userId === v.chatName)
+                        ?.userThumbnail === undefined
+                        ? "url('/images/picode-7.svg')"
+                        : `url('http://localhost:8000/api/temp/${
+                            userList.find((user) => user.userId === v.chatName)
+                              ?.userThumbnail
+                          }')`,
+                    backgroundSize:
+                      userList.find((user) => user.userId === v.chatName)
+                        ?.userThumbnail === undefined
+                        ? "contain"
+                        : "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                  }}
+                ></div>
                 <div className={classes.channelBody}>
                   <div className={classes.channelInfo}>
                     <span className={classes.channelName}>
@@ -717,7 +788,7 @@ export default function Chat(ctx: any) {
                     </span>
                   </div>
                   <div className={classes.lastContent}>
-                    last message bla bla...
+                    {v.description ?? "this chat has no description"}
                   </div>
                 </div>
                 <div className={classes.channelTail}>
@@ -749,7 +820,7 @@ export default function Chat(ctx: any) {
           </div>
           <div className={classes.content}>
             <div className={classes.contentBox}>
-              {renderMessage(messages, classes, ctx.session.userId)}
+              {renderMessage(messages, classes, ctx.session.userId, false)}
               <div ref={endRef} />
             </div>
           </div>
@@ -860,7 +931,12 @@ export default function Chat(ctx: any) {
               {thread.messages.length > 0 && (
                 <DayBoundary text={`${thread.messages.length} replies`} />
               )}
-              {renderMessage(thread.messages, classes, ctx.session.userId)}
+              {renderMessage(
+                thread.messages,
+                classes,
+                ctx.session.userId,
+                true
+              )}
               <div ref={threadEndRef} />
             </div>
             <div className={classes.input}>
@@ -912,7 +988,7 @@ export default function Chat(ctx: any) {
                           threadMessageRef.current.value !== ""
                         ) {
                           sendMessage(
-                            thread.parentId,
+                            thread.chatName,
                             threadMessageRef.current?.value ?? "",
                             thread.parentId
                           );

@@ -6,7 +6,7 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
   createStyles({
     root: {
       backgroundColor: "#2c3239",
-      width: "calc(100% - 64px)",
+      width: "100%",
       height: "100%",
       display: "flex",
     },
@@ -377,6 +377,7 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
       flexDirection: "column",
       height: "30px",
       justifyContent: "center",
+      alignItems: "center",
     },
     dayBoundary: {
       width: "100%",
@@ -386,7 +387,6 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
     },
     timeTicket: {
       position: "relative",
-      left: "50%",
       color: theme.font.high.color,
       width: "fit-content",
       height: "22px",
@@ -472,6 +472,8 @@ export const createChannelStyle = makeStyles((theme: IThemeStyle) =>
       display: "fixed",
       backgroundColor: "#2c3239",
       zIndex: 9999,
+      top: 0,
+      left: 0,
       marginLeft: "35%",
       marginTop: "10%",
       padding: "30px",
