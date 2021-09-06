@@ -10,4 +10,20 @@ router.get("/", sessionRouter, (_, res) => {
     return res.json({ code: ResponseCode.ok, dockerVisualInfo: dockerVisualInfo });
 });
 
+router.put("/", sessionRouter, (req, res) => {
+    const userId = req.session.userId as string;
+    const containerId = req.body?.containerId;
+    const dockerInfo = req.body?.dockerInfo;
+
+    if (containerId === undefined || dockerInfo === undefined) {
+        return res.json({ code: ResponseCode.missingParameter });
+    }
+
+    if (!DataDockerManager.updateFromDocker(userId, containerId, dockerInfo)) {
+        return res.json({ code: ResponseCode.internalError });
+    }
+
+    return res.json({ code: ResponseCode.ok });
+});
+
 export default router;

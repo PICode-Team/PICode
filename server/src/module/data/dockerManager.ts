@@ -401,6 +401,14 @@ CMD ["./server-linux", "${socketPort}"]`;
         return true;
     }
 
+    static updateFromDocker(userId: string, containerId: string, dockerInfo: TDockerUpdateData) {
+        const projectName = DataProjectManager.getProjectInfo(this.getProjectId(userId, containerId) as string)?.projectName;
+        if (projectName === undefined) {
+            return false;
+        }
+        return this.update(userId, projectName, dockerInfo);
+    }
+
     static update(userId: string, projectName: string, dockerInfo: TDockerUpdateData) {
         const projectId = DataProjectManager.getProjectId(userId, projectName);
         if (projectId === undefined) {
