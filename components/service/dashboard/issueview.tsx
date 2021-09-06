@@ -62,7 +62,7 @@ export default function IssueView(props: any) {
 
   return (
     <div style={{ width: "44%", height: "100%" }}>
-      <div className={classes.title}>Server Stat</div>
+      <div className={classes.title}>Issue</div>
       <div
         className={classes.content}
         style={{
@@ -70,7 +70,7 @@ export default function IssueView(props: any) {
           overflowY: "auto",
         }}
       >
-        {issues.length > 0 &&
+        {issues.length > 0 ? (
           issues.map((v, i) => {
             return (
               <div
@@ -104,7 +104,7 @@ export default function IssueView(props: any) {
                       marginRight: "8px",
                     }}
                   ></div>
-                  <div>
+                  <div style={{ width: "60px" }}>
                     <div style={{ fontSize: "11px", fontWeight: "bold" }}>
                       {v.title}
                     </div>
@@ -154,7 +154,10 @@ export default function IssueView(props: any) {
                 </div>
               </div>
             );
-          })}
+          })
+        ) : (
+          <div>this server has no issue</div>
+        )}
       </div>
     </div>
   );

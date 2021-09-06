@@ -148,7 +148,7 @@ export function Topbar(ctx: any) {
             }}
             title={i.workInfo.workingPath}
           >
-            {userList.find((v) => v.userId === i.userId)?.userThumbnail ===
+            {userList?.find((v) => v.userId === i.userId)?.userThumbnail ===
               undefined && <span>{i.userId.substring(0, 1)}</span>}
           </div>
         );

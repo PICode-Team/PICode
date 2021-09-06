@@ -123,7 +123,7 @@ export default function MakeMile(props: any) {
           }}
           id="form-dialog-title"
         >
-          {props.edit ? "Edit" : "Make"} Kanban Board
+          {props.edit ? "Edit" : "Make"} Milestone
         </DialogTitle>
         <DialogContent
           style={{
@@ -225,12 +225,15 @@ export default function MakeMile(props: any) {
               onClick={() => {
                 if (props.edit === true) {
                   let payload = {
-                    title: title,
-                    content: content ?? "",
-                    startDate: startDate ?? "",
-                    endDate: endDate ?? "",
-                    uuid: props.modalData.uuid,
+                    milestoneUUID: props.modalData.uuid,
+                    milestoneData: {
+                      title: title,
+                      content: content ?? "",
+                      startDate: startDate ?? "",
+                      endDate: endDate ?? "",
+                    },
                   };
+
                   props.ws.send(
                     JSON.stringify({
                       category: "milestone",
@@ -254,19 +257,6 @@ export default function MakeMile(props: any) {
                     })
                   );
                 }
-                let payload = {
-                  title: title,
-                  content: content ?? "",
-                  startDate: startDate ?? "",
-                  endDate: endDate ?? "",
-                };
-                props.ws.send(
-                  JSON.stringify({
-                    category: "milestone",
-                    type: "createMilestone",
-                    data: payload,
-                  })
-                );
                 props.setOpen(false);
               }}
             >

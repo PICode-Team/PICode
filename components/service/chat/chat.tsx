@@ -382,10 +382,10 @@ export default function Chat(ctx: any) {
           className={classes.thumbnail}
           style={{
             backgroundImage:
-              userList.find((v) => v.userId === user)?.userThumbnail ===
+              userList?.find((v) => v.userId === user)?.userThumbnail ===
                 undefined
                 ? "none"
-                : ` url('http://localhost:8000/api/temp/${userList.find((v) => v.userId === user)?.userThumbnail
+                : ` url('http://localhost:8000/api/temp/${userList?.find((v) => v.userId === user)?.userThumbnail
                 }')`,
             backgroundSize: "cover",
             backgroundPosition: "center",
@@ -761,14 +761,14 @@ export default function Chat(ctx: any) {
                   className={classes.channelThumbnail}
                   style={{
                     backgroundImage:
-                      userList.find((user) => user.userId === v.chatName)
+                      userList?.find((user) => user.userId === v.chatName)
                         ?.userThumbnail === undefined
                         ? "url('/images/picode-7.svg')"
-                        : `url('http://localhost:8000/api/temp/${userList.find((user) => user.userId === v.chatName)
+                        : `url('http://localhost:8000/api/temp/${userList?.find((user) => user.userId === v.chatName)
                           ?.userThumbnail
                         }')`,
                     backgroundSize:
-                      userList.find((user) => user.userId === v.chatName)
+                      userList?.find((user) => user.userId === v.chatName)
                         ?.userThumbnail === undefined
                         ? "contain"
                         : "cover",

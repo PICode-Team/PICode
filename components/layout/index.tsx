@@ -74,21 +74,28 @@ export function Layout(ctx: any) {
       if (pageData[i].url === route.route) {
         setPageName({
           name: pageData[i].title,
-          icon: pageData[i].icon
-        })
+          icon: pageData[i].icon,
+        });
       } else {
-        if (pageData[i].subUrl !== undefined && pageData[i].subUrl.some((v: any) => v === route.route)) {
+        if (
+          pageData[i].subUrl !== undefined &&
+          pageData[i].subUrl.some((v: any) => v === route.route)
+        ) {
           if (pageData[i].children !== undefined) {
-            let realTile = pageData[i].children.find((v1: any) => v1.url === route.route || v1.subUrl.some((v2: any) => v2 === route.route))
+            let realTile = pageData[i].children.find(
+              (v1: any) =>
+                v1.url === route.route ||
+                v1.subUrl.some((v2: any) => v2 === route.route)
+            );
             setPageName({
               name: realTile.title,
-              icon: realTile.icon
-            })
+              icon: realTile.icon,
+            });
           } else {
             setPageName({
               name: pageData[i].title,
-              icon: pageData[i].icon
-            })
+              icon: pageData[i].icon,
+            });
           }
         }
       }
@@ -161,7 +168,7 @@ export function Layout(ctx: any) {
     <div className={classes.main} onMouseMoveCapture={userMouseMoveCapture}>
       <Topbar {...ctx} loginUser={loginUser} ws={ws} />
       <div className={classes.contentWrapper}>
-        <Sidebar {...ctx} />
+        <Sidebar {...ctx} loginUser={loginUser} />
         <div style={{ width: "100%", height: "calc(100% - 41px)" }}>
           <div className={classes.pageName}>
             {pageName.icon}
