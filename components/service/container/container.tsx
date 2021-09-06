@@ -31,7 +31,7 @@ export default function Contatiner(props: any) {
         let data = await fetch(`http://localhost:8000/api/docker/visualization`, {
             method: "GET"
         }).then((res) => res.json())
-        setDockerData(data.networkList);
+        setDockerData(data.dockerVisualInfo);
     }
 
     useEffect(() => {
@@ -88,20 +88,22 @@ export default function Contatiner(props: any) {
     useEffect(() => {
         if (mouseDown !== undefined && mouseUp !== undefined) {
             let payload;
-            if (mouseDown.type === "network" && mouseDown.type === "container") {
+            console.log(mouseDown)
+            console.log(mouseUp)
+            if (mouseDown.type === "network" && mouseUp.type === "container") {
                 payload = {
-                    "containerId": `${mouseDown.containerId}`,
+                    "containerId": `${mouseUp.containerId}`,
                     "dockerInfo": {
-                        "bridgeName": "testConnectBridge",
+                        "bridgeName": `${mouseDown.name}`,
                         "bridgeAlias": "testBridge",
                         "connect": true
                     }
                 }
-            } else if (mouseDown.type === "container" && mouseDown.type === "network") {
+            } else if (mouseDown.type === "container" && mouseUp.type === "network") {
                 payload = {
                     "containerId": `${mouseDown.containerId}`,
                     "dockerInfo": {
-                        "bridgeName": "testConnectBridge",
+                        "bridgeName": `${mouseUp.name}`,
                         "bridgeAlias": "testBridge",
                         "connect": true
                     }

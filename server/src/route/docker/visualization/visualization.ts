@@ -2,11 +2,13 @@ import express from "express";
 import { ResponseCode } from "../../../constants/response";
 import sessionRouter from "../../../lib/router/session";
 import DataDockerManager from "../../../module/data/dockerManager";
+import log from "../../../module/log";
 
 const router = express.Router();
 
 router.get("/", sessionRouter, (_, res) => {
     const dockerVisualInfo = DataDockerManager.getDockerVisualizationInfo();
+    log.debug(`dockerVisualInfo: ${JSON.stringify(dockerVisualInfo)}`);
     return res.json({ code: ResponseCode.ok, dockerVisualInfo: dockerVisualInfo });
 });
 
