@@ -472,31 +472,8 @@ CMD ["./server-linux", "${socketPort}"]`;
             log.error(`no project existed ${projectName}`);
             return false;
         }
+
         const newDockerInfo = this.getDockerInfo(projectId) as TDockerData;
-        if (dockerInfo.bridgeName !== undefined && Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeName) && dockerInfo.connect === false) {
-            delete newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string];
-        }
-        if (dockerInfo.linkContainer !== undefined && dockerInfo.bridgeName !== undefined && !newDockerInfo.containers.includes(dockerInfo.linkContainer) && dockerInfo.connect === true) {
-            const linkProjectId = fs
-                .readdirSync(DataProjectManager.getProjectDefaultPath())
-                .filter((Id) => {
-                    return Id !== projectId;
-                })
-                .find((projectId) => {
-                    return (this.getDockerInfo(projectId) as TDockerData).containerName === dockerInfo.linkContainer;
-                });
-            if (linkProjectId !== undefined) {
-                newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string] = dockerInfo.bridgeAlias ?? "";
-                newDockerInfo.containers.push(dockerInfo.linkContainer);
-                const linkContainerInfo = this.getDockerInfo(linkProjectId) as TDockerData;
-                linkContainerInfo.containers.push(newDockerInfo.containerName), this.setDockerInfo(linkProjectId, linkContainerInfo);
-            }
-        }
-        if (dockerInfo.bridgeName !== undefined && dockerInfo.linkContainer === undefined && !Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeName) && dockerInfo.connect === true) {
-            log.debug(`docker Info : ${dockerInfo.bridgeName} : ${dockerInfo.bridgeAlias}`);
-            newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string] = dockerInfo.bridgeAlias ?? "";
-            log.debug(`docker Info : ${newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string]}}`);
-        }
 
         if (dockerInfo.bridgeName !== undefined && Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeName) && dockerInfo.connect === false) {
             this.commandDockerAsync(
@@ -545,7 +522,7 @@ CMD ["./server-linux", "${socketPort}"]`;
             let command = `docker network connect `;
             command += dockerInfo.bridgeAlias ? `--alias ${dockerInfo.bridgeAlias} ` : ``;
             command += `${dockerInfo.bridgeName} ${newDockerInfo.containerName}`;
-
+            log.debug(`docker network command : ${command}`);
             this.commandDockerAsync(
                 command,
                 () => {},
@@ -574,6 +551,29 @@ CMD ["./server-linux", "${socketPort}"]`;
                     }
                 }
             );
+        }
+
+        if (dockerInfo.bridgeName !== undefined && Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeName) && dockerInfo.connect === false) {
+            delete newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string];
+        }
+        if (dockerInfo.linkContainer !== undefined && dockerInfo.bridgeName !== undefined && !newDockerInfo.containers.includes(dockerInfo.linkContainer) && dockerInfo.connect === true) {
+            const linkProjectId = fs
+                .readdirSync(DataProjectManager.getProjectDefaultPath())
+                .filter((Id) => {
+                    return Id !== projectId;
+                })
+                .find((projectId) => {
+                    return (this.getDockerInfo(projectId) as TDockerData).containerName === dockerInfo.linkContainer;
+                });
+            if (linkProjectId !== undefined) {
+                newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string] = dockerInfo.bridgeAlias ?? "";
+                newDockerInfo.containers.push(dockerInfo.linkContainer);
+                const linkContainerInfo = this.getDockerInfo(linkProjectId) as TDockerData;
+                linkContainerInfo.containers.push(newDockerInfo.containerName), this.setDockerInfo(linkProjectId, linkContainerInfo);
+            }
+        }
+        if (dockerInfo.bridgeName !== undefined && dockerInfo.linkContainer === undefined && !Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeName) && dockerInfo.connect === true) {
+            newDockerInfo.bridgeInfo[dockerInfo.bridgeName as string] = dockerInfo.bridgeAlias ?? "";
         }
 
         newDockerInfo.containerName = dockerInfo.containerName ?? newDockerInfo.containerName;
