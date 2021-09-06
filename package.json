@@ -23,6 +23,7 @@
     "@types/multer": "^1.4.7",
     "@types/uuid": "^8.3.1",
     "adm-zip": "^0.5.5",
+    "ansi-to-react": "^6.1.6",
     "apollo-server-express": "^2.25.2",
     "child_process": "^1.0.2",
     "class-validator": "^0.13.1",

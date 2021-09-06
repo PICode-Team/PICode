@@ -23,6 +23,7 @@ interface IAddInput {
 
 export default function AddInput(props: IAddInput) {
     const [tmpFileName, setTmpFileName] = React.useState<string>("");
+    if (props.contextPosition === undefined) return <></>
 
     return <div className={props.classes.fileRow} style={{ paddingLeft: "16px" }}>
         <input placeholder={"untitled"}
