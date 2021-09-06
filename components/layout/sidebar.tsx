@@ -167,6 +167,7 @@ export function Sidebar(props: any) {
         >
           <div
             onClick={() => {}}
+            className={classes.test2}
             style={{
               width: "100%",
               height: "30px",
@@ -174,7 +175,6 @@ export function Sidebar(props: any) {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              backgroundColor: "#505965",
               marginTop: "2px",
             }}
           >
@@ -207,6 +207,7 @@ export function Sidebar(props: any) {
                 return (
                   <div
                     key={`user-list-on-off-${i}`}
+                    className={classes.test}
                     style={{
                       display: "flex",
                       borderBottom: "1px solid #7d7a7a",

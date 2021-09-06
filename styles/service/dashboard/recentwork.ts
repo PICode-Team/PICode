@@ -187,5 +187,9 @@ export const recentWorkStyle = makeStyles((theme: IThemeStyle) =>
       gap: "28px 28px",
       padding: "30px",
     },
+    test: {
+      color: theme.font.high.color,
+      backgroundColor: theme.backgroundColor.step2,
+    },
   })
 );

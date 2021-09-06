@@ -59,17 +59,15 @@ export default function MilestoneView(props: any) {
           milestone.map((v: any, idx: number) => {
             return (
               <div
-                className={classes.item}
+                className={classes.test}
                 key={v.uuid}
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
                 }}
                 style={{
-                  backgroundColor: "#3b434d",
                   padding: "8px 12px 10px",
                   marginBottom: "12px",
-                  color: "#ffffff",
                   pointerEvents: "none",
                 }}
               >

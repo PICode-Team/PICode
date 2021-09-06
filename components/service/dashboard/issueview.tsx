@@ -75,8 +75,8 @@ export default function IssueView(props: any) {
             return (
               <div
                 key={`dashboard-issue-${i}`}
+                className={classes.test}
                 style={{
-                  backgroundColor: "#3b434d",
                   padding: "15px",
                   borderRadius: "6px",
                   marginBottom: "8px",
@@ -92,7 +92,6 @@ export default function IssueView(props: any) {
                   style={{
                     display: "flex",
                     alignItems: "flex-end",
-                    color: "#ffffff",
                   }}
                 >
                   <div
@@ -121,7 +120,6 @@ export default function IssueView(props: any) {
                     <div
                       style={{
                         fontSize: "11px",
-                        color: "#ffffff",
                         display: "flex",
                         alignItems: "center",
                       }}

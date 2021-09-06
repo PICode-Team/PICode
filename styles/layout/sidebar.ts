@@ -36,6 +36,13 @@ export const sidebarStyle = makeStyles((theme: IThemeStyle) =>
       overflow: "hidden",
       padding: "0px !important",
     },
+    test: {
+      color: theme.font.high.color,
+    },
+    test2: {
+      backgroundColor: theme.backgroundColor.step3,
+      color: theme.font.high.color,
+    },
   })
 );
 
