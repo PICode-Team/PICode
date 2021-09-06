@@ -58,5 +58,44 @@ export const containerStyle = makeStyles((theme: IThemeStyle) =>
         icon: {
             color: theme.font.high.color,
         },
+        footerButton: {
+            width: "100px",
+            marginTop: "6px",
+            marginLeft: "12px",
+            height: "32px",
+            color: theme.font.high.color,
+            fontSize: theme.font.small.size,
+            borderRadius: "2px",
+            border: "none",
+            background: theme.backgroundColor.step2,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            cursor: "pointer",
+            "&:nth-child(1)": {
+                background: "#566372",
+                "&:hover": {
+                    background: "#647487",
+                    transition: "all 0.3s",
+                },
+            },
+            "&:nth-child(2)": {
+                background: "#4078b8",
+                "&:hover": {
+                    background: "#488cd9",
+                    transition: "all 0.3s",
+                },
+            },
+        },
+        select: {
+            "&>select": {},
+            "&>option": {},
+            "&>span": {},
+        },
+        overlay: {
+            "& .MuiDialog-paper": {
+                background: "none",
+            },
+        },
     })
 );

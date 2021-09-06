@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { containerStyle } from "../../../styles/service/container/container";
 import * as d3 from "d3"
-import { Icon, IconButton } from "@material-ui/core";
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Icon, IconButton } from "@material-ui/core";
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import LockOpenOutlinedIcon from '@material-ui/icons/LockOpenOutlined';
 import AddOutlinedIcon from '@material-ui/icons/AddOutlined';
@@ -13,6 +13,48 @@ import { throttle } from "lodash";
 import SettingsBackupRestoreOutlinedIcon from '@material-ui/icons/SettingsBackupRestoreOutlined';
 import PowerOffOutlinedIcon from '@material-ui/icons/PowerOffOutlined';
 import { DeleteForeverOutlined } from "@material-ui/icons";
+
+let tmpData = {
+    "container": [
+        {
+            "containerName": "testProject",
+            "image": "ubuntu",
+            "tag": "18.04",
+            "containerId": "00be311ecf163ede494dcda48e626d05588ef4f5f2ac72c4f12885a3a4fff34f",
+            "status": "running",
+            "bridgeInfo": { "bridge": "bridgeAlias" },
+            "containers": [],
+            "portInfo": {},
+            "ramUsage": "0.00%",
+            "parent": ["654e42dbc4b5a77948e5dfd6b1a045b63223c4c7fa5d69579d53be510d0b5c8d"]
+        },
+        {
+            "containerName": "testProject2",
+            "image": "ubuntu",
+            "tag": "latest",
+            "containerId": "452051b103e48995962331a9682b98ed20ed043bab91ce22fd71f39cdbaa23ea",
+            "status": "running",
+            "bridgeInfo": { "bridge": "" },
+            "containers": [],
+            "portInfo": { "1234": 1234 },
+            "containerIP": "172.17.0.3",
+            "ramUsage": "0.02%",
+            "parent": ["654e42dbc4b5a77948e5dfd6b1a045b63223c4c7fa5d69579d53be510d0b5c8d"]
+        }
+    ],
+    "port": [{ "outBound": 1234, "inBound": [1234], "onContainer": "452051b103e48995962331a9682b98ed20ed043bab91ce22fd71f39cdbaa23ea", "connectedContainers": [] }],
+    "network": [
+        {
+            "name": "bridge",
+            "networkId": "654e42dbc4b5a77948e5dfd6b1a045b63223c4c7fa5d69579d53be510d0b5c8d",
+            "ip": "172.17.0.0/16",
+            "containers": ["00be311ecf163ede494dcda48e626d05588ef4f5f2ac72c4f12885a3a4fff34f", "452051b103e48995962331a9682b98ed20ed043bab91ce22fd71f39cdbaa23ea"]
+        },
+        { "name": "host", "networkId": "51451691d45e04223b4da5da2bfcf40557f1d78504b7f6881126809d91988651", "containers": [] },
+        { "name": "none", "networkId": "2d07c58758e07d3c84fc8e2df4269bd00432745492163ead657effba81742b98", "containers": [] },
+        { "name": "testNetwork", "networkId": "3edf989cca3331f188d673cca6515a4b31a83a2f4aa8fb9d9392fc1596a8468e", "ip": "172.19.0.0/16", "containers": [] }
+    ]
+}
 
 
 export default function Contatiner(props: any) {
@@ -26,12 +68,52 @@ export default function Contatiner(props: any) {
         x: 0, y: 0
     })
     const [contextInformation, setContextInformation] = React.useState<any>();
+    const [modal, setModal] = React.useState<boolean>(false)
+    const [networkList, setNetworkList] = React.useState<any[]>([])
+    const dataConvertor: any = {
+        container: {
+            padding: 240,
+            r: 60,
+            y: 420,
+            name: "containerName",
+            id: "containerId",
+        },
+        port: {
+            padding: 200,
+            r: 50,
+            y: 820,
+            name: "outBound",
+            id: "outBound"
+        },
+        network: {
+            padding: 200,
+            r: 50,
+            y: 0,
+            name: "name",
+            id: "networkId"
+        }
+    }
+
+    const getNetworkList = async () => {
+        await fetch("http://localhost:8000/api/docker/network", {
+            method: "GET",
+            mode: "cors",
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                setNetworkList(res.networkList)
+            });
+    };
+
+    React.useEffect(() => {
+        getNetworkList();
+    }, [modal]);
 
     const getDockerData = async () => {
-        let data = await fetch(`http://localhost:8000/api/docker/visualization`, {
-            method: "GET"
-        }).then((res) => res.json())
-        setDockerData(data.networkList);
+        // let data = await fetch(`http://localhost:8000/api/docker/visualization`, {
+        //     method: "GET"
+        // }).then((res) => res.json())
+        setDockerData(tmpData);
     }
 
     useEffect(() => {
@@ -46,14 +128,23 @@ export default function Contatiner(props: any) {
         highlightOnNode();
         d3.selectAll("#checkCircle")
             .on("click", (e, d: any) => {
+                if (d.type === "port") return;
                 if (mouseDown === undefined) {
-                    setMouseDown(d)
+                    setMouseDown({ ...d, id: d[dataConvertor[d.type].id] })
                 } else {
-                    setMouseUp(d)
+                    if (mouseDown.id === d[dataConvertor[d.type].id]) {
+                        setMouseDown(undefined)
+                    } else {
+                        if (mouseDown.type === "network" && mouseUp.type === "network") return
+                        setMouseUp({ ...d, id: d[dataConvertor[d.type].id] })
+                    }
                 }
             })
             .attr("fill", (d: any) => {
-                if (mouseDown.id === d.id || mouseUp.id === d.id) {
+                if (mouseDown !== undefined && d[dataConvertor[d.type].id] === mouseDown.id) {
+                    return "black"
+                }
+                if (mouseUp !== undefined && d[dataConvertor[d.type].id] === mouseUp.id) {
                     return "black"
                 }
                 return "grey"
@@ -129,18 +220,21 @@ export default function Contatiner(props: any) {
                 .on("click", (e, d: any) => {
                     if (d.type === "port") return;
                     if (mouseDown === undefined) {
-                        setMouseDown(d.id)
+                        setMouseDown({ ...d, id: d[dataConvertor[d.type].id] })
                     } else {
-                        if (mouseDown === d.id) {
+                        if (mouseDown.id === d[dataConvertor[d.type].id]) {
                             setMouseDown(undefined)
                         } else {
                             if (mouseDown.type === "network" && mouseUp.type === "network") return
-                            setMouseUp(d.id)
+                            setMouseUp({ ...d, id: d[dataConvertor[d.type].id] })
                         }
                     }
                 })
                 .attr("fill", (d: any) => {
-                    if (mouseDown === d.id || mouseUp === d.id) {
+                    if (mouseDown !== undefined && d[dataConvertor[d.type].id] === mouseDown.id) {
+                        return "black"
+                    }
+                    if (mouseUp !== undefined && d[dataConvertor[d.type].id] === mouseUp.id) {
                         return "black"
                     }
                     return "grey"
@@ -167,31 +261,6 @@ export default function Contatiner(props: any) {
             return result === undefined ? "/images/serverImage/computer.svg" : result
         }
     }
-
-    const dataConvertor: any = {
-        container: {
-            padding: 240,
-            r: 60,
-            y: 420,
-            name: "containerName",
-            id: "containerId",
-        },
-        port: {
-            padding: 200,
-            r: 50,
-            y: 820,
-            name: "outBound",
-            id: "outBound"
-        },
-        network: {
-            padding: 200,
-            r: 50,
-            y: 0,
-            name: "name",
-            id: "networkId"
-        }
-    }
-
     let zoom = d3.zoom().scaleExtent([0.25, 10])
         .on('zoom', handleZoom)
 
@@ -328,7 +397,7 @@ export default function Contatiner(props: any) {
 
                 conCircle.append("circle")
                     .attr("id", `checkCircle`)
-                    .datum(node)
+                    .datum({ ...node, type: type })
                     .attr("r", 5)
                     .attr("cx", x)
                     .attr("cy", () => {
@@ -339,7 +408,7 @@ export default function Contatiner(props: any) {
 
                 conCircle.append("circle")
                     .attr("id", `checkCircle`)
-                    .datum(node)
+                    .datum({ ...node, type: type })
                     .attr("r", 5)
                     .attr("cx", x)
                     .attr("cy", () => {
@@ -682,5 +751,100 @@ export default function Contatiner(props: any) {
             }
         </div>
         }
+        <button onClick={() => {
+            setModal(true)
+        }}> test </button>
+        <div>
+            <Dialog
+                className={classes.overlay}
+                open={modal}
+                onClose={() => setModal(false)}
+                aria-labelledby="form-dialog-title"
+            >
+                <DialogTitle
+                    style={{
+                        backgroundColor: "#2c3239",
+                        color: "#ffffff",
+                        padding: "30px 30px 0px 30px",
+                        borderTopLeftRadius: "8px",
+                        borderTopRightRadius: "8px",
+                    }}
+                    id="form-dialog-title"
+                >
+                    Connect Network
+                </DialogTitle>
+                <DialogContent
+                    style={{
+                        backgroundColor: "#2c3239",
+                        color: "#ffffff",
+                        padding: "20px 30px",
+                        paddingTop: "10px",
+                    }}
+                >
+                    <DialogContentText
+                        style={{ color: "#ffffff", paddingBottom: "20px" }}
+                    >
+                        To subscribe to this website, please enter your email address here.
+                        We will send updates occasionally.
+                    </DialogContentText>
+                    <div
+                        className={classes.select}
+                        style={{ marginBottom: "10px", display: "flex" }}
+                    >
+                        <span
+                            style={{ width: "105px", display: "flex", alignItems: "center" }}
+                        >
+                            network bridge
+                        </span>
+                        <select
+                            style={{
+                                flex: 1,
+                                borderRadius: "2px",
+                                color: "#ffffff",
+                                background: "#3b434c",
+                                padding: "4px 8px",
+                                width: "100%",
+                                height: "32px",
+                                outline: "none",
+                                border: "none",
+                            }}
+                        >
+                            <option value="default">default</option>
+                            {networkList.map((v, i) => (
+                                <option key={`network-option-${i}`} value={v}>
+                                    {v}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </DialogContent>
+                <DialogActions
+                    style={{
+                        backgroundColor: "#2c3239",
+                        color: "#ffffff",
+                        padding: "0px 30px 30px 30px",
+                        borderBottomLeftRadius: "8px",
+                        borderBottomRightRadius: "8px",
+                    }}
+                >
+                    <div style={{ display: "flex" }}>
+                        <button
+                            className={classes.footerButton}
+                            onClick={() => setModal(false)}
+                        >
+                            CANCEL
+                        </button>
+                        <button
+                            className={classes.footerButton}
+                            onClick={() => {
+                                setModal(false);
+                            }}
+                        >
+                            SUBMIT
+                        </button>
+                    </div>
+                </DialogActions>
+            </Dialog>
+        </div>
     </div >
 }
