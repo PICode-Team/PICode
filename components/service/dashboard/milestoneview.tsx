@@ -55,7 +55,7 @@ export default function MilestoneView(props: any) {
           padding: "15px",
         }}
       >
-        {milestone.length > 0 &&
+        {milestone.length > 0 ? (
           milestone.map((v: any, idx: number) => {
             return (
               <div
@@ -105,7 +105,10 @@ export default function MilestoneView(props: any) {
                 </div>
               </div>
             );
-          })}
+          })
+        ) : (
+          <div>this server has no milestone</div>
+        )}
       </div>
     </div>
   );
