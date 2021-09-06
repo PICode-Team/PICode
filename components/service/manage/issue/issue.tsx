@@ -192,8 +192,6 @@ export default function Issue(props: any) {
   }
 
   function Card({ node }: any) {
-    console.log(node);
-
     return (
       <div
         style={{

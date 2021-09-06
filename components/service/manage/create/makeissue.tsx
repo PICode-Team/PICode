@@ -32,14 +32,13 @@ export default function MakeIssue(props: any) {
       setTitle(props.modalData.title);
       setContent(props.modalData.content);
       setAssigner(props.modalData.assigner);
-      setColumn(props.modalData.column);
       setMilestone(props.modalData.milestone);
       setLabel(props.modalData.label);
     }
 
     getUserList();
     getMileList();
-  }, []);
+  }, [props.column]);
 
   return (
     <div>

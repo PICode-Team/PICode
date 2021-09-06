@@ -9,7 +9,7 @@ export default function Home(pageProps: any) {
     <React.Fragment>
       {pageProps.session.userId ? (
         <Layout {...pageProps}>
-          <Dashboard />
+          <Dashboard {...pageProps} />
         </Layout>
       ) : (
         <Login />

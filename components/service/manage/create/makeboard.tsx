@@ -20,8 +20,6 @@ export default function MakeKanban(props: any) {
 
   React.useEffect(() => {
     if (props.modalData !== undefined) {
-      console.log(props.modalData.title);
-
       setTitle(props.modalData.title);
       setUuid(props.modalData.uuid);
     }

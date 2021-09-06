@@ -29,6 +29,7 @@ export const alertDialogStyle = makeStyles((theme: IThemeStyle) =>
       width: "100%",
       height: "calc(100% - 63px)",
       overflowY: "auto",
+      backgroundColor: "#505965",
     },
   })
 );

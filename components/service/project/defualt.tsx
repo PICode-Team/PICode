@@ -150,8 +150,6 @@ export const DefualtInput = ({
       .then((res) => res.json())
       .then((res) => {
         if (res.code === 200) {
-          console.log(res);
-
           setContainerList(["1", "2", "3"]);
         }
       });

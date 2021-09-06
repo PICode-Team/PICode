@@ -4,8 +4,6 @@ import DescriptionIcon from "@material-ui/icons/Description";
 import ExpandMoreRoundedIcon from '@material-ui/icons/ExpandMoreRounded';
 import { cloneDeep } from "lodash";
 import AddInput from "./addfile";
-import QueryUpdate from "../../grapql/document/update";
-import GetQuery from "../../grapql/document/get";
 
 interface INoteSidebar {
   fileView: IFileView[] | undefined;

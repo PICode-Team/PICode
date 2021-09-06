@@ -59,13 +59,13 @@ export function Layout(ctx: any) {
       }
     };
 
-    ws.current.onmessage = (msg: any) => {
+    ws.current.addEventListener("message", (msg: any) => {
       let loginUserData = JSON.parse(msg.data);
 
       if (loginUserData.type === "getWorkingPath") {
         setLoginUser(loginUserData.data);
       }
-    };
+    });
   };
 
   React.useEffect(() => {

@@ -1151,7 +1151,7 @@ export default function Messenger({ ws, userId }: { ws: any; userId: string }) {
     if (ws.current) {
       if (targetList.length === 0) getChat();
 
-      ws.current.onmessage = (msg: any) => {
+      ws.current.addEventListener("message", (msg: any) => {
         const message = JSON.parse(msg.data);
 
         if (message.category === "chat") {
@@ -1233,7 +1233,7 @@ export default function Messenger({ ws, userId }: { ws: any; userId: string }) {
               break;
           }
         }
-      };
+      });
     }
   }, [ws.current, messages]);
 
