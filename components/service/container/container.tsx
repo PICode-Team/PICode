@@ -47,13 +47,13 @@ export default function Contatiner(props: any) {
         d3.selectAll("#checkCircle")
             .on("click", (e, d: any) => {
                 if (mouseDown === undefined) {
-                    setMouseDown(d.id)
+                    setMouseDown(d)
                 } else {
-                    setMouseUp(d.id)
+                    setMouseUp(d)
                 }
             })
             .attr("fill", (d: any) => {
-                if (mouseDown === d.id || mouseUp === d.id) {
+                if (mouseDown.id === d.id || mouseUp.id === d.id) {
                     return "black"
                 }
                 return "grey"
@@ -80,7 +80,7 @@ export default function Contatiner(props: any) {
             mode: "cors",
             body: JSON.stringify(payload)
         }).then((res) => res.json())
-        if (data.result === "ok") {
+        if (data.code === 200) {
             getDockerData();
         }
     }
@@ -88,8 +88,6 @@ export default function Contatiner(props: any) {
     useEffect(() => {
         if (mouseDown !== undefined && mouseUp !== undefined) {
             let payload;
-            console.log(mouseDown)
-            console.log(mouseUp)
             if (mouseDown.type === "network" && mouseUp.type === "container") {
                 payload = {
                     "containerId": `${mouseUp.containerId}`,
@@ -229,7 +227,7 @@ export default function Contatiner(props: any) {
             .attr('markerHeight', 10)
             .attr('orient', 'auto-start-reverse')
             .append('path')
-            .attr('d', d3.line()([[0, 0], [0, 10], [10, 5]]))
+            .attr('d', (d3 as any).line()([[0, 0], [0, 10], [10, 5]]))
             .attr('stroke', '#fff')
             .attr("fill", "#fff");
 
@@ -276,10 +274,11 @@ export default function Contatiner(props: any) {
                             }
                         }
 
-                        d3.selectAll("line").filter((tmp: any, i: any) => {
+                        d3.selectAll("line").filter((tmp: any) => {
                             if (tmp.source === String(d[dataConvertor[type].id]) || tmp.target === String(d[dataConvertor[type].id])) {
                                 return true;
                             }
+                            return false;
                         }).attr("opacity", 1)
                     })
                     .on("contextmenu", (e, d) => {
@@ -329,7 +328,7 @@ export default function Contatiner(props: any) {
 
                 conCircle.append("circle")
                     .attr("id", `checkCircle`)
-                    .datum({ id: node[dataConvertor[type].id] })
+                    .datum(node)
                     .attr("r", 5)
                     .attr("cx", x)
                     .attr("cy", () => {
@@ -340,7 +339,7 @@ export default function Contatiner(props: any) {
 
                 conCircle.append("circle")
                     .attr("id", `checkCircle`)
-                    .datum({ id: node[dataConvertor[type].id] })
+                    .datum(node)
                     .attr("r", 5)
                     .attr("cx", x)
                     .attr("cy", () => {
@@ -364,7 +363,7 @@ export default function Contatiner(props: any) {
             .attr('markerHeight', 10)
             .attr('orient', 'auto-start-reverse')
             .append('path')
-            .attr('d', d3.line()([[0, 0], [0, 10], [10, 5]]))
+            .attr('d', (d3 as any).line()([[0, 0], [0, 10], [10, 5]]))
             .attr('stroke', color !== undefined ? color : "#fff")
             .attr("fill", color !== undefined ? color : "#fff");
     }
@@ -428,11 +427,11 @@ export default function Contatiner(props: any) {
                         .attr("id", `${port}:${node.containerId}`)
                         .style("stroke", "#fff")
                         .style("stroke-width", 1.5)
-                        .attr("x1", startPoint.getBoundingClientRect().x - 30)
-                        .attr("y1", startPoint.getBoundingClientRect().y - 120)
-                        .attr("x2", endPoint.getBoundingClientRect().x - 30)
+                        .attr("x1", (startPoint as any).getBoundingClientRect().x - 30)
+                        .attr("y1", (startPoint as any).getBoundingClientRect().y - 120)
+                        .attr("x2", (endPoint as any).getBoundingClientRect().x - 30)
                         .style("stroke-dasharray", ("10, 4"))
-                        .attr("y2", endPoint.getBoundingClientRect().y + 40)
+                        .attr("y2", (endPoint as any).getBoundingClientRect().y + 40)
                         .attr("marker-end", "url(#arrow)").attr("marker-start", "url(#arrow)");
                 }
             }
@@ -454,10 +453,10 @@ export default function Contatiner(props: any) {
                             .style("stroke", "#fff")
                             .style("stroke-dasharray", ("10, 4"))
                             .style("stroke-width", 1)
-                            .attr("x1", startPoint.getBoundingClientRect().x - 30)
-                            .attr("y1", startPoint.getBoundingClientRect().y + 20)
-                            .attr("x2", endPoint.getBoundingClientRect().x - 30)
-                            .attr("y2", endPoint.getBoundingClientRect().y - 120)
+                            .attr("x1", (startPoint as any).getBoundingClientRect().x - 30)
+                            .attr("y1", (startPoint as any).getBoundingClientRect().y + 20)
+                            .attr("x2", (endPoint as any).getBoundingClientRect().x - 30)
+                            .attr("y2", (endPoint as any).getBoundingClientRect().y - 120)
                             .attr("marker-end", "url(#arrow)")
                             .attr("marker-start", "url(#arrow)");
                     }
@@ -479,7 +478,7 @@ export default function Contatiner(props: any) {
                     if (startPoint !== null && endPoint !== null) {
                         makeLine.push({ source: tmpNode.containerId, target: node.containerId })
                         let lineGenrator = d3.line().curve(d3.curveNatural)
-                        const points = [[startPoint.getBoundingClientRect().x - 175, startPoint.getBoundingClientRect().y], [endPoint.getBoundingClientRect().x - 200, endPoint.getBoundingClientRect().y],];
+                        const points: any = [[(startPoint as any).getBoundingClientRect().x - 175, (startPoint as any).getBoundingClientRect().y], [(endPoint as any).getBoundingClientRect().x - 200, (endPoint as any).getBoundingClientRect().y],];
                         let pathData = lineGenrator(points)
                         d3.select("#containerView")
                             .select("g")
@@ -490,10 +489,10 @@ export default function Contatiner(props: any) {
                             .style("stroke", "#fff")
                             .style("stroke-dasharray", ("10, 4"))
                             .style("stroke-width", 1)
-                            .attr("x1", startPoint.getBoundingClientRect().x - 100)
-                            .attr("y1", startPoint.getBoundingClientRect().y - 40)
-                            .attr("x2", endPoint.getBoundingClientRect().x + 40)
-                            .attr("y2", endPoint.getBoundingClientRect().y - 65)
+                            .attr("x1", (startPoint as any).getBoundingClientRect().x - 100)
+                            .attr("y1", (startPoint as any).getBoundingClientRect().y - 40)
+                            .attr("x2", (endPoint as any).getBoundingClientRect().x + 40)
+                            .attr("y2", (endPoint as any).getBoundingClientRect().y - 65)
                             .attr("marker-end", "url(#arrow)")
                             .attr("marker-start", "url(#arrow)");
                     }
@@ -509,7 +508,7 @@ export default function Contatiner(props: any) {
                 .duration(1000)
                 .ease(d3.easeLinear)
                 .styleTween("stroke-dashoffset", () => {
-                    return d3.interpolate(0, 14);
+                    return d3.interpolate(0, 14) as any;
                 })
                 .on("end", animate);
 
@@ -616,7 +615,7 @@ export default function Contatiner(props: any) {
                                 },
                                 body: JSON.stringify(payload),
                             }).then((res) => res.json());
-                            if (data.result === "ok") {
+                            if (data.code === 200) {
                                 getDockerData()
                             }
                         }}>
@@ -636,7 +635,7 @@ export default function Contatiner(props: any) {
                                 },
                                 body: JSON.stringify(payload),
                             }).then((res) => res.json());
-                            if (data.result === "ok") {
+                            if (data.code === 200) {
                                 getDockerData()
                             }
                         }}>
@@ -656,7 +655,7 @@ export default function Contatiner(props: any) {
                             },
                             body: JSON.stringify(payload),
                         }).then((res) => res.json());
-                        if (data.result === "ok") {
+                        if (data.code === 200) {
                             getDockerData()
                         }
                     }}>
@@ -673,7 +672,7 @@ export default function Contatiner(props: any) {
                         method: "DELETE",
                         mode: "cors",
                     }).then((res) => res.json());
-                    if (data.result === "ok") {
+                    if (data.code === 200) {
                         getDockerData()
                     }
                 }}>
