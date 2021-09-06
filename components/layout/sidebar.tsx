@@ -158,79 +158,85 @@ export function Sidebar(props: any) {
           <Row data={data[v]} toggle={toggle} key={idx} />
         ))}
       </div>
-      <div
-        style={{
-          width: "100%",
-          color: "#ffffff",
-        }}
-      >
+      {!toggle && (
         <div
-          onClick={() => {}}
           style={{
             width: "100%",
-            height: "30px",
-            padding: "8px 15px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            backgroundColor: "#505965",
-            marginTop: "2px",
+            color: "#ffffff",
           }}
         >
-          Member
-          <span
+          <div
+            onClick={() => {}}
             style={{
+              width: "100%",
+              height: "30px",
+              padding: "8px 15px",
               display: "flex",
+              justifyContent: "space-between",
               alignItems: "center",
-              cursor: "pointer",
-            }}
-            onClick={() => {
-              document
-                .getElementById("on-off-content")
-                ?.classList.toggle(classes.onOffContent);
+              backgroundColor: "#505965",
+              marginTop: "2px",
             }}
           >
-            <ArrowDropDown />
-          </span>
-        </div>
-        <div
-          id="on-off-content"
-          style={{ width: "100%", height: "30px", padding: "8px 15px" }}
-        >
-          {userList.length > 0 &&
-            userList.map((v, i) => {
-              return (
-                <div
-                  key={`user-list-on-off-${i}`}
-                  style={{
-                    display: "flex",
-                    borderBottom: "1px solid #7d7a7a",
-                    margin: "0px -15px",
-                    padding: "6px 15px",
-                  }}
-                >
+            Member
+            <span
+              style={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                document
+                  .getElementById("on-off-content")
+                  ?.classList.toggle(classes.onOffContent);
+              }}
+            >
+              <ArrowDropDown />
+            </span>
+          </div>
+          <div
+            id="on-off-content"
+            style={{
+              width: "100%",
+              height: "fit-content",
+              padding: "8px 15px",
+            }}
+          >
+            {userList.length > 0 &&
+              userList.map((v, i) => {
+                return (
                   <div
+                    key={`user-list-on-off-${i}`}
                     style={{
-                      width: "20px",
-                      height: "20px",
-                      borderRadius: "10px",
-                      backgroundColor: "#ffffff",
-                      marginRight: "12px",
-                      border: `3.5px solid ${
-                        props.loginUser.find(
-                          (user: any) => user.userId === v.userId
-                        ) !== undefined
-                          ? "#42995f"
-                          : "#b84343"
-                      }`,
+                      display: "flex",
+                      borderBottom: "1px solid #7d7a7a",
+                      margin: "0px -15px",
+                      padding: "6px 15px",
                     }}
-                  ></div>
-                  <div>{v.userName}</div>
-                </div>
-              );
-            })}
+                  >
+                    <div
+                      style={{
+                        width: "20px",
+                        height: "20px",
+                        borderRadius: "10px",
+                        backgroundColor: "#ffffff",
+                        marginRight: "12px",
+                        border: `3.5px solid ${
+                          props.loginUser.find(
+                            (user: any) => user.userId === v.userId
+                          ) !== undefined
+                            ? "#42995f"
+                            : "#b84343"
+                        }`,
+                      }}
+                    ></div>
+                    <div>{v.userName}</div>
+                  </div>
+                );
+              })}
+          </div>
         </div>
-      </div>
+      )}
       <div
         className={classes.toggleButton}
         onClick={() => {
