@@ -6,7 +6,7 @@ export const chatStyle = makeStyles((theme: IThemeStyle) =>
   createStyles({
     root: {
       backgroundColor: "#2c3239",
-      width: "calc(100% - 64px)",
+      width: "100%",
       height: "100%",
       display: "flex",
     },

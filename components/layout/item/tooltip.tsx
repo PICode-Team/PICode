@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { UserInfoStyle } from "../../../styles/layout/item/tooltip";
 import ClearRoundedIcon from "@material-ui/icons/ClearRounded";
 import AccountCircleRoundedIcon from "@material-ui/icons/AccountCircleRounded";
@@ -8,6 +8,7 @@ import { Edit } from "@material-ui/icons";
 
 export default function UserInfo(props: any) {
   const classes = UserInfoStyle();
+
   return (
     <div className={classes.userInfo}>
       <div className={classes.topbar}>
@@ -26,7 +27,13 @@ export default function UserInfo(props: any) {
             backgroundColor: "#ffffff",
             borderRadius: "50%",
             display: "flex",
-            justifyContent: "flex-end",
+            alignItems: "flex-end",
+            justifyContent: "",
+            backgroundImage: `url('http://localhost:8000/api/temp/${props.data.userThumbnail}')`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            flexDirection: "column",
           }}
         >
           <div
@@ -50,6 +57,19 @@ export default function UserInfo(props: any) {
               }}
             />
           </div>
+          {props.data.userThumbnail === undefined && (
+            <div
+              style={{
+                width: "100%",
+                height: "calc(50% - 32px)",
+                fontSize: "52px",
+                fontWeight: "bold",
+                marginTop: "-8px",
+              }}
+            >
+              {props.data.userName.slice(0, 1)}
+            </div>
+          )}
         </div>
         <div className={classes.contentText}>Hello, {props.data.userName}</div>
         <div style={{ color: "#ffffff" }}>You had to {4} issues in 7 days</div>

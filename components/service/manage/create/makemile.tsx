@@ -245,7 +245,6 @@ export default function MakeMile(props: any) {
                     startDate: startDate ?? "",
                     endDate: endDate ?? "",
                   };
-                  console.log(payload);
 
                   props.ws.send(
                     JSON.stringify({

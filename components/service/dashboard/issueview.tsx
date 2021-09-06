@@ -4,8 +4,7 @@ import { recentWorkStyle } from "../../../styles/service/dashboard/recentwork";
 export default function IssueView(props: any) {
   const classes = recentWorkStyle();
   const [kanbanList, setKanbanList] = useState<string[]>([]);
-  const [mile, setMile] = useState();
-  const [issue, setIssue] = useState<any[]>();
+  const [issues, setIssue] = useState<any[]>([]);
 
   useEffect(() => {
     if (props.ws !== undefined && props.ws.current) {
@@ -22,37 +21,25 @@ export default function IssueView(props: any) {
               break;
             default:
           }
-        } else if (content.category === "milestone") {
-          switch (content.type) {
-            case "getMilestone":
-              setMile(content.data);
-              break;
-            default:
-          }
         } else if (content.category === "issue") {
           switch (content.type) {
             case "getIssue":
-              setIssue([...(issue as any[]), content.data.issues]);
+              if (content.data.issues.length > 0)
+                setIssue([...issues, ...content.data.issues]);
               break;
           }
         }
       });
 
-      props.ws.current.send(
-        JSON.stringify({
-          category: "kanban",
-          type: "getKanban",
-          data: {},
-        })
-      );
-
-      props.ws.current.send(
-        JSON.stringify({
-          category: "milestone",
-          type: "getMilestone",
-          data: {},
-        })
-      );
+      if (kanbanList.length === 0) {
+        props.ws.current.send(
+          JSON.stringify({
+            category: "kanban",
+            type: "getKanban",
+            data: {},
+          })
+        );
+      }
     }
   }, [props.ws]);
 
@@ -76,58 +63,97 @@ export default function IssueView(props: any) {
   return (
     <div style={{ width: "44%", height: "100%" }}>
       <div className={classes.title}>Server Stat</div>
-      <div className={classes.content}>
-        {issue !== undefined &&
-          issue.map((v, i) => {
-            <div
-              key={`issue-${i}`}
-              style={{
-                backgroundColor: "#2C3239",
-                padding: "15px",
-                borderRadius: "6px",
-              }}
-            >
+      <div
+        className={classes.content}
+        style={{
+          display: "block",
+          overflowY: "auto",
+        }}
+      >
+        {issues.length > 0 &&
+          issues.map((v, i) => {
+            return (
               <div
+                key={`dashboard-issue-${i}`}
                 style={{
-                  display: "flex",
-                  alignItems: "flex-end",
+                  backgroundColor: "#3b434d",
+                  padding: "15px",
+                  borderRadius: "6px",
                   marginBottom: "8px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
+                onClick={() => {
+                  // console.log(v);
+                  //window.location.href = `/manage/issue?projectName=${abc}&kanban=${testasd}`;
                 }}
               >
                 <div
                   style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "16px",
-                    backgroundColor: "#ffffff",
-                    marginRight: "8px",
-                  }}
-                ></div>
-                <div>
-                  <div style={{ fontSize: "11px" }}>{v.title}</div>
-                  <div style={{ fontSize: "11px" }}>#{v.issueId} Issue</div>
-                </div>
-              </div>
-              <div style={{ fontSize: "11px", marginBottom: "14px" }}>
-                {v.content}
-              </div>
-              <div style={{ display: "flex" }}>
-                <div
-                  style={{
-                    fontSize: "10px",
-                    textAlign: "center",
-                    width: "50px",
-                    height: "18px",
-                    backgroundColor: "#475261",
-                    marginRight: "6px",
-                    borderRadius: "6px",
-                    padding: "3px 0px",
+                    display: "flex",
+                    alignItems: "flex-end",
+                    color: "#ffffff",
                   }}
                 >
-                  {v.label}
+                  <div
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "16px",
+                      backgroundColor: "#ffffff",
+                      marginRight: "8px",
+                    }}
+                  ></div>
+                  <div>
+                    <div style={{ fontSize: "11px", fontWeight: "bold" }}>
+                      {v.title}
+                    </div>
+                    <div style={{ fontSize: "11px" }}>#{v.issueId} Issue</div>
+                  </div>
+                  <div
+                    style={{
+                      height: "100%",
+                      marginLeft: "12px",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: "#ffffff",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      {v.content ?? "this issue has no content"}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ display: "flex" }}>
+                    {v.label !== "" && v.label !== undefined && (
+                      <div
+                        style={{
+                          fontSize: "10px",
+                          textAlign: "center",
+                          width: "50px",
+                          height: "18px",
+                          backgroundColor: "#475261",
+                          marginRight: "6px",
+                          borderRadius: "6px",
+                          padding: "3px 0px",
+                          color: "#ffffff",
+                        }}
+                      >
+                        {v.label}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>;
+            );
           })}
       </div>
     </div>

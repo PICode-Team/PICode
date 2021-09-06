@@ -201,7 +201,11 @@ export default function NoteSidebar(props: INoteSidebar) {
                     }}
                   />
                 )}
-                <div style={{}}>
+                <div
+                  style={{
+                    display: "flex",
+                  }}
+                >
                   <DescriptionIcon
                     style={{
                       height: "17px",
