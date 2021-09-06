@@ -47,7 +47,7 @@ export const containerStyle = makeStyles((theme: IThemeStyle) =>
         },
         context: {
             width: "150px",
-            height: "160px",
+            height: "85px",
             position: "absolute",
             background: theme.backgroundColor.step2,
             zIndex: 99,

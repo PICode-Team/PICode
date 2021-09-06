@@ -14,142 +14,21 @@ import SettingsBackupRestoreOutlinedIcon from '@material-ui/icons/SettingsBackup
 import PowerOffOutlinedIcon from '@material-ui/icons/PowerOffOutlined';
 import { DeleteForeverOutlined } from "@material-ui/icons";
 
-const tmpData: any = {
-    "container": [
-        {
-            "containerName": "testProject2",
-            "image": "ubuntu",
-            "tag": "latest",
-            "containerId": "f8f244355925bf9b43beeb2ec93a6b4d96f7e1752e04b448372573a92346ddef",
-            "status": "running",
-            "bridgeInfo": { "testBridge": "testAlias" },
-            "containers": [],
-            "portInfo": { "1111": 2222, "3333": 4444 },
-            "socketPort": 63428,
-            "ramUsage": "0.00%\u001b[H0.00%",
-            "parent": ["8c3f514d9dbd2216991d6b60c18bcbf524bd721c5a2d40140d72d39996db4f00"]
-        },
-        {
-            "containerName": "testProject4",
-            "image": "ubuntu",
-            "tag": "latest",
-            "containerId": "815e7d0b51a44897476e99edc5348a45c657dd9115c9d83220960cd943c1d813",
-            "status": "running",
-            "bridgeInfo": { "bridge": "" },
-            "containers": [],
-            "portInfo": { "1313": 1414 },
-            "socketPort": 62083,
-            "ramUsage": "0.00%\u001b[H0.00%",
-            "parent": ["70ecdf273ef360e4036390ff870c84db1115b8ffcb494597e9384e480afe5442"]
-        },
-        {
-            "containerName": "testProject",
-            "image": "ubuntu",
-            "tag": "latest",
-            "containerId": "1dd43d7d93d5acf7a7747a2cd946b01b66dadb9af263d0f001ffba36ee2ca8df",
-            "status": "exited",
-            "bridgeInfo": { "testBridge": "testAlias" },
-            "containers": ["testProject3"],
-            "portInfo": { "1111": 2222 },
-            "socketPort": 62321,
-            "ramUsage": "0.00%",
-            "parent": ["8c3f514d9dbd2216991d6b60c18bcbf524bd721c5a2d40140d72d39996db4f00"]
-        },
-        {
-            "containerName": "testProject6",
-            "image": "ubuntu",
-            "tag": "latest",
-            "containerId": "fbe9ed75526f1e62e8404f2a594287ab59865ec289990061a185e74e54d35973",
-            "status": "running",
-            "bridgeInfo": { "bridge": "" },
-            "containers": [],
-            "portInfo": { "12345": 54321, "22222": 33333 },
-            "socketPort": 62990,
-            "ramUsage": "0.00%",
-            "parent": ["70ecdf273ef360e4036390ff870c84db1115b8ffcb494597e9384e480afe5442"]
-        },
-        {
-            "containerName": "testProject5",
-            "image": "ubuntu",
-            "tag": "latest",
-            "containerId": "282d89de768d5772238b333dc5eb8f12d86adaa1b42c5de64c8b17d04708f7c4",
-            "status": "running",
-            "bridgeInfo": { "bridge": "" },
-            "containers": [],
-            "portInfo": { "12222": 12222, "13131": 13131 },
-            "socketPort": 61816,
-            "parent": ["70ecdf273ef360e4036390ff870c84db1115b8ffcb494597e9384e480afe5442"]
-        },
-        {
-            "containerName": "testProject3",
-            "image": "ubuntu",
-            "tag": "latest",
-            "containerId": "ab3b8c35a7eed628a03802787dd41b7558410f4195d00e912f291da0e6cd155b",
-            "status": "running",
-            "bridgeInfo": { "testBridge": "testAlias" },
-            "containers": ["testProject"],
-            "portInfo": { "1234": 4321 },
-            "socketPort": 61329,
-            "ramUsage": "0.00%",
-            "parent": ["8c3f514d9dbd2216991d6b60c18bcbf524bd721c5a2d40140d72d39996db4f00"]
-        }
-    ],
-    "port": [
-        {
-            "outBound": 1111,
-            "inBound": [2222, 2222],
-            "onContainer": "f8f244355925bf9b43beeb2ec93a6b4d96f7e1752e04b448372573a92346ddef",
-            "connectedContainers": ["1dd43d7d93d5acf7a7747a2cd946b01b66dadb9af263d0f001ffba36ee2ca8df"]
-        },
-        { "outBound": 3333, "inBound": [4444], "onContainer": "f8f244355925bf9b43beeb2ec93a6b4d96f7e1752e04b448372573a92346ddef", "connectedContainers": [] },
-        { "outBound": 1313, "inBound": [1414], "onContainer": "815e7d0b51a44897476e99edc5348a45c657dd9115c9d83220960cd943c1d813", "connectedContainers": [] },
-        { "outBound": 12345, "inBound": [54321], "onContainer": "fbe9ed75526f1e62e8404f2a594287ab59865ec289990061a185e74e54d35973", "connectedContainers": [] },
-        { "outBound": 22222, "inBound": [33333], "onContainer": "fbe9ed75526f1e62e8404f2a594287ab59865ec289990061a185e74e54d35973", "connectedContainers": [] },
-        { "outBound": 12222, "inBound": [12222], "onContainer": "282d89de768d5772238b333dc5eb8f12d86adaa1b42c5de64c8b17d04708f7c4", "connectedContainers": [] },
-        { "outBound": 13131, "inBound": [13131], "onContainer": "282d89de768d5772238b333dc5eb8f12d86adaa1b42c5de64c8b17d04708f7c4", "connectedContainers": [] },
-        { "outBound": 1234, "inBound": [4321], "onContainer": "ab3b8c35a7eed628a03802787dd41b7558410f4195d00e912f291da0e6cd155b", "connectedContainers": [] }
-    ],
-    "network": [
-        { "name": "host", "networkId": "51451691d45e04223b4da5da2bfcf40557f1d78504b7f6881126809d91988651", "containers": [] },
-        { "name": "none", "networkId": "2d07c58758e07d3c84fc8e2df4269bd00432745492163ead657effba81742b98", "containers": [] },
-        {
-            "name": "bridge",
-            "networkId": "70ecdf273ef360e4036390ff870c84db1115b8ffcb494597e9384e480afe5442",
-            "ip": "172.17.0.0/16",
-            "containers": [
-                "815e7d0b51a44897476e99edc5348a45c657dd9115c9d83220960cd943c1d813",
-                "fbe9ed75526f1e62e8404f2a594287ab59865ec289990061a185e74e54d35973",
-                "282d89de768d5772238b333dc5eb8f12d86adaa1b42c5de64c8b17d04708f7c4"
-            ]
-        },
-        {
-            "name": "testBridge",
-            "networkId": "8c3f514d9dbd2216991d6b60c18bcbf524bd721c5a2d40140d72d39996db4f00",
-            "ip": "172.19.0.0/16",
-            "containers": [
-                "f8f244355925bf9b43beeb2ec93a6b4d96f7e1752e04b448372573a92346ddef",
-                "1dd43d7d93d5acf7a7747a2cd946b01b66dadb9af263d0f001ffba36ee2ca8df",
-                "ab3b8c35a7eed628a03802787dd41b7558410f4195d00e912f291da0e6cd155b"
-            ]
-        }
-    ]
-} // 추후 fetch 로 변경
-
 
 export default function Contatiner(props: any) {
     const classes = containerStyle();
     const [zoomLock, setZoomLock] = React.useState<boolean>(false);
-    const [mouseDown, setMouseDown] = React.useState();
-    const [mouseUp, setMouseUp] = React.useState();
-    const [dockerData, setDockerData] = React.useState();
+    const [mouseDown, setMouseDown] = React.useState<any>();
+    const [mouseUp, setMouseUp] = React.useState<any>();
+    const [dockerData, setDockerData] = React.useState<any>();
     const [openContext, setOpenContext] = React.useState(false);
     const [contextPosition, setContextPosition] = React.useState({
         x: 0, y: 0
     })
-    const [contextInformation, setContextInformation] = React.useState();
+    const [contextInformation, setContextInformation] = React.useState<any>();
 
     const getDockerData = async () => {
-        let data = await fetch(`http://localhost:8000/api/docker/network`, {
+        let data = await fetch(`http://localhost:8000/api/docker/visualization`, {
             method: "GET"
         }).then((res) => res.json())
         setDockerData(data.networkList);
@@ -192,8 +71,55 @@ export default function Contatiner(props: any) {
         let container = d3.select("#containerView").select("g")
     }, [zoomLock])
 
+    const connectContainer = async (payload: any) => {
+        let data = await fetch(`http://localhost:8000/api/docker/visualization`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            mode: "cors",
+            body: JSON.stringify(payload)
+        }).then((res) => res.json())
+        if (data.result === "ok") {
+            getDockerData();
+        }
+    }
+
     useEffect(() => {
         if (mouseDown !== undefined && mouseUp !== undefined) {
+            let payload;
+            if (mouseDown.type === "network" && mouseDown.type === "container") {
+                payload = {
+                    "containerId": `${mouseDown.containerId}`,
+                    "dockerInfo": {
+                        "bridgeName": "testConnectBridge",
+                        "bridgeAlias": "testBridge",
+                        "connect": true
+                    }
+                }
+            } else if (mouseDown.type === "container" && mouseDown.type === "network") {
+                payload = {
+                    "containerId": `${mouseDown.containerId}`,
+                    "dockerInfo": {
+                        "bridgeName": "testConnectBridge",
+                        "bridgeAlias": "testBridge",
+                        "connect": true
+                    }
+                }
+            } else {
+                payload = {
+                    "containerId": mouseDown.containerId,
+                    "dockerInfo":
+                    {
+                        "bridgeName": mouseDown.containerId,
+                        "bridgeAlias": "TestConnectContainer",
+                        "linkConatiner": mouseUp.containerId,
+                        "connect": true
+                    }
+                }
+
+            }
+            connectContainer(payload);
             setMouseDown(undefined)
             setMouseUp(undefined)
             //선 연결 코드
@@ -201,13 +127,14 @@ export default function Contatiner(props: any) {
         else {
             d3.selectAll("#checkCircle")
                 .on("click", (e, d: any) => {
+                    if (d.type === "port") return;
                     if (mouseDown === undefined) {
                         setMouseDown(d.id)
                     } else {
-                        console.log(d, mouseDown)
                         if (mouseDown === d.id) {
                             setMouseDown(undefined)
                         } else {
+                            if (mouseDown.type === "network" && mouseUp.type === "network") return
                             setMouseUp(d.id)
                         }
                     }
@@ -378,6 +305,7 @@ export default function Contatiner(props: any) {
                     .attr("y", () => {
                         return y - r / 2
                     })
+
                 conCircle.append("circle")
                     .attr("id", "nodeCircle")
                     .attr("r", r)
@@ -658,35 +586,99 @@ export default function Contatiner(props: any) {
                 </div>
             </div>
         </div>
-        {(openContext && contextInformation !== undefined) && < div
+        {(openContext && contextInformation !== undefined && contextInformation.type !== "port") && < div
             className={classes.context}
             onBlur={() => { setOpenContext(false) }}
-            style={{ top: contextPosition.y, left: contextPosition.x }}>
+            style={{
+                top: contextPosition.y, left: contextPosition.x,
+            }}>
             <div style={{ width: "100%", fontSize: "18px", lineHeight: "30px", height: "30px", borderBottom: "1px solid #fff" }}>
                 {contextInformation[dataConvertor[contextInformation.type].name]}
             </div>
-            <div style={{ height: "30px", padding: "0 10px", fontSize: "15px", lineHeight: "30px" }}>
-                Power Setting
-            </div>
-            <div style={{ height: "45px", width: "100%", lineHeight: "45px", display: "flex", borderBottom: "1px solid #fff" }}>
-                <IconButton>
-                    <PowerOutlinedIcon className={classes.icon} />
-                </IconButton>
-                <IconButton>
-                    <PowerOffOutlinedIcon className={classes.icon} />
-                </IconButton>
-                <IconButton>
-                    <SettingsBackupRestoreOutlinedIcon className={classes.icon} />
-                </IconButton>
-            </div>
-            <div style={{ height: "45px", width: "100%", padding: "0 10px", lineHeight: "45px", display: "flex", justifyContent: "space-between" }}>
+            {contextInformation.type === "container" && <div style={{ display: "flex", height: "45px", padding: "0 10px", fontSize: "15px", lineHeight: "45px", justifyContent: "space-around" }}>
+                <div style={{ height: "45px", fontSize: "15px", lineHeight: "45px", display: "inline-block" }}>
+                    Power
+                </div>
+                <div style={{ height: "45px", width: "100%", lineHeight: "45px", display: "flex", justifyContent: "flex-end" }}>
+                    {contextInformation.status === "exited" &&
+                        <IconButton style={{ padding: 0 }} onClick={async () => {
+                            let payload = {
+                                containerId: contextInformation.containerId,
+                                dockerCommand: "start"
+                            }
+                            let data = await fetch(`http://localhost:8000/api/docker`, {
+                                method: "POST",
+                                mode: "cors",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify(payload),
+                            }).then((res) => res.json());
+                            if (data.result === "ok") {
+                                getDockerData()
+                            }
+                        }}>
+                            <PowerOutlinedIcon className={classes.icon} />
+                        </IconButton>}
+                    {contextInformation.status === "running" &&
+                        <IconButton style={{ padding: 0 }} onClick={async () => {
+                            let payload = {
+                                containerId: contextInformation.containerId,
+                                dockerCommand: "stop"
+                            }
+                            let data = await fetch(`http://localhost:8000/api/docker`, {
+                                method: "POST",
+                                mode: "cors",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify(payload),
+                            }).then((res) => res.json());
+                            if (data.result === "ok") {
+                                getDockerData()
+                            }
+                        }}>
+                            <PowerOffOutlinedIcon className={classes.icon} />
+                        </IconButton>
+                    }
+                    <IconButton style={{ padding: 0 }} onClick={async () => {
+                        let payload = {
+                            containerId: contextInformation.containerId,
+                            dockerCommand: "restart"
+                        }
+                        let data = await fetch(`http://localhost:8000/api/docker`, {
+                            method: "POST",
+                            mode: "cors",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(payload),
+                        }).then((res) => res.json());
+                        if (data.result === "ok") {
+                            getDockerData()
+                        }
+                    }}>
+                        <SettingsBackupRestoreOutlinedIcon className={classes.icon} />
+                    </IconButton>
+                </div>
+            </div>}
+            {contextInformation.type === "network" && <div style={{ height: "45px", width: "100%", padding: "0 10px", lineHeight: "45px", display: "flex", justifyContent: "space-between" }}>
                 <div style={{ height: "45px", fontSize: "15px", lineHeight: "45px" }}>
                     Delete
                 </div>
-                <IconButton>
+                <IconButton onClick={async () => {
+                    let data = await fetch(`http://localhost:8000/api/docker/network?networkName=${contextInformation.name}`, {
+                        method: "DELETE",
+                        mode: "cors",
+                    }).then((res) => res.json());
+                    if (data.result === "ok") {
+                        getDockerData()
+                    }
+                }}>
                     <DeleteForeverOutlined className={classes.icon} />
                 </IconButton>
             </div>
+            }
         </div>
         }
     </div >
