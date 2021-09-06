@@ -15,12 +15,12 @@ router.get("/", sessionRouter, (req, res) => {
 
 router.post("/", (req, res) => {
     const userId = req.session.userId as string;
-    const projectName = req.body?.projectName;
+    const containerId = req.body?.containerId;
     const dockerCommand = req.body?.dockerCommand;
-    if (projectName === undefined || dockerCommand === undefined) {
+    if (containerId === undefined || dockerCommand === undefined) {
         res.json({ code: ResponseCode.missingParameter });
     }
-    DataDockerManager.manage(userId, projectName, dockerCommand);
+    DataDockerManager.manage(userId, containerId, dockerCommand);
     res.json({ code: ResponseCode.ok });
 });
 

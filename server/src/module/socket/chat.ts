@@ -15,7 +15,7 @@ function sendMessage(sender: string, target: string, { message, parentChatId }: 
         getSocket(target)?.send(sendData);
         DataAlarmManager.create(sender, {
             type: "chat",
-            location: "",
+            location: `/chat?target=${sender}`,
             content: `${sender} send message to you : ${message}`,
             checkAlarm: { [target]: true },
         });
@@ -28,7 +28,7 @@ function sendMessage(sender: string, target: string, { message, parentChatId }: 
             });
             DataAlarmManager.create(sender, {
                 type: "chat",
-                location: "",
+                location: `/chat?target=${target}`,
                 content: `${sender} send message to channel ${target}: ${message}`,
                 checkAlarm: chatData.chatParticipant.reduce((list: { [ket in string]: boolean }, member) => {
                     list[member] = true;
@@ -57,7 +57,7 @@ function createChannel(creator: string, chatName: string, data: { description?: 
     });
     DataAlarmManager.create(creator, {
         type: "chat",
-        location: "",
+        location: `/chat?target=${chatName}`,
         content: `${creator} create channel ${chatName}`,
         checkAlarm: chatParticipant.reduce((list: { [ket in string]: boolean }, member) => {
             list[member] = true;

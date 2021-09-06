@@ -97,7 +97,7 @@ export default class DataIssueManager {
             return undefined;
         }
 
-        const issueListData = { uuid: issueUUID, issueId: issueNumber, title, creator, assigner, label, column } as TIssueListData;
+        const issueListData = { uuid: issueUUID, issueId: issueNumber, title, creator, assigner, label, column, content } as TIssueListData;
         if (!this.setIssueListInfo(kanbanUUID, issueUUID, issueListData)) {
             log.error(`[dataIssueManager] create -> fail to setIssueListInfo`);
             return undefined;

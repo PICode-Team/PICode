@@ -13,10 +13,10 @@ export interface TIssueUpdateData {
 export type TIssueListData = TIssueUpdateData & {
     uuid: string;
     issueId: number;
+    content?: string;
 };
 
 export type TIssueData = TIssueListData & {
-    content?: string;
     kanban: string;
     milestone?: string;
 };

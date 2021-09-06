@@ -334,7 +334,7 @@ CMD ["./server-linux", "${socketPort}"]`;
 
                 DataAlarmManager.create(userId, {
                     type: "workspace",
-                    location: "",
+                    location: `?workspace=${projectId}`,
                     content: `${userId} created workspace : ${projectName}`,
                     checkAlarm: projectParticipants.reduce((list: { [ket in string]: boolean }, member) => {
                         list[member] = true;
@@ -350,7 +350,7 @@ CMD ["./server-linux", "${socketPort}"]`;
                     removeData(DataProjectManager.getProjectDataPath(projectId));
                     DataAlarmManager.create(userId, {
                         type: "workspace",
-                        location: "",
+                        location: `/`,
                         content: `${userId} could not create workspace : ${projectName}, error is: ${error}`,
                         checkAlarm: projectParticipants.reduce((list: { [ket in string]: boolean }, member) => {
                             list[member] = true;
@@ -362,8 +362,14 @@ CMD ["./server-linux", "${socketPort}"]`;
         );
     }
 
-    static manage(userId: string, projectName: string, dockerCommand: "start" | "stop" | "restart" | "rm") {
-        const projectId = DataProjectManager.getProjectId(userId, projectName);
+    static getProjectId(userId: string, containerId: string) {
+        return fs.readdirSync(DataProjectManager.getProjectDefaultPath()).find((projectId) => {
+            return this.getDockerInfo(projectId).containerId === containerId && (DataProjectManager.isProjectCreator(userId, projectId) || DataProjectManager.isProjectParticipants(userId, projectId));
+        });
+    }
+
+    static manage(userId: string, containerId: string, dockerCommand: "start" | "stop" | "restart" | "rm") {
+        const projectId = this.getProjectId(userId, containerId);
         const dockerInfo = projectId ? this.getDockerInfo(projectId) : undefined;
 
         if (dockerInfo === undefined || projectId === undefined) {
@@ -381,7 +387,7 @@ CMD ["./server-linux", "${socketPort}"]`;
                 DataAlarmManager.create(userId, {
                     type: "workspace",
                     location: "",
-                    content: `${userId} commands ${dockerCommand} to ${projectName} : ${dockerInfo.containerName}`,
+                    content: `${userId} commands ${dockerCommand} to ${dockerInfo.containerName}`,
                     checkAlarm: (DataProjectManager.getProjectInfo(projectId)?.projectParticipants as string[]).reduce((list: { [ket in string]: boolean }, member) => {
                         list[member] = true;
                         return list;

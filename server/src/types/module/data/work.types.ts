@@ -11,6 +11,7 @@ export interface TWorkInfo {
 export interface TUserToWork {
     userId: string;
     workInfo: TWorkInfo;
+    userThumbnail?: string;
 }
 
 export type TUserWorkInfo = {
