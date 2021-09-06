@@ -6,7 +6,7 @@ export const codeStyle = makeStyles((theme: IThemeStyle) =>
     createStyles({
         root: {
             backgroundColor: theme.backgroundColor.step0,
-            width: "calc(100% - 64px)",
+            width: "100%",
             height: "100%",
             display: "flex",
         },
@@ -67,13 +67,16 @@ export const sidebarStyle = makeStyles((theme: IThemeStyle) =>
             width: "300px",
             height: "100%",
             position: "relative",
-            backgroundColor: theme.backgroundColor.step3,
+            backgroundColor: theme.backgroundColor.step2,
         },
         rootDirectory: {
             fontSize: "14px",
             fontWeight: "bold",
             color: theme.font.low.color,
+            height: "30px",
+            lineHeight: "30px",
             textTransform: "uppercase",
+            padding: "0 10px 0 10px",
             cursor: "pointer",
             "& svg": {
                 width: "13px",

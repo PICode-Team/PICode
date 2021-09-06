@@ -576,9 +576,9 @@ export function Sidebar({
           e.stopPropagation()
           setOpen(open + 1)
         }} style={{
-          position: "absolute", right: 0, padding: "0px", transform: "rotate(-90deg)",
+          position: "absolute", right: "10px", top: 0, padding: 0, transform: "rotate(-90deg)",
         }}>
-          <WebAssetIcon style={{ width: "20px", height: "20px" }} />
+          <WebAssetIcon style={{ width: "20px", height: "20px", color: "#fff" }} />
         </IconButton>
       </div>
       <div

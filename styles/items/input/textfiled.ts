@@ -9,7 +9,7 @@ export const textFiledStyle = makeStyles((theme: IThemeStyle) =>
             color: theme.font.medium.color,
             width: "100%",
             height: "48px",
-            marginBottom: "20px",
+            marginBottom: "15px",
             borderBottom: "1px solid" + theme.font.medium.color,
             "&>div": {
                 color: theme.font.medium.color,
@@ -21,7 +21,7 @@ export const textFiledStyle = makeStyles((theme: IThemeStyle) =>
             "&>div:after": {
                 borderBottom: "1px solid " + theme.font.medium.color,
             },
-            "& label.Mui-focused": {
+            "&>label.Mui-focused": {
                 color: theme.font.medium.color,
             },
             "&>label": {

@@ -3,9 +3,9 @@ import { recentWorkStyle } from "../../../styles/service/dashboard/recentwork"
 
 export default function NoteView() {
     const classes = recentWorkStyle();
-    return <div style={{ width: "50%", height: "100%" }}>
+    return <div style={{ width: "32%", height: "100%" }}>
         <div className={classes.title}>
-            Current Document
+            Note
         </div>
         <div className={classes.content}>
 

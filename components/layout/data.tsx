@@ -1,39 +1,48 @@
-import DashboardIcon from '@material-ui/icons/Dashboard';
-import CodeRoundedIcon from '@material-ui/icons/CodeRounded';
-import ChatIcon from '@material-ui/icons/Chat';
-import CreateIcon from '@material-ui/icons/Create';
-import SettingsIcon from '@material-ui/icons/Settings';
-import EqualizerIcon from '@material-ui/icons/Equalizer';
+import DashboardOutlinedIcon from '@material-ui/icons/DashboardOutlined';
+import DescriptionOutlinedIcon from '@material-ui/icons/DescriptionOutlined';
+import ChatOutlinedIcon from '@material-ui/icons/ChatOutlined';
+import SettingsOutlinedIcon from '@material-ui/icons/SettingsOutlined';
+import DnsOutlinedIcon from '@material-ui/icons/DnsOutlined';
+import ComputerOutlinedIcon from '@material-ui/icons/ComputerOutlined';
+import WorkOutlineOutlinedIcon from '@material-ui/icons/WorkOutlineOutlined';
 
 export const sidebarData = {
     dashboard: {
         url: "/",
-        icon: <DashboardIcon />,
+        icon: <DashboardOutlinedIcon />,
         title: "Dashboard",
     },
-    code: {
-        url: "/codeview",
-        icon: <CodeRoundedIcon />,
-        title: "Code",
-    },
-    chat: {
-        url: "/chat",
-        icon: <ChatIcon />,
-        title: "Message",
+    workspace: {
+        icon: <WorkOutlineOutlinedIcon />,
+        title: "Workspace",
+        children: [
+            {
+                url: "/codeview",
+                icon: <DnsOutlinedIcon />,
+                title: "Code",
+                subUrl: ["/code"]
+            },
+            {
+                url: "/container",
+                icon: <ComputerOutlinedIcon />,
+                title: "Container",
+            },
+        ],
+        subUrl: ["/code", "/codeview", "/container"]
     },
     note: {
         url: "/note",
-        icon: <CreateIcon />,
+        icon: <DescriptionOutlinedIcon />,
         title: "Note",
     },
-    stat: {
-        url: "/stat",
-        icon: <EqualizerIcon />,
-        title: "Server Stat",
+    chat: {
+        url: "/chat",
+        icon: <ChatOutlinedIcon />,
+        title: "Chat",
     },
     setting: {
         url: "/setting",
-        icon: <SettingsIcon />,
+        icon: <SettingsOutlinedIcon />,
         title: "Setting",
     },
 };
