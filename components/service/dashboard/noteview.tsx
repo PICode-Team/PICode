@@ -68,9 +68,8 @@ export default function NoteView(props: any) {
             return (
               <div
                 key={`dashboard-file-viwe-${i}`}
+                className={classes.test}
                 style={{
-                  color: "#ffffff",
-                  backgroundColor: "#3b434d",
                   padding: "15px",
                   borderRadius: "6px",
                   marginBottom: "8px",
