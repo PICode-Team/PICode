@@ -1,34 +1,98 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# PICode
 
-## Getting Started
+### Project-Integrated COllaborative Development Environment
 
-First, run the development server:
+## What is the PICode?
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+PIcode is a web page that supports all development environments of the project so that users can collaborate without additional programs.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## What's the difference from other IDEs?
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.tsx`.
+---
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+### Work without any external modules
 
-## Learn More
+If you are going to start a project, you need a program for document management function, chat function to communicate with team members, and issue management function in addition to the code editor. However, if you use PICode, you can use all of the above functions on just a single web page.
 
-To learn more about Next.js, take a look at the following resources:
+![module_code](https://user-images.githubusercontent.com/28240077/132558933-19ab1a1d-b240-40b1-bac4-1f18dbdc7f4e.gif)
+code edit function
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+![module_chat](https://user-images.githubusercontent.com/28240077/132558942-65d9b40e-072b-4097-8e30-511b2222bd52.gif)
+chat function
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+![module_note](https://user-images.githubusercontent.com/28240077/132638418-a97da4c3-a315-4681-9679-4e38c5f2efb8.gif)
 
-## Deploy on Vercel
+note function
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Possible collaboration
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Through PICode real-time communication, you can see in real time where your team members are working, what they are working on. Therefore, you can work on documents or codes with them, or you can discuss the team's work with them in chat.
+
+![collaborate_code](https://user-images.githubusercontent.com/28240077/132559165-3f49e62d-d0f9-4ef7-a25f-c8fee82e3c02.gif)
+
+### Visualization
+
+Through container visualization, you can see all workspace structures and states. In addition, you can simply control network creation, container and network connection, and connection between containers by clicking nodes and buttons.
+
+![visualization_hover](https://user-images.githubusercontent.com/28240077/132559247-3b0667b1-6486-4267-bc90-1913c6a57f69.gif)
+visualization view
+
+![visualization_poweron](https://user-images.githubusercontent.com/28240077/132559253-f06e02dd-362b-4a8e-9410-d1b95ed5ab75.gif)
+power on the container through visualization view
+
+![visualization_connect](https://user-images.githubusercontent.com/28240077/132559258-15ac563e-d60c-41f2-a6d4-ea24dbf0357a.gif)
+connect container to network through visualization view
+
+### Work without changing environment
+
+If you want to work in vscode editor, use the extension supported by PICode in vscode.
+If you enter the PICode server url, ID, and password in the vscode extension, connect to it and select workspace, you can get the selected workspace codes and work in the vscode.
+
+![extension_vscode](https://user-images.githubusercontent.com/28240077/132559602-a2a90470-b371-4331-901d-ef9f5300d8ea.gif)
+
+## Development Environment
+
+---
+
+-   Linux or related OS
+-   Docker v20.X
+-   npm v7.X
+-   node v14.X
+
+## How to start PICode?
+
+---
+
+1. Install all of our npm module on terminal ( npm i )
+2. Create .env file
+3. Enter PORT={your port}, SERVER_API={your port} in the env file
+4. Enter `npm run-script build` on terminal
+5. Enter `npm run-script server:build` on terminal
+6. Enter `npm run-script start` on terminal
+7. Enter the url on web browser and login
+8. it's worked!
+
+If you have a problem in start, please visit our website and check guide!
+<>
+
+## Documentation
+
+---
+
+Documentation is on our website.
+<>
+
+## LICENSE
+
+---
+
+## Contact us
+
+---
+
+[Nevation](https://github.com/Nevation)
+[EunPyoLee1010](https://github.com/EunPyoLee1010)
+[benovice](https://github.com/benovice)
+[wlsrn3684](https://github.com/wlsrn3684)
