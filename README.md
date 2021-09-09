@@ -85,6 +85,7 @@ Connect with PICode server, input ID and password in the vscode extension. Once 
 ---
 
 Documentation is on our website.
+
 ![https://picode-team.github.io/picode-page/](https://picode-team.github.io/picode-page/)
 
 ## LICENSE
