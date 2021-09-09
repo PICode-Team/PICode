@@ -80,15 +80,12 @@ Connect with PICode server, input ID and password in the vscode extension. Once 
 7. Enter the url on web browser and login
 8. it's worked!
 
-If you have a problem in start, please visit our website and check guide!
-<>
-
 ## Documentation
 
 ---
 
 Documentation is on our website.
-<https://picode-team.github.io/picode-page/>
+![https://picode-team.github.io/picode-page/](https://picode-team.github.io/picode-page/)
 
 ## LICENSE
 
