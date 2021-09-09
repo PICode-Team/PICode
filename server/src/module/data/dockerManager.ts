@@ -66,10 +66,7 @@ export default class DataDockerManager {
                     (result: Buffer) => {
                         const ramUsage = result.toString("utf8").replace(/\n/gi, "").split(`\u001b[2J`).join("").replace(`\u001B[H`, "");
                         if (ramUsage.length > 0) {
-                            this.setDockerInfo(projectId, {
-                                ...dockerInfo,
-                                ramUsage: ramUsage,
-                            });
+                            this.setDockerInfo(projectId, { ...dockerInfo, ramUsage: ramUsage });
                             getRam.stdout.pause();
                             getRam.kill();
                         }
@@ -118,10 +115,7 @@ export default class DataDockerManager {
                 this.commandDockerAsync(
                     `docker inspect --format="{{.State.Status}}" ${dockerInfo.containerName}`,
                     (state: Buffer) => {
-                        this.setDockerInfo(projectId, {
-                            ...dockerInfo,
-                            status: state.toString().replace(/\n/gi, "") as "created" | "running" | "exited",
-                        });
+                        this.setDockerInfo(projectId, { ...dockerInfo, status: state.toString().replace(/\n/gi, "") as "created" | "running" | "exited" });
                     },
                     (error) => {
                         log.error(error);
@@ -130,10 +124,7 @@ export default class DataDockerManager {
                 this.commandDockerAsync(
                     `docker inspect --format="{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${dockerInfo.containerName}`,
                     (ip: Buffer) => {
-                        this.setDockerInfo(projectId, {
-                            ...dockerInfo,
-                            containerIP: ip.toString().replace(/\n/gi, ""),
-                        });
+                        this.setDockerInfo(projectId, { ...dockerInfo, containerIP: ip.toString().replace(/\n/gi, "") });
                     },
                     (error) => {
                         log.error(error);
@@ -222,19 +213,7 @@ export default class DataDockerManager {
             }, []);
     }
 
-    static createPkgProgram(
-        userId: string,
-        dockerInfo: TDockerCreateData,
-        {
-            projectId,
-            projectName,
-            projectParticipants,
-        }: {
-            projectId: string;
-            projectName: string;
-            projectParticipants: string[];
-        }
-    ) {
+    static createPkgProgram(userId: string, dockerInfo: TDockerCreateData, { projectId, projectName, projectParticipants }: { projectId: string; projectName: string; projectParticipants: string[] }) {
         if (!fs.existsSync(`${DataDirectoryPath}/docker`)) {
             fs.mkdirSync(`${DataDirectoryPath}/docker`, { recursive: true });
         }
@@ -250,36 +229,16 @@ export default class DataDockerManager {
                 (code) => {
                     log.debug(`code : ${code}`);
                     if (code === 0) {
-                        this.createDockerFile(userId, dockerInfo, {
-                            projectId,
-                            projectName,
-                            projectParticipants,
-                        });
+                        this.createDockerFile(userId, dockerInfo, { projectId, projectName, projectParticipants });
                     }
                 }
             );
         } else {
-            this.createDockerFile(userId, dockerInfo, {
-                projectId,
-                projectName,
-                projectParticipants,
-            });
+            this.createDockerFile(userId, dockerInfo, { projectId, projectName, projectParticipants });
         }
     }
 
-    static createDockerFile(
-        userId: string,
-        dockerInfo: TDockerCreateData,
-        {
-            projectId,
-            projectName,
-            projectParticipants,
-        }: {
-            projectId: string;
-            projectName: string;
-            projectParticipants: string[];
-        }
-    ) {
+    static createDockerFile(userId: string, dockerInfo: TDockerCreateData, { projectId, projectName, projectParticipants }: { projectId: string; projectName: string; projectParticipants: string[] }) {
         const socketPort = Math.floor(Math.random() * (49998 - 40000 + 1)) + 40000;
         let dockerFileContent = `FROM ${dockerInfo.image}:${dockerInfo.tag ?? "latest"}
         
@@ -299,11 +258,7 @@ CMD ["./server-linux", "${socketPort}"]`;
             },
             (code) => {
                 code === 0
-                    ? this.create(userId, dockerInfo, {
-                          projectId,
-                          projectName,
-                          projectParticipants,
-                      }) //, projectName.toLowerCase(), socketPort)
+                    ? this.create(userId, dockerInfo, { projectId, projectName, projectParticipants }) //, projectName.toLowerCase(), socketPort)
                     : DataAlarmManager.create(userId, {
                           type: "workspace",
                           location: "",
@@ -317,19 +272,7 @@ CMD ["./server-linux", "${socketPort}"]`;
         );
     }
 
-    static create(
-        userId: string,
-        dockerInfo: TDockerCreateData,
-        {
-            projectId,
-            projectName,
-            projectParticipants,
-        }: {
-            projectId: string;
-            projectName: string;
-            projectParticipants: string[];
-        }
-    ) {
+    static create(userId: string, dockerInfo: TDockerCreateData, { projectId, projectName, projectParticipants }: { projectId: string; projectName: string; projectParticipants: string[] }) {
         const tag = dockerInfo.tag ?? "latest";
         const projectPath = DataProjectManager.getProjectWorkPath(projectId);
         const containerName = dockerInfo.containerName ?? projectName;
@@ -625,11 +568,7 @@ CMD ["./server-linux", "${socketPort}"]`;
     }
 
     static getDockerVisualizationInfo() {
-        const visualizationInfo = {
-            container: [],
-            port: [],
-            network: [],
-        } as TDockerVisualData;
+        const visualizationInfo = { container: [], port: [], network: [] } as TDockerVisualData;
         fs.readdirSync(DataProjectManager.getProjectDefaultPath()).map((projectId) => {
             const dockerInfo = this.getDockerInfo(projectId) as TDockerData;
 
@@ -684,9 +623,7 @@ CMD ["./server-linux", "${socketPort}"]`;
     static async run() {
         this.getDefaultNetwork();
         if (!fs.existsSync(DataProjectManager.getProjectDefaultPath())) {
-            fs.mkdirSync(DataProjectManager.getProjectDefaultPath(), {
-                recursive: true,
-            });
+            fs.mkdirSync(DataProjectManager.getProjectDefaultPath(), { recursive: true });
         }
         setInterval(() => {
             this.updateStatus();
