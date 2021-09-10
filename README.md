@@ -88,9 +88,18 @@ Documentation is on our website.
 
 <https://picode-team.github.io/picode-page/>
 
+## CONTRIBUTE
+
+---
+
+If you want contribute our projcect, please read it
+[contribute](https://github.com/PICode-Team/PICode/blob/develop/contribute.md)
+
 ## LICENSE
 
 ---
+[license](https://github.com/PICode-Team/PICode/blob/develop/license.md/)
+
 
 ## Contact us
 
