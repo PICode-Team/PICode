@@ -2,10 +2,11 @@ import { TChatChannelData } from "../../types/module/data/chat.types";
 import { TSocketPacket } from "../../types/module/socket.types";
 import DataAlarmManager from "../data/alarmManager";
 import DataChatManager from "../data/chatManager";
+import { getTime } from "../datetime";
 import { getSocket, makePacket } from "./manager";
 
 function sendMessage(sender: string, target: string, { message, parentChatId }: { message: string; parentChatId?: string }) {
-    const sendData = JSON.stringify(makePacket("chat", "sendMessage", { message, sender }));
+    const sendData = JSON.stringify(makePacket("chat", "sendMessage", { message, sender, parentChatId, time: getTime() }));
     DataChatManager.saveChat(sender, target, message, parentChatId);
 
     if (DataChatManager.getChatType(target) === "direct") {
