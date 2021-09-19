@@ -1,3 +1,5 @@
+import { TReturnData } from "./data.types";
+
 export type TIssueListJsonData = {
     [key in string]: TIssueListData;
 };
@@ -19,4 +21,8 @@ export type TIssueListData = TIssueUpdateData & {
 export type TIssueData = TIssueListData & {
     kanban: string;
     milestone?: string;
+};
+
+export type TReturnIssueData = TReturnData & {
+    uuid?: string;
 };

@@ -5,3 +5,8 @@ export const StaticDirectoryPath = "./static";
 
 export type TDataManagerType = "userInfo";
 export type TProjectManagerType = "projectInfo";
+
+export type TReturnData = {
+    code: number;
+    message?: string;
+};

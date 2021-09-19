@@ -1,3 +1,5 @@
+import { TReturnData } from "./data.types";
+
 export type TUploadManager = {
     [key in string]: Express.Multer.File;
 };
@@ -27,5 +29,9 @@ export interface TFile {
     path?: string;
     children?: TFile[] | undefined;
 }
+
+export type TReturnFileData = TReturnData & {
+    path?: string;
+};
 
 export const TLanguageList: string[] = ["c", "cpp", "cc", "m", "mm", "pl", "java", "jsp", "php", "as", "js", "ts", "asp", "cs", "py", "html", "css"];

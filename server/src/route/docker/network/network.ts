@@ -6,8 +6,8 @@ import log from "../../../module/log";
 const router = express.Router();
 
 router.get("/", sessionRouter, (req, res) => {
-    const networkName = req.query?.networkName as string;
-    const dockerNetworkList = DataDockerManager.getNetwork(networkName);
+    const networkId = req.query?.networkId as string;
+    const dockerNetworkList = DataDockerManager.getNetworkById(networkId);
     return res.json({ code: ResponseCode.ok, networkList: dockerNetworkList });
 });
 
@@ -20,20 +20,24 @@ router.post("/", (req, res) => {
         return res.json({ code: ResponseCode.missingParameter });
     }
 
-    if (!DataDockerManager.createNetwork({ networkName, subnet, ipRange, gateway })) {
-        return res.json({ code: ResponseCode.confilct });
+    const result = DataDockerManager.createNetwork({ name: networkName, subnet, ipRange, gateway });
+    if (result.code === ResponseCode.ok) {
+        log.info(`Docker network created ${networkName}`);
     }
-    log.info(`Docker network created ${networkName}`);
-    return res.json({ code: ResponseCode.ok });
+    return res.json(result);
 });
 
 router.delete("/", (req, res) => {
-    const networkName = req.query?.networkName as string;
-    if (networkName === undefined) {
+    const networkId = req.query?.networkId as string;
+    if (networkId === undefined) {
         return res.json({ code: ResponseCode.missingParameter });
     }
-    DataDockerManager.deleteNetwork(networkName);
-    return res.json({ code: ResponseCode.ok });
+
+    const result = DataDockerManager.deleteNetwork(networkId);
+    if (result.code === ResponseCode.ok) {
+        log.info(`Docker network deleted ${networkId}`);
+    }
+    return res.json(result);
 });
 
 export default router;

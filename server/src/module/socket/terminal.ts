@@ -3,16 +3,16 @@ import { v4 as uuidv4 } from "uuid";
 import log from "../log";
 import { getSocket, makePacket } from "./manager";
 import DataTerminalManager from "../data/terminalManager";
-import DataProjectManager from "../data/projectManager";
+import DataWorkspaceManager from "../data/workspaceManager";
 
-function createTerminal(userId: string, { projectName, size }: { projectName: string; size: { cols: number; rows: number } }) {
+function createTerminal(userId: string, { workspaceName, size }: { workspaceName: string; size: { cols: number; rows: number } }) {
     const uuid = uuidv4();
     const terminalWorker = DataTerminalManager.createTerminal(userId, uuid);
-    const projectId = DataProjectManager.getProjectId(userId, projectName);
-    if (terminalWorker === undefined || projectId === undefined) {
+    const workspaceId = DataWorkspaceManager.getWorkspaceId(userId, workspaceName);
+    if (terminalWorker === undefined || workspaceId === undefined) {
         getSocket(userId)?.send(JSON.stringify(makePacket("terminal", "createTerminal", { message: "fail to create terminal" })));
     } else {
-        DataTerminalManager.listenToTerminalWorker(userId, uuid, projectId as string, terminalWorker, size);
+        DataTerminalManager.listenToTerminalWorker(userId, uuid, workspaceId as string, terminalWorker, size);
         getSocket(userId)?.send(JSON.stringify(makePacket("terminal", "createTerminal", { uuid: uuid })));
     }
 }

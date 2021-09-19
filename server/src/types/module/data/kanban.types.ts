@@ -1,6 +1,6 @@
 export type TkanbanCreateData = {
     title: string;
-    projectName: string;
+    workspaceName: string;
     columns?: string[];
 };
 

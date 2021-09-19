@@ -2,13 +2,13 @@ import { TCommandData, UUIDToWorker } from "../../types/module/data/terminal.typ
 import { Worker } from "worker_threads";
 import { getSocket, makePacket } from "../socket/manager";
 import log from "../log";
-import DataProjectManager from "./projectManager";
+import DataWorkspaceManager from "./workspaceManager";
 import path from "path";
 
 const terminalInfo: UUIDToWorker = {};
 
 export default class DataTerminalManager {
-    static projectPath: string;
+    static workspacePath: string;
 
     static getUserTerminal(uuid: string) {
         return terminalInfo[uuid];
@@ -28,8 +28,8 @@ export default class DataTerminalManager {
         return worker;
     }
 
-    static listenToTerminalWorker(userId: string, uuid: string, projectId: string, worker: Worker, size: { cols: number; rows: number }) {
-        worker.postMessage({ type: "setup", setupData: { projectPath: DataProjectManager.getProjectWorkPath(projectId), size: size } } as TCommandData);
+    static listenToTerminalWorker(userId: string, uuid: string, workspaceId: string, worker: Worker, size: { cols: number; rows: number }) {
+        worker.postMessage({ type: "setup", setupData: { workspacePath: DataWorkspaceManager.getWorkspaceWorkPath(workspaceId), size: size } } as TCommandData);
         worker.on("message", (message: TCommandData) => {
             switch (message.type) {
                 case "command": {

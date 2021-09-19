@@ -19,19 +19,21 @@ function getIssue(userId: string, { kanbanUUID, options }: { kanbanUUID: string;
     getSocket(userId).send(JSON.stringify(sendData));
 }
 
-function createIssue(userId: string, { kanbanUUID, issueData }: { kanbanUUID: string; issueData: TIssueData }) {
-    const issueUUID = DataIssueManager.create(userId, kanbanUUID, issueData);
-    const sendData = makePacket("issue", "createIssue", issueUUID ? { code: ResponseCode.ok, uuid: issueUUID } : { code: ResponseCode.internalError });
+function createIssue(userId: string, { kanbanUUID, issueData }: { kanbanUUID: string; issueData: Omit<TIssueData, "issueId"> }) {
+    const metaData = DataIssueManager.create(userId, kanbanUUID, issueData);
+    const sendData = makePacket("issue", "createIssue", metaData);
     getSocket(userId).send(JSON.stringify(sendData));
 }
 
 function updateIssue(userId: string, { kanbanUUID, issueData }: { kanbanUUID: string; issueData: Partial<TIssueData> }) {
-    const sendData = makePacket("issue", "updateIssue", DataIssueManager.update(userId, kanbanUUID, issueData) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError });
+    const metaData = DataIssueManager.update(userId, kanbanUUID, issueData);
+    const sendData = makePacket("issue", "updateIssue", metaData);
     getSocket(userId).send(JSON.stringify(sendData));
 }
 
 function deleteIssue(userId: string, { kanbanUUID, issueUUID }: { kanbanUUID: string; issueUUID: string }) {
-    const sendData = makePacket("issue", "deleteIssue", DataIssueManager.delete(userId, kanbanUUID, issueUUID) ? { code: ResponseCode.ok } : { code: ResponseCode.internalError });
+    const metaData = DataIssueManager.delete(userId, kanbanUUID, issueUUID);
+    const sendData = makePacket("issue", "deleteIssue", metaData);
     getSocket(userId).send(JSON.stringify(sendData));
 }
 

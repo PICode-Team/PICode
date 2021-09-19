@@ -29,14 +29,14 @@ export type TDockerData = Omit<TDockerCreateData, "linkContainer" | "bridgeName"
 };
 
 export type TDockerNetworkCreateData = {
-    networkName: string;
+    name: string;
     subnet?: string;
     ipRange?: string;
     gateway?: string;
 };
 
 export type TDockerNetworkData = TDockerNetworkCreateData & {
-    id: string;
+    networkId: string;
 };
 
 export type TDockerNetworkJsonData = {

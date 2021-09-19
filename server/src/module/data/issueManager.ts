@@ -1,11 +1,12 @@
 import { DataDirectoryPath } from "../../types/module/data/data.types";
 import fs from "fs";
 import { isExists, getJsonData, setJsonData } from "./fileManager";
-import { TIssueData, TIssueListData, TIssueListJsonData } from "../../types/module/data/issue.types";
+import { TIssueData, TIssueListData, TIssueListJsonData, TReturnIssueData } from "../../types/module/data/issue.types";
 import { v4 as uuidv4 } from "uuid";
 import log from "../log";
 import DataKanbanManager from "./kanbanManager";
 import DataAlarmManager from "../data/alarmManager";
+import { ResponseCode } from "../../constants/response";
 
 export default class DataIssueManager {
     static getIssueListPath(kanbanUUID?: string, type: "issueList.json" | "" = "") {
@@ -88,19 +89,19 @@ export default class DataIssueManager {
         return this.getIssueInfo(kanbanUUID, issueUUID);
     }
 
-    static create(userId: string, kanbanUUID: string, { title, creator, assigner, label, column, content, milestone }: TIssueData) {
+    static create(userId: string, kanbanUUID: string, { title, creator, assigner, label, column, content, milestone }: Omit<TIssueData, "issueId">): TReturnIssueData {
         const issueUUID = uuidv4();
         const issueNumber = this.getIssueNumber(kanbanUUID);
 
         if (column !== undefined && !DataKanbanManager.getKanbanInfo(kanbanUUID)?.columns?.includes(column)) {
             log.error(`[dataIssueManager] create -> issue's column is not exist`);
-            return undefined;
+            return { code: ResponseCode.invaildRequest, message: "Issue's column is not in kanban board's columns" };
         }
 
         const issueListData = { uuid: issueUUID, issueId: issueNumber, title, creator, assigner, label, column, content } as TIssueListData;
         if (!this.setIssueListInfo(kanbanUUID, issueUUID, issueListData)) {
             log.error(`[dataIssueManager] create -> fail to setIssueListInfo`);
-            return undefined;
+            return { code: ResponseCode.internalError, message: "Failed to create issue" };
         }
 
         fs.mkdirSync(this.getIssueInfoPath(kanbanUUID, issueUUID), { recursive: true });
@@ -108,7 +109,7 @@ export default class DataIssueManager {
         const issueData = { ...issueListData, content, milestone, kanban: kanbanUUID } as TIssueData;
         if (!this.setIssueInfo(kanbanUUID, issueUUID, issueData)) {
             log.error(`[dataIssueManager] create -> fail to setIssueInfo`);
-            return undefined;
+            return { code: ResponseCode.internalError, message: "Failed to create issue" };
         }
 
         DataKanbanManager.updateIssueCount(kanbanUUID, "totalIssue", "increase");
@@ -123,14 +124,14 @@ export default class DataIssueManager {
             content: `${userId} create ${issueData.title} issue : creator ${issueData.creator}, assigner ${issueData.assigner}`,
             checkAlarm: { [issueData.creator]: true, [issueData.assigner]: true },
         });
-        return issueUUID;
+        return { code: ResponseCode.ok, uuid: issueUUID };
     }
 
     static update(userId: string, kanbanUUID: string, { uuid, issueId, title, creator, assigner, label, column, content, milestone }: Partial<TIssueData>) {
         const issueListJsonData = this.getIssueListInfo(kanbanUUID);
         if (uuid === undefined || issueListJsonData === undefined) {
             log.error(`[dataIssueManager] update -> uuid or issueListJsonData is undefined`);
-            return false;
+            return { code: ResponseCode.missingParameter, message: "Could not find issue" };
         }
         const beforeColumn = (issueListJsonData[uuid] as TIssueListData).column;
 
@@ -143,15 +144,16 @@ export default class DataIssueManager {
                 assigner: assigner ?? issueListJsonData[uuid].assigner,
                 label: label ?? issueListJsonData[uuid].label,
                 column: column ?? issueListJsonData[uuid].column,
+                content: content ?? issueListJsonData[uuid].content,
             })
         ) {
             log.error(`[dataIssueManager] update -> fail to setIssueListInfo`);
-            return false;
+            return { code: ResponseCode.internalError, message: "Failed to update issue" };
         }
         const issueData = this.getIssueInfo(kanbanUUID, uuid);
         if (issueData === undefined) {
             log.error(`[dataIssueManager] update -> issueData is undefined`);
-            return false;
+            return { code: ResponseCode.internalError, message: "Could not find issue" };
         }
         if (
             !this.setIssueInfo(kanbanUUID, uuid, {
@@ -168,7 +170,7 @@ export default class DataIssueManager {
             } as TIssueData)
         ) {
             log.error(`[dataIssueManager] update -> fail to setIssueInfo`);
-            return false;
+            return { code: ResponseCode.internalError, message: "Failed to update issue" };
         }
         if (beforeColumn === "Done" && column !== undefined && column !== "Done") {
             DataKanbanManager.updateIssueCount(kanbanUUID, "doneIssue", "decrease");
@@ -183,14 +185,14 @@ export default class DataIssueManager {
             content: `${userId} update ${title ?? issueData.title}issue`,
             checkAlarm: { [creator ?? issueData.creator]: true, [assigner ?? issueData.assigner]: true },
         });
-        return true;
+        return { code: ResponseCode.ok };
     }
 
     static delete(userId: string, kanbanUUID: string, issueUUID: string) {
         const issueListJsonData = this.getIssueListInfo(kanbanUUID);
         if (issueListJsonData === undefined || issueUUID == undefined) {
             log.error(`[dataIssueManager] delete -> isueListJsonData is undefined`);
-            return false;
+            return { code: ResponseCode.invaildRequest, message: "Could not find issue" };
         }
 
         const deleteIssueInfo = issueListJsonData[issueUUID];
@@ -199,12 +201,12 @@ export default class DataIssueManager {
         }
         if (!Object.keys(issueListJsonData).includes(issueUUID)) {
             log.error(`[dataIssueManager] delete -> issueUUID is not in issueList`);
-            return false;
+            return { code: ResponseCode.invaildRequest, message: "Could not find issue" };
         }
         delete issueListJsonData[issueUUID];
         if (!setJsonData(this.getIssueListPath(kanbanUUID, "issueList.json"), issueListJsonData)) {
             log.error(`[dataIssueManager] delete -> fail to delete issueData from issueList.json`);
-            return false;
+            return { code: ResponseCode.internalError, message: "Failed to delete issue" };
         }
         fs.rmdirSync(this.getIssueInfoPath(kanbanUUID, issueUUID), { recursive: true });
         DataKanbanManager.updateIssueCount(kanbanUUID, "totalIssue", "decrease");
@@ -216,6 +218,6 @@ export default class DataIssueManager {
             content: `${userId} delete ${deleteIssueInfo.title} issue`,
             checkAlarm: { [deleteIssueInfo.creator]: true, [deleteIssueInfo.assigner]: true },
         });
-        return true;
+        return { code: ResponseCode.ok };
     }
 }

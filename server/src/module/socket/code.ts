@@ -1,11 +1,11 @@
 import { TSocketPacket } from "../../types/module/socket.types";
 import { getSocket, makePacket } from "./manager";
-import DataProjectManager from "../data/projectManager";
+import DataWorkspaceManager from "../data/workspaceManager";
 
 const codeLoadFuncs: {
-    [key in string]: (userId: string, projectInfo: any) => void;
+    [key in string]: (userId: string, workspaceInfo: any) => void;
 } = {
-    loadProject: loadProject,
+    loadWorkspace: loadWorkspace,
     getCode: getCode,
     changeCode: changeCode,
     moveFileOrDir: moveFileOrDir,
@@ -14,38 +14,38 @@ const codeLoadFuncs: {
     deleteFileOrDir: deleteFileOrDir,
 };
 
-function loadProject(userId: string, data: { projectName: string }) {
-    const sendData = JSON.stringify(makePacket("code", "loadProject", DataProjectManager.getAllProjectPath(userId, data.projectName)));
+function loadWorkspace(userId: string, data: { workspaceId: string }) {
+    const sendData = JSON.stringify(makePacket("code", "loadWorkspace", DataWorkspaceManager.getAllWorkspacePath(userId, data.workspaceId)));
     getSocket(userId).send(sendData);
 }
 
-function getCode(userId: string, data: { projectName: string; filePath: string }) {
-    const sendData = JSON.stringify(makePacket("code", "getCode", DataProjectManager.getCodesFromProject(userId, data)));
+function getCode(userId: string, data: { workspaceId: string; filePath: string }) {
+    const sendData = JSON.stringify(makePacket("code", "getCode", DataWorkspaceManager.getCodesFromWorkspace(userId, data)));
     getSocket(userId).send(sendData);
 }
 
-function changeCode(userId: string, data: { projectName: string; filePath: string; code: string }) {
-    const sendData = JSON.stringify(makePacket("code", "changeCode", DataProjectManager.changeProjectCode(userId, data)));
+function changeCode(userId: string, data: { workspaceId: string; filePath: string; code: string }) {
+    const sendData = JSON.stringify(makePacket("code", "changeCode", DataWorkspaceManager.changeWorkspaceCode(userId, data)));
     getSocket(userId).send(sendData);
 }
 
-function moveFileOrDir(userId: string, data: { projectName: string; oldPath: string; newPath: string }) {
-    const sendData = JSON.stringify(makePacket("code", "moveFileOrDir", DataProjectManager.moveProjectFileOrDir(userId, data)));
+function moveFileOrDir(userId: string, data: { workspaceId: string; oldPath: string; newPath: string }) {
+    const sendData = JSON.stringify(makePacket("code", "moveFileOrDir", DataWorkspaceManager.moveWorkspaceFileOrDir(userId, data)));
     getSocket(userId).send(sendData);
 }
 
-function deleteFileOrDir(userId: string, data: { projectName: string; deletePath: string; recursive?: boolean }) {
-    const sendData = JSON.stringify(makePacket("code", "deleteFileOrDir", DataProjectManager.deleteFileOrDir(userId, data)));
+function deleteFileOrDir(userId: string, data: { workspaceId: string; deletePath: string; recursive?: boolean }) {
+    const sendData = JSON.stringify(makePacket("code", "deleteFileOrDir", DataWorkspaceManager.deleteFileOrDir(userId, data)));
     getSocket(userId).send(sendData);
 }
 
-function createFile(userId: string, data: { projectName: string; filePath: string }) {
-    const sendData = JSON.stringify(makePacket("code", "createFile", DataProjectManager.createProjectFile(userId, data)));
+function createFile(userId: string, data: { workspaceId: string; filePath: string }) {
+    const sendData = JSON.stringify(makePacket("code", "createFile", DataWorkspaceManager.createWorkspaceFile(userId, data)));
     getSocket(userId).send(sendData);
 }
 
-function createDir(userId: string, data: { projectName: string; dirPath: string }) {
-    const sendData = JSON.stringify(makePacket("code", "createDir", DataProjectManager.createProjectDir(userId, data)));
+function createDir(userId: string, data: { workspaceId: string; dirPath: string }) {
+    const sendData = JSON.stringify(makePacket("code", "createDir", DataWorkspaceManager.createWorkspaceDir(userId, data)));
     getSocket(userId).send(sendData);
 }
 

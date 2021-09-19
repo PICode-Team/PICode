@@ -3,14 +3,14 @@ import path from "path";
 import { TUploadFileLanguageToSize, TUploadMimeType, TLanguageList, TFile } from "../../types/module/data/file.types";
 import log from "../log";
 import admZip from "adm-zip";
-import DataProjectManager from "./projectManager";
+import DataWorkspaceManager from "./workspaceManager";
 import DataUploadManager from "./uploadManager";
 
 function isNormalPath(dataPath: string) {
-    const projectRootPath = path.resolve(`${__dirname}/../../../../`);
+    const workspaceRootPath = path.resolve(`${__dirname}/../../../../`);
     const absPath = path.resolve(path.normalize(dataPath));
 
-    return absPath.indexOf(projectRootPath) > -1;
+    return absPath.indexOf(workspaceRootPath) > -1;
 }
 
 export function isExists(dataPath: string) {
@@ -88,7 +88,7 @@ export function unzipFileAsync(
     new admZip(zipPath).extractAllToAsync(extractPath, true, callback);
 }
 
-export function searchProjectFiles(
+export function searchWorkspaceFiles(
     dir: string,
     func: {
         fileToSize?: TUploadFileLanguageToSize;
@@ -98,7 +98,7 @@ export function searchProjectFiles(
         //need to manage memory(global variable)
         const fullPath = path.join(dir, entry.name);
         if (entry.isDirectory()) {
-            searchProjectFiles(fullPath, func);
+            searchWorkspaceFiles(fullPath, func);
         } else if (entry.isFile()) {
             if (func.fileToSize !== undefined) {
                 calculateFileSize(fullPath, func.fileToSize);
@@ -180,10 +180,10 @@ export function writeCodeToFile(serverPath: string, clientPath: string, code: st
     return true;
 }
 
-export function getAllChildren(projectId: string, projectPath: string, loopPath: string): TFile {
-    const fullPath = path.join(projectPath, loopPath);
-    const replacePath = fullPath.replace(path.join(DataProjectManager.getProjectWorkPath(projectId)).replace(".", ""), "");
+export function getAllChildren(workspaceId: string, workspacePath: string, loopPath: string): TFile {
+    const fullPath = path.join(workspacePath, loopPath);
+    const replacePath = fullPath.replace(path.join(DataWorkspaceManager.getWorkspaceWorkPath(workspaceId)).replace(".", ""), "");
     const children: string[] | undefined = fs.statSync(fullPath).isDirectory() ? fs.readdirSync(fullPath) : undefined;
 
-    return { path: replacePath !== "" ? replacePath : "/", children: children ? children.map((v) => getAllChildren(projectId, fullPath, v)) : undefined };
+    return { path: replacePath !== "" ? replacePath : "/", children: children ? children.map((v) => getAllChildren(workspaceId, fullPath, v)) : undefined };
 }
