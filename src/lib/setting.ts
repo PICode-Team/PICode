@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors'
-import session from 'express-session'
 import compression from 'compression'
+import cookieParser from 'cookie-parser'
 const router = express.Router()
 
 // body-parser setting
@@ -14,12 +14,8 @@ router.use(cors({
     methods: ['GET', 'PUT', 'POST', 'DELETE']
 }))
 
-// session setting
-router.use(session({
-    secret: 'session-secret-key',
-    resave: false,
-    saveUninitialized: false
-}))
+// cookie parser setting
+router.use(cookieParser('secretKey'))
 
 // compression setting
 router.use(compression())

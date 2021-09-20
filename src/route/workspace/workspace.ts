@@ -1,22 +1,22 @@
 import express from "express";
 import { ResponseCode } from "../../constants/response";
-import sessionRouter from "../../lib/router/session";
+import tokenRouter from "../../lib/router/token";
 import DataWorkspaceManager from "../../module/data/service/workspace/workspaceManager";
 import log from "../../module/log";
 import { TWorkspaceUpdateData } from "../../types/module/data/service/workspace/workspace.type";
 
 const router = express.Router();
 
-router.get("/", sessionRouter, (req, res) => {
-    const userId = req.session.userId as string;
+router.get("/", tokenRouter, (req, res) => {
+    const userId = req.token.userId!;
     const workspaceId = req.query?.workspaceId as string;
 
     const workspaceList = DataWorkspaceManager.get(userId, workspaceId);
     return res.json({ code: ResponseCode.ok, workspaceList: workspaceList });
 });
 
-router.post("/", sessionRouter, (req, res) => {
-    const userId = req.session.userId as string;
+router.post("/", tokenRouter, (req, res) => {
+    const userId = req.token.userId!;
     const workspaceInfo = req.body?.workspaceInfo;
     const dockerInfo = req.body?.dockerInfo;
     const source = req.body?.source ?? {};
@@ -29,8 +29,8 @@ router.post("/", sessionRouter, (req, res) => {
     return res.json(result);
 });
 
-router.put("/", sessionRouter, (req, res) => {
-    const userId = req.session.userId as string;
+router.put("/", tokenRouter, (req, res) => {
+    const userId = req.token.userId!;
     const workspaceId = req.body?.workspaceId as string;
     const workspaceInfo = req.body?.workspaceInfo as TWorkspaceUpdateData;
     const dockerInfo = req.body?.dockerInfo;
@@ -46,8 +46,8 @@ router.put("/", sessionRouter, (req, res) => {
     return res.json(result);
 });
 
-router.delete("/", sessionRouter, (req, res) => {
-    const userId = req.session.userId as string;
+router.delete("/", tokenRouter, (req, res) => {
+    const userId = req.token.userId!;
     const workspaceId = req.query?.workspaceId as string;
 
     if (workspaceId === undefined) {

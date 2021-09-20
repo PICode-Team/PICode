@@ -1,13 +1,13 @@
 import express from "express";
 import { ResponseCode } from "../../constants/response";
-import sessionRouter from "../../lib/router/session";
+import tokenRouter from "../../lib/router/token";
 import DataUserManager from "../../module/data/service/user/userManager";
 import log from "../../module/log";
 
 const router = express.Router();
 
-router.get("/", sessionRouter, (req, res) => {
-    const userId = req.session.userId as string;
+router.get("/", tokenRouter, (req, res) => {
+    const userId = req.token.userId!;
     const userData = DataUserManager.get(userId);
 
     if (userData === undefined) {
@@ -39,8 +39,8 @@ router.post("/", (req, res) => {
     return res.json({ code: ResponseCode.created });
 });
 
-router.put("/", sessionRouter, (req, res) => {
-    const userId = req.session.userId as string;
+router.put("/", tokenRouter, (req, res) => {
+    const userId = req.token.userId!;
     const passwd = req.body?.passwd;
     const userName = req.body?.userName;
     const userThumbnail = req.body?.userThumbnail;
@@ -54,20 +54,13 @@ router.put("/", sessionRouter, (req, res) => {
     return res.json({ code: ResponseCode.ok });
 });
 
-router.delete("/", sessionRouter, (req, res) => {
-    const userId = req.session.userId as string;
+router.delete("/", tokenRouter, (req, res) => {
+    const userId = req.token.userId!;
 
     DataUserManager.delete(userId);
     log.info(`Delete user account (userId: "${userId}")`);
 
-    req.session.userId = undefined;
-    req.session.userName = undefined;
-    req.session.destroy((err) => {
-        if (err) {
-            log.error(err);
-        }
-    });
-
+    res.clearCookie('authorization')
     return res.json({ code: ResponseCode.ok });
 });
 

@@ -1,11 +1,11 @@
 import express from "express";
 import { ResponseCode } from "../../../constants/response";
-import sessionRouter from "../../../lib/router/session";
+import tokenRouter from "../../../lib/router/token";
 import DataDockerManager from "../../../module/data/service/workspace/dockerManager";
 import log from "../../../module/log";
 const router = express.Router();
 
-router.get("/", sessionRouter, (req, res) => {
+router.get("/", tokenRouter, (req, res) => {
     const networkId = req.query?.networkId as string;
     const dockerNetworkList = DataDockerManager.getNetworkById(networkId);
     return res.json({ code: ResponseCode.ok, networkList: dockerNetworkList });

@@ -1,6 +1,0 @@
-{
-    "watch": ["./src"],
-    "delay": 2,
-    "ext": "ts, json",
-    "exec": "ts-node --project ./tsconfig.json --files ./src"
-}

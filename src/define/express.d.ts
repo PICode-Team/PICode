@@ -1,16 +1,12 @@
-import "express-session";
+import { TAuthToken } from "../types/token.types";
 
-declare module "express-session" {
-    interface SessionData {
-        userId?: string;
-        userName?: string;
-    }
-}
+export {};
 
 declare global {
     namespace Express {
         interface Request {
             fileId?: string;
+            token?: TAuthToken;
         }
     }
 }

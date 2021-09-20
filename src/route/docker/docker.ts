@@ -1,20 +1,20 @@
 import express from "express";
 import { ResponseCode } from "../../constants/response";
-import sessionRouter from "../../lib/router/session";
+import tokenRouter from "../../lib/router/token";
 import DataDockerManager from "../../module/data/service/workspace/dockerManager";
 import log from "../../module/log";
 
 const router = express.Router();
 
-router.get("/", sessionRouter, (req, res) => {
+router.get("/", (req, res) => {
     const workspaceId = req.query?.workspaceId as string;
 
     const dockerInfo = DataDockerManager.get(workspaceId);
     return res.json({ code: ResponseCode.ok, dockerInfo: dockerInfo });
 });
 
-router.post("/", (req, res) => {
-    const userId = req.session.userId as string;
+router.post("/", tokenRouter, (req, res) => {
+    const userId = req.token.userId!;
     const containerId = req.body?.containerId;
     const dockerCommand = req.body?.dockerCommand;
     if (containerId === undefined || dockerCommand === undefined) {

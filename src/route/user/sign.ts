@@ -1,8 +1,8 @@
 import express from "express";
 import { ResponseCode } from "../../constants/response";
+import tokenRouter from "../../lib/router/token";
 import DataUserManager from "../../module/data/service/user/userManager";
-import sessionRouter from "../../lib/router/session";
-import log from "../../module/log";
+import { signToken } from "../../module/token";
 
 const router = express.Router();
 
@@ -22,23 +22,16 @@ router.post("/", (req, res) => {
         return res.json({ code: ResponseCode.invaildPasswd });
     }
 
-    // save session
-    req.session.userId = userId;
-    req.session.userName = userData.userName;
-    req.session.save();
+    // set token Cookies
+    const token = signToken({ userId, userName: userData.userName })
+    res.cookie('authorization', token, { httpOnly: true, maxAge: 10 * 60 * 1000})
 
-    return res.json({ code: ResponseCode.created });
+    res.json({ code: ResponseCode.ok })
 });
 
-router.delete("/", sessionRouter, (req, res) => {
-    req.session.userId = undefined;
-    req.session.userName = undefined;
-    req.session.destroy((err) => {
-        if (err) {
-            log.error(err);
-        }
-    });
-    res.json({ code: ResponseCode.ok });
+router.delete("/", tokenRouter, (_, res) => {
+    res.clearCookie('Authorization')
+    res.json({ code: ResponseCode.ok })
 });
 
 export default router;

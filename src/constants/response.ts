@@ -5,7 +5,7 @@ export const ResponseCode = {
     invaildParameterType: 401,
     missingParameter: 402,
     forbidden: 403,
-    notFoundSession: 410,
+    unauthorized: 404,
     invaildPasswd: 411,
     invaildRequest: 420,
     confilct: 409,
