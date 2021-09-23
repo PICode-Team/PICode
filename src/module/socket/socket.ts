@@ -12,6 +12,7 @@ import kanban from "./kanban";
 import alarm from "./alarm";
 import milestone from "./milestone";
 import note from "./note";
+import { verifyToken } from "../token";
 
 const SocketFuncs = {
     chat,
@@ -27,12 +28,17 @@ const SocketFuncs = {
 };
 
 export function webSocketInit(server: expressWs.Application) {
-    server.ws("/", (ws, req) => {
-        if (req.query?.userId === undefined) {
+    server.ws("/", (_, req, next)=>{
+        try {
+            req.token = verifyToken(req.cookies.authorization)
+            next()
+        } catch {}
+    }, (ws, req) => {
+        const userId = req.token.userId!
+        if (userId === undefined) {
             return ws.close();
         }
 
-        const userId = req.query?.userId as string;
         ws.on("message", (msg) => {
             if (req.query.userId === undefined) {
                 return;
