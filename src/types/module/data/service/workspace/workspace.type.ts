@@ -3,7 +3,7 @@ import { TUploadFileLanguageToSize } from "../etc/file.types";
 export interface TWorkspaceCreateData {
     name: string;
     description?: string;
-    thumbnail?: string; // move to ./image/uuid, proejectInfo.json
+    thumbnail?: string;
     creator?: string;
     participants?: string[];
 }
@@ -14,4 +14,5 @@ export type TWorkspaceUpdateData = TWorkspaceCreateData & {
 
 export type TWorkspaceData = TWorkspaceUpdateData & {
     workspaceId: string;
+    creation: string;
 };

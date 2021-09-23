@@ -2,7 +2,7 @@ export interface TDockerCreateData {
     containerName: string;
     image: string;
     tag?: string | "latest";
-    bridgeName?: string;
+    bridgeId?: string;
     bridgeAlias?: string;
     portInfo?: TPortMappingData;
     linkContainer?: string;
@@ -16,7 +16,7 @@ export type TBridgeInfo = {
     [key in string]: string | undefined;
 };
 
-export type TDockerUpdateData = Pick<Partial<TDockerCreateData>, "containerName" | "bridgeName" | "bridgeAlias" | "linkContainer"> & { connect?: boolean };
+export type TDockerUpdateData = Pick<Partial<TDockerCreateData>, "containerName" | "bridgeId" | "bridgeAlias" | "linkContainer"> & { connect?: boolean };
 
 export type TDockerData = Omit<TDockerCreateData, "linkContainer" | "bridgeName" | "bridgeAlias"> & {
     containerId: string;

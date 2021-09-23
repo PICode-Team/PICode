@@ -12,26 +12,57 @@ import { v4 as uuidv4 } from "uuid";
 import { TDockerCreateData, TDockerUpdateData } from "../../../../types/module/data/service/workspace/docker.types";
 import DataDockerManager from "./dockerManager";
 import { ResponseCode } from "../../../../constants/response";
+import { getTime } from "../../../datetime";
 
 const workspaceFileName = "workspaceInfo.json";
 
 export default class DataWorkspaceManager {
-    static isExists(workspaceId: string, workspacePath: (workspaceId: string, type?: undefined) => string) {
+    /**
+     *
+     * @param workspaceId ID that you want to know if workspace's path exists
+     * @param workspacePath function that you want to know if workspace's path exists
+     * @description check if path exists
+     * @returns true if path exists, false if not
+     */
+    static isExists(workspaceId: string, workspacePath: (workspaceId: string) => string) {
         return isExists(workspacePath(workspaceId));
     }
 
+    /**
+     *
+     * @description get workspace data path
+     * @returns path that workspace data path
+     */
     static getWorkspaceDefaultPath() {
         return `${DataDirectoryPath}/workspace`;
     }
 
+    /**
+     *
+     * @param workspaceId ID that you want to get work path of ID's workspace
+     * @description get ID's workspace work path
+     * @returns ID's workspace work path
+     */
     static getWorkspaceWorkPath(workspaceId: string) {
         return `${WorkDirectoryPath}/workspace/${workspaceId}`;
     }
 
+    /**
+     *
+     * @param workspaceId ID that you want to get data path of ID's workspace
+     * @description get ID's workspace data path
+     * @returns ID's workspace data path
+     */
     static getWorkspaceDataPath(workspaceId: string) {
         return `${DataDirectoryPath}/workspace/${workspaceId}`;
     }
 
+    /**
+     *
+     * @param workspaceId ID that you want to get workspace infomation of ID's workspace
+     * @description get ID's workspace infomation
+     * @returns ID's workspace infomation
+     */
     static getWorkspaceInfo(workspaceId: string) {
         const defaultPath = this.getWorkspaceDataPath(workspaceId);
         const workspacePath = `${defaultPath}/${workspaceFileName}`;
@@ -42,50 +73,90 @@ export default class DataWorkspaceManager {
         return getJsonData(workspacePath) as TWorkspaceData;
     }
 
+    /**
+     *
+     * @param workspaceId ID that you want to set workspace infomation of ID's workspace
+     * @param data data that you want to set workspace infomation
+     * @description set ID's workspace infomation
+     * @returns true if setting infomation succeed, false if failed
+     */
     static setWorkspaceInfo(workspaceId: string, data: TWorkspaceData | TWorkspaceCreateData | TWorkspaceUpdateData) {
         const defaultPath = this.getWorkspaceDataPath(workspaceId);
-        const workspacePath = `${defaultPath}/${workspaceFileName}`;
-        if (!isExists(workspacePath)) {
-            return undefined;
+
+        if (!isExists(defaultPath)) {
+            return false;
         }
+        const workspacePath = `${defaultPath}/${workspaceFileName}`;
 
         return setJsonData(workspacePath, data);
     }
 
+    /**
+     *
+     * @param workspaceId ID that you want to compare
+     * @param workspaceName name that you want to compare
+     * @description compare workspace name to ID's workspace name
+     * @returns true if workspaceId's name is same to workspace name, false if different
+     */
     static compareWorkspaceName(workspaceId: string, workspaceName?: string) {
         return (this.getWorkspaceInfo(workspaceId) as TWorkspaceData).name === workspaceName;
     }
 
+    /**
+     *
+     * @param userId user ID that you want to know if he is a creator
+     * @param workspaceId workspace ID to compare with userid to see if he is a creator.
+     * @description check if user is a creator of workspace
+     * @returns true if workspace's creator is userId, false if not
+     */
     static isWorkspaceCreator(userId: string, workspaceId: string) {
-        return (this.getWorkspaceInfo(workspaceId) as TWorkspaceData).creator === userId;
+        return (this.getWorkspaceInfo(workspaceId) as TWorkspaceData)?.creator === userId;
     }
 
+    /**
+     *
+     * @param userId user ID that you want to know if he is participant of workspace
+     * @param workspaceId workspace ID to see if userId is a participant of workerspace.
+     * @description check if user is a participant of workspace
+     * @returns true if user ID is a participant of workspace, false if not
+     */
     static isWorkspaceParticipants(userId: string, workspaceId: string) {
-        return ((this.getWorkspaceInfo(workspaceId) as TWorkspaceData).participants as string[]).includes(userId);
+        return this.getWorkspaceInfo(workspaceId)?.participants?.includes(userId);
     }
 
+    /**
+     *
+     * @param userId user ID that you want to know if he has authority of this workspace
+     * @param workspaceId workspace ID to see if user ID has authority of this workspace
+     * @param participantIncluded check true if you want to allow authority to participant, check false if not
+     * @description check if user has authority of this workspace
+     * @returns true if user ID has authority of this workspace, false if not
+     */
     static canEditWorkspace(userId: string, workspaceId: string, participantIncluded: boolean) {
         return this.isWorkspaceCreator(userId, workspaceId) || participantIncluded ? this.isWorkspaceParticipants(userId, workspaceId) : false;
     }
 
+    /**
+     *
+     * @param userId user ID to get workspace ID
+     * @param workspaceName workspace name to get workspace ID
+     * @description get workspace ID from user ID, workspace name
+     * @returns workspace ID that userId has authority and workspace's name is workspaceName
+     */
     static getWorkspaceId(userId: string, workspaceName: string) {
         return fs.readdirSync(this.getWorkspaceDefaultPath()).find((workspaceId) => {
             const workspaceInfo = this.getWorkspaceInfo(workspaceId);
-            return workspaceInfo ? (workspaceInfo.creator === userId || workspaceInfo.participants?.includes(userId)) && workspaceInfo.name === workspaceName : false;
+            return workspaceInfo ? this.canEditWorkspace(userId, workspaceId, true) && workspaceInfo.name === workspaceName : false;
         });
     }
 
-    static isValidAuth(userId: string, workspaceName: string, participantIncluded: boolean) {
-        const workspaceId = this.getWorkspaceId(userId, workspaceName);
-        if (workspaceId === undefined) {
-            return false;
-        }
-        if (!this.canEditWorkspace(userId, workspaceId, participantIncluded)) {
-            return false;
-        }
-        return true;
-    }
-
+    /**
+     *
+     * @param workspaceId workspace ID to be downloaded from git url
+     * @param source object that contains git url
+     * @description git clone from git url
+     * @returns true if succeed, false if not
+     */
     static gitCloneFromURL(
         workspaceId: string,
         source: {
@@ -126,6 +197,13 @@ export default class DataWorkspaceManager {
         return true;
     }
 
+    /**
+     *
+     * @param workspaceId workspace ID to be downloaded from zip file
+     * @param source object that contains File ID and isExtract
+     * @description move zip file to workspace and if isExtract is true, unzip zip file to workspace
+     * @returns true if succeed to move zip file or unzip zip file, false if not
+     */
     static createworkspaceFromFile(
         workspaceId: string,
         source: {
@@ -164,6 +242,13 @@ export default class DataWorkspaceManager {
             : false;
     }
 
+    /**
+     *
+     * @param workspaceId workspace ID
+     * @param source object that contains type
+     * @description create empty workspace
+     * @returns true if function has no error, false if not
+     */
     static createEmptyworkspace(workspaceId: string, source: any) {
         if (source.type !== "nothing") {
             return false;
@@ -207,7 +292,7 @@ export default class DataWorkspaceManager {
      * @param dockerInfo : information that create container
      * @param source : Information on how to create a workspace.
      * @description create workspace with container
-     * @returns {code, message? } : code based on the result and message if function has error
+     * @returns {TReturnData } : code based on the result and message if function has error
      */
     static create(
         userId: string,
@@ -254,14 +339,19 @@ export default class DataWorkspaceManager {
                 DataUploadManager.deleteUploadFileInfo(thumbnail);
             }
             const workspaceParticipants = participants ? [...participants, userId] : [userId];
-            this.setWorkspaceInfo(workspaceId, {
-                workspaceId: workspaceId,
-                name: name,
-                description: description,
-                thumbnail: thumbnail,
-                creator: userId,
-                participants: workspaceParticipants,
-            });
+            if (
+                !this.setWorkspaceInfo(workspaceId, {
+                    workspaceId: workspaceId,
+                    name: name,
+                    description: description,
+                    thumbnail: thumbnail,
+                    creator: userId,
+                    participants: workspaceParticipants,
+                    creation: getTime(),
+                })
+            ) {
+                return { code: ResponseCode.internalError, message: `Failed to create workspace` };
+            }
 
             if (func?.[source.type](workspaceId, source) !== true) {
                 return { code: ResponseCode.internalError, message: `Failed to create workspace with ${source.type}` };
@@ -274,6 +364,16 @@ export default class DataWorkspaceManager {
         return { code: ResponseCode.ok };
     }
 
+    /**
+     *
+     * @param userId user ID to find workspace
+     * @param workspaceId workspace ID to find workspace
+     * @param participantIncluded check true if you want to allow authority to participant, check false if not
+     * @param workspaceInfo workspace infomation to update old workspace infomation
+     * @param dockerInfo container infomation to update old container infomation
+     * @description update workspace infomation
+     * @returns {TReturnData } : code based on the result and message if function has error
+     */
     static update(userId: string, workspaceId: string, participantIncluded: boolean, workspaceInfo: TWorkspaceUpdateData, dockerInfo: TDockerUpdateData): TReturnData {
         DataUploadManager.loadUploadFileInfo();
         const workspaceData = this.getWorkspaceInfo(workspaceId);
@@ -318,6 +418,13 @@ export default class DataWorkspaceManager {
         return { code: ResponseCode.ok };
     }
 
+    /**
+     *
+     * @param userId user ID to delete workspace
+     * @param workspaceId workspace ID to delete workspace
+     * @description delete workspace
+     * @returns {TReturnData } : code based on the result and message if function has error
+     */
     static delete(userId: string, workspaceId: string): TReturnData {
         if (!this.canEditWorkspace(userId, workspaceId, false)) {
             return { code: ResponseCode.forbidden, message: "No authority to delete this workspace" };
@@ -331,8 +438,14 @@ export default class DataWorkspaceManager {
         return { code: ResponseCode.ok };
     }
 
-    static export(userId: string, workspaceName: string) {
-        const workspaceId = this.getWorkspaceId(userId, workspaceName);
+    /**
+     *
+     * @param userId user ID to export workspace
+     * @param workspaceId workspace ID to export workspace
+     * @returns true if you succeed to export workspace, false if not
+     */
+    static export(userId: string, workspaceId: string) {
+        const workspaceName = this.getWorkspaceInfo(workspaceId).name;
         if (workspaceId === undefined) {
             return false;
         }
@@ -345,12 +458,20 @@ export default class DataWorkspaceManager {
         return true;
     }
 
+    /**
+     *
+     * @param userId user ID to get code
+     * @param workspaceId workspace ID to get code
+     * @param filePath file path to get code
+     * @description
+     * @returns {TFileData} if you succeed to get code, error code and message if not
+     */
     static getCodesFromWorkspace(userId: string, { workspaceId, filePath }: { workspaceId: string; filePath: string }) {
         if (workspaceId === undefined) {
-            return { message: "could not find workspace" };
+            return { code: ResponseCode.missingParameter, message: "Could not find workspace" };
         }
         if (!this.canEditWorkspace(userId, workspaceId, true)) {
-            return { message: "could not edit workspace" };
+            return { code: ResponseCode.forbidden, message: "Could not edit workspace" };
         }
         const fileData: TFileData = {};
         const codeData = readCodesFromFile(this.getWorkspaceWorkPath(workspaceId), filePath);
@@ -361,47 +482,74 @@ export default class DataWorkspaceManager {
         return fileData;
     }
 
+    /**
+     *
+     * @param userId user ID to save code to file
+     * @param workspaceId workspace ID to save code to file
+     * @param filePath file path to save code to file
+     * @param code code content that save to file
+     * @description save code to user workspace's file path
+     * @returns {TReturnFileData } : code based on the result and message if function has error
+     */
     static changeWorkspaceCode(userId: string, { workspaceId, filePath, code }: { workspaceId: string; filePath: string; code: string }): TReturnFileData {
         if (workspaceId === undefined) {
-            return { code: ResponseCode.missingParameter };
+            return { code: ResponseCode.missingParameter, message: "Could not find workspace" };
         }
         if (!this.canEditWorkspace(userId, workspaceId, true)) {
-            return { code: ResponseCode.invaildRequest };
+            return { code: ResponseCode.forbidden, message: "Could not edit workspace" };
         }
 
         if (!writeCodeToFile(this.getWorkspaceWorkPath(workspaceId), filePath, code)) {
-            return { code: ResponseCode.internalError };
+            return { code: ResponseCode.internalError, message: "Failed to change code" };
         }
         return { code: ResponseCode.ok, path: filePath };
     }
 
+    /**
+     *
+     * @param userId user ID to get workspace path
+     * @param workspaceId workspace ID to get workspace path
+     * @param oldPath path of the current file of directory
+     * @param newPath file of directory path that you want to move
+     * @description move file or directory from old path to new path
+     * @returns {TReturnFileData } : code based on the result and message if function has error
+     */
     static moveWorkspaceFileOrDir(userId: string, { workspaceId, oldPath, newPath }: { workspaceId: string; oldPath: string; newPath: string }): TReturnFileData {
         if (workspaceId === undefined) {
-            return { code: ResponseCode.missingParameter };
+            return { code: ResponseCode.missingParameter, message: "Could not find workspace" };
         }
         if (!this.canEditWorkspace(userId, workspaceId, true)) {
-            return { code: ResponseCode.invaildRequest };
+            return { code: ResponseCode.forbidden, message: "Could not edit workspace" };
         }
         const fullOldPath = path.join(this.getWorkspaceWorkPath(workspaceId), oldPath);
         const fullNewPath = path.join(this.getWorkspaceWorkPath(workspaceId), newPath);
         if (!isExists(fullOldPath)) {
-            return { code: ResponseCode.internalError };
+            return { code: ResponseCode.internalError, message: "Could not find path" };
         }
         try {
             fs.renameSync(fullOldPath, fullNewPath);
         } catch (e: any) {
             log.error(e.stack);
-            return { code: ResponseCode.internalError };
+            return { code: ResponseCode.internalError, message: "Error occured move file or dir" };
         }
         return { code: ResponseCode.ok, path: newPath };
     }
 
+    /**
+     *
+     * @param userId user ID to get workspace path
+     * @param workspaceId workspace ID to get workspace path
+     * @param deletePath file or directory path to remove from workspace
+     * @param recursive check true if you want to remove directory recursive, false if not
+     * @description remove file or directory from workspace
+     * @returns {TReturnFileData } : code based on the result and message if function has error
+     */
     static deleteFileOrDir(userId: string, { workspaceId, deletePath, recursive }: { workspaceId: string; deletePath: string; recursive?: boolean }): TReturnFileData {
         if (workspaceId === undefined) {
-            return { code: ResponseCode.missingParameter };
+            return { code: ResponseCode.missingParameter, message: "Could not find workspace" };
         }
         if (!this.canEditWorkspace(userId, workspaceId, true)) {
-            return { code: ResponseCode.invaildRequest };
+            return { code: ResponseCode.forbidden, message: "Could not edit workspace" };
         }
         try {
             const fullPath = path.join(this.getWorkspaceWorkPath(workspaceId), deletePath);
@@ -412,49 +560,74 @@ export default class DataWorkspaceManager {
             }
         } catch (e: any) {
             log.error(e.stack);
-            return { code: ResponseCode.internalError };
+            return { code: ResponseCode.internalError, message: "Error occurred" };
         }
         return { code: ResponseCode.ok, path: deletePath };
     }
+
+    /**
+     *
+     * @param userId user ID to get workspace path
+     * @param workspaceId workspace ID to get workspace path
+     * @param filePath file path to create file
+     * @description create file at file path of workspace
+     * @returns {TReturnFileData } : code based on the result and message if function has error
+     */
     static createWorkspaceFile(userId: string, { workspaceId, filePath }: { workspaceId: string; filePath: string }): TReturnFileData {
         if (workspaceId === undefined) {
-            return { code: ResponseCode.missingParameter };
+            return { code: ResponseCode.missingParameter, message: "Could not find workspace" };
         }
         if (!this.canEditWorkspace(userId, workspaceId, true)) {
-            return { code: ResponseCode.invaildRequest };
+            return { code: ResponseCode.forbidden, message: "Could not edit workspace" };
         }
         try {
             const fullPath = path.join(this.getWorkspaceWorkPath(workspaceId), filePath);
             fs.openSync(fullPath, "w");
         } catch (e: any) {
             log.error(e.stack);
-            return { code: ResponseCode.internalError };
+            return { code: ResponseCode.internalError, message: "Failed to create file" };
         }
         return { code: ResponseCode.ok, path: filePath };
     }
+
+    /**
+     *
+     * @param userId user ID to get workspace path
+     * @param workspaceId workspace ID to get workspace path
+     * @param dirPath directory path to create file
+     * @description create directory at directory path of workspace
+     * @returns {TReturnFileData } : code based on the result and message if function has error
+     */
     static createWorkspaceDir(userId: string, { workspaceId, dirPath }: { workspaceId: string; dirPath: string }): TReturnFileData {
         if (workspaceId === undefined) {
-            return { code: ResponseCode.missingParameter };
+            return { code: ResponseCode.missingParameter, message: "Could not find workspace" };
         }
         if (!this.canEditWorkspace(userId, workspaceId, true)) {
-            return { code: ResponseCode.invaildRequest };
+            return { code: ResponseCode.forbidden, message: "Could not edit workspace" };
         }
         try {
             const fullPath = path.join(this.getWorkspaceWorkPath(workspaceId), dirPath);
             fs.mkdirSync(fullPath, { recursive: true });
         } catch (e: any) {
             log.error(e.stack);
-            return { code: ResponseCode.internalError };
+            return { code: ResponseCode.internalError, message: "Failed to create directory" };
         }
         return { code: ResponseCode.ok, path: dirPath };
     }
 
+    /**
+     *
+     * @param userId user ID to get workspace path
+     * @param workspaceId workspace ID to get workspace path
+     * @description get all directory and file path of workspace
+     * @returns {TReturnFileData | TFile } : code based on the result and message if function has error. if succeed, get all path of workspace
+     */
     static getAllWorkspacePath(userId: string, workspaceId: string): TFile | TReturnData {
         if (workspaceId === undefined) {
-            return { code: ResponseCode.missingParameter };
+            return { code: ResponseCode.missingParameter, message: "Could not find workspace" };
         }
         if (!this.canEditWorkspace(userId, workspaceId, true)) {
-            return { code: ResponseCode.invaildRequest };
+            return { code: ResponseCode.forbidden, message: "Could not edit workspace" };
         }
         const workspacePath = DataWorkspaceManager.getWorkspaceWorkPath(workspaceId);
         return getAllChildren(workspaceId, workspacePath, "/");

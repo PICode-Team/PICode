@@ -8,52 +8,71 @@ import DataKanbanManager from "./kanbanManager";
 import DataAlarmManager from "../alarm/alarmManager";
 import { ResponseCode } from "../../../../constants/response";
 
+const issueListFileName = "issueList.json";
+const issueInfoFileName = "issueInfo.json";
+
 export default class DataIssueManager {
-    static getIssueListPath(kanbanUUID?: string, type: "issueList.json" | "" = "") {
-        const issueListPath = kanbanUUID ? `${DataDirectoryPath}/issues/${kanbanUUID}` : `${DataDirectoryPath}/issues`;
-        return type !== "" ? `${issueListPath}/${type}` : issueListPath;
+    static getIssueListPath(kanbanUUID?: string) {
+        return kanbanUUID ? `${DataDirectoryPath}/issues/${kanbanUUID}` : `${DataDirectoryPath}/issues`;
     }
 
-    static getIssueInfoPath(kanbanUUID: string, issueUUID: string, type: "issueInfo.json" | "" = "") {
-        return type !== "" ? `${this.getIssueListPath(kanbanUUID)}/${issueUUID}/${type}` : `${this.getIssueListPath(kanbanUUID)}/${issueUUID}`;
+    static getIssueInfoPath(kanbanUUID: string, issueUUID: string) {
+        return `${this.getIssueListPath(kanbanUUID)}/${issueUUID}`;
     }
 
     static getIssueListInfo(kanbanUUID: string) {
-        if (!isExists(this.getIssueListPath(kanbanUUID, "issueList.json"))) {
+        const defaultPath = this.getIssueListPath(kanbanUUID);
+        const issueListPath = `${defaultPath}/${issueListFileName}`;
+        if (!isExists(issueListPath)) {
             return undefined;
         }
 
-        return getJsonData(this.getIssueListPath(kanbanUUID, "issueList.json")) as TIssueListJsonData;
+        return getJsonData(issueListPath) as TIssueListJsonData;
     }
 
     static getIssueInfo(kanbanUUID: string, issueUUID: string) {
-        if (!isExists(this.getIssueInfoPath(kanbanUUID, issueUUID))) {
+        const defaultPath = this.getIssueInfoPath(kanbanUUID, issueUUID);
+        const issueInfoPath = `${defaultPath}/${issueInfoFileName}`;
+        if (!isExists(issueInfoPath)) {
             return undefined;
         }
 
-        return getJsonData(this.getIssueInfoPath(kanbanUUID, issueUUID, "issueInfo.json")) as TIssueData;
+        return getJsonData(issueInfoPath) as TIssueData;
     }
 
-    static setIssueListInfo(kanbanUUID: string, issueUUID: string, issueListData: TIssueListData) {
-        if (!isExists(this.getIssueListPath(kanbanUUID))) {
+    static setIssueListInfo(kanbanUUID: string, issueUUID: string, addOrDelete: "add" | "delete", issueListData?: TIssueListData) {
+        //이거에 맞게 구현하기 add일땐 값 더해주고 아니면 빼주고 ㅇㅇ
+        const defaultPath = this.getIssueListPath(kanbanUUID);
+        const issueListPath = `${defaultPath}/${issueListFileName}`;
+        if (!isExists(issueListPath)) {
             return false;
         }
-        const newIssueListData = this.getIssueListInfo(kanbanUUID) ? (this.getIssueListInfo(kanbanUUID) as TIssueListJsonData) : ({} as TIssueListJsonData);
-        newIssueListData[issueUUID] = issueListData;
-        return setJsonData(this.getIssueListPath(kanbanUUID, "issueList.json"), newIssueListData);
+        const newIssueListData = this.getIssueListInfo(kanbanUUID) ? this.getIssueListInfo(kanbanUUID) : {};
+        if (addOrDelete === "add") {
+            newIssueListData[issueUUID] = issueListData;
+        } else if (addOrDelete === "delete") {
+            delete newIssueListData[issueUUID];
+        } else {
+            log.error(`setIssueListInfo : Invalid type ${addOrDelete}`);
+            return false;
+        }
+
+        return setJsonData(issueListPath, newIssueListData);
     }
 
     static setIssueInfo(kanbanUUID: string, issueUUID: string, issueData: TIssueData) {
-        if (!isExists(this.getIssueInfoPath(kanbanUUID, issueUUID))) {
+        const defaultPath = this.getIssueInfoPath(kanbanUUID, issueUUID);
+        const issueInfoPath = `${defaultPath}/${issueInfoFileName}`;
+        if (!isExists(issueInfoPath)) {
             return false;
         }
 
-        return setJsonData(this.getIssueInfoPath(kanbanUUID, issueUUID, "issueInfo.json"), issueData);
+        return setJsonData(issueInfoPath, issueData);
     }
 
     static getIssueNumber(kanbanUUID: string) {
         const nextIssue = (DataKanbanManager.getKanbanInfo(kanbanUUID)?.nextIssue as number) + 1;
-        DataKanbanManager.update(kanbanUUID, { nextIssue: nextIssue });
+        DataKanbanManager.update(kanbanUUID, { nextIssue });
         return nextIssue;
     }
 
@@ -82,13 +101,6 @@ export default class DataIssueManager {
             });
     }
 
-    static getInfo(kanbanUUID: string, issueUUID: string) {
-        if (!fs.existsSync(this.getIssueListPath(kanbanUUID))) {
-            fs.mkdirSync(this.getIssueListPath(kanbanUUID), { recursive: true });
-        }
-        return this.getIssueInfo(kanbanUUID, issueUUID);
-    }
-
     static create(userId: string, kanbanUUID: string, { title, creator, assigner, label, column, content, milestone }: Omit<TIssueData, "issueId">): TReturnIssueData {
         const issueUUID = uuidv4();
         const issueNumber = this.getIssueNumber(kanbanUUID);
@@ -99,7 +111,7 @@ export default class DataIssueManager {
         }
 
         const issueListData = { uuid: issueUUID, issueId: issueNumber, title, creator, assigner, label, column, content } as TIssueListData;
-        if (!this.setIssueListInfo(kanbanUUID, issueUUID, issueListData)) {
+        if (!this.setIssueListInfo(kanbanUUID, issueUUID, "add", issueListData)) {
             log.error(`[dataIssueManager] create -> fail to setIssueListInfo`);
             return { code: ResponseCode.internalError, message: "Failed to create issue" };
         }
@@ -136,7 +148,7 @@ export default class DataIssueManager {
         const beforeColumn = (issueListJsonData[uuid] as TIssueListData).column;
 
         if (
-            !this.setIssueListInfo(kanbanUUID, uuid, {
+            !this.setIssueListInfo(kanbanUUID, uuid, "add", {
                 uuid: uuid,
                 issueId: issueId ?? issueListJsonData[uuid].issueId,
                 title: title ?? issueListJsonData[uuid].title,
@@ -203,8 +215,8 @@ export default class DataIssueManager {
             log.error(`[dataIssueManager] delete -> issueUUID is not in issueList`);
             return { code: ResponseCode.invaildRequest, message: "Could not find issue" };
         }
-        delete issueListJsonData[issueUUID];
-        if (!setJsonData(this.getIssueListPath(kanbanUUID, "issueList.json"), issueListJsonData)) {
+
+        if (!this.setIssueListInfo(kanbanUUID, issueUUID, "delete")) {
             log.error(`[dataIssueManager] delete -> fail to delete issueData from issueList.json`);
             return { code: ResponseCode.internalError, message: "Failed to delete issue" };
         }
