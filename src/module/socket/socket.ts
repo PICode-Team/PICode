@@ -40,10 +40,6 @@ export function webSocketInit(server: expressWs.Application) {
         }
 
         ws.on("message", (msg) => {
-            if (req.query.userId === undefined) {
-                return;
-            }
-
             try {
                 const data = JSON.parse(msg.toString()) as TSocketPacket;
                 if (data.category === "connect") {
