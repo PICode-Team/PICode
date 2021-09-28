@@ -347,7 +347,7 @@ export default class DataWorkspaceManager {
                     thumbnail: thumbnail,
                     creator: userId,
                     participants: workspaceParticipants,
-                    creation: getTime(),
+                    creation: getTime(getTime(), "YY-MM-DD"),
                 })
             ) {
                 return { code: ResponseCode.internalError, message: `Failed to create workspace` };

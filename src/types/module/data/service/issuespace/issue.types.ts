@@ -10,6 +10,8 @@ export interface TIssueUpdateData {
     assigner: string;
     label?: string;
     column?: string;
+    startDate?: string;
+    dueDate?: string;
 }
 
 export type TIssueListData = TIssueUpdateData & {
@@ -21,6 +23,7 @@ export type TIssueListData = TIssueUpdateData & {
 export type TIssueData = TIssueListData & {
     kanban: string;
     milestone?: string;
+    creation?: string;
 };
 
 export type TReturnIssueData = TReturnData & {

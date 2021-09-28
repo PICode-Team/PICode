@@ -9,26 +9,37 @@ import DataUserManager from "../user/userManager";
 import { ResponseCode } from "../../../../constants/response";
 import { TReturnMilestoneData } from "../../../../types/module/data/service/issuespace/milestone.types";
 
+const milestoneInfoFileName = "milestoneListInfo.json";
+
 export default class DataMilestoneManager {
-    static getMilestonePath(type: "milestoneListInfo.json" | "" = "") {
-        return type !== "" ? `${DataDirectoryPath}/issues/${type}` : `${DataDirectoryPath}/issues`;
+    static getMilestonePath() {
+        return `${DataDirectoryPath}/issues`;
     }
 
     static getMilestoneInfo(milestoneUUID?: string) {
-        if (!isExists(this.getMilestonePath("milestoneListInfo.json"))) {
-            setJsonData(this.getMilestonePath("milestoneListInfo.json"), {});
+        const milestoneInfoPath = `${this.getMilestonePath()}/${milestoneInfoFileName}`;
+        if (!isExists(milestoneInfoPath)) {
+            setJsonData(milestoneInfoPath, {});
         }
-        const milestoneListData = getJsonData(this.getMilestonePath("milestoneListInfo.json"));
+        const milestoneListData = getJsonData(milestoneInfoPath);
         return milestoneUUID ? (milestoneListData[milestoneUUID] as TMilestoneData) : (milestoneListData as TMilestoneJsonData);
     }
 
-    static setMilestoneInfo(milestoneUUID: string, milestoneData: TMilestoneData) {
-        if (!isExists(this.getMilestonePath())) {
+    static setMilestoneInfo(milestoneUUID: string, addOrDelete: "add" | "delete", milestoneData?: TMilestoneData) {
+        const milestoneInfoPath = `${this.getMilestonePath()}/${milestoneInfoFileName}`;
+        if (!isExists(milestoneInfoPath)) {
             return false;
         }
-        const milestoneListData = this.getMilestoneInfo() as TMilestoneJsonData;
-        milestoneListData[milestoneUUID] = milestoneData;
-        return setJsonData(this.getMilestonePath("milestoneListInfo.json"), milestoneListData) ? true : false;
+        const milestoneListData = this.getMilestoneInfo();
+        if (addOrDelete === "add") {
+            milestoneListData[milestoneUUID] = milestoneData;
+        } else if (addOrDelete === "delete") {
+            delete milestoneListData[milestoneUUID];
+        } else {
+            log.error(`setMilestoneInfo : Invalid parameter ${addOrDelete}`);
+            return false;
+        }
+        return setJsonData(milestoneInfoPath, milestoneListData) ? true : false;
     }
 
     static get(options?: Partial<TMilestoneData>) {
@@ -38,7 +49,7 @@ export default class DataMilestoneManager {
                   return (
                       (options?.content === undefined || options.content === mileStoneData.content) &&
                       (options?.startDate === undefined || options.startDate === mileStoneData.content) &&
-                      (options?.endDate === undefined || options.endDate === mileStoneData.endDate) &&
+                      (options?.dueDate === undefined || options.dueDate === mileStoneData.dueDate) &&
                       (options?.title === undefined || options.title === mileStoneData.title)
                   );
               });
@@ -48,7 +59,7 @@ export default class DataMilestoneManager {
         const milestoneUUID = uuidv4();
         fs.mkdirSync(this.getMilestonePath(), { recursive: true });
         if (
-            !this.setMilestoneInfo(milestoneUUID, {
+            !this.setMilestoneInfo(milestoneUUID, "add", {
                 ...milestoneData,
                 uuid: milestoneUUID,
             })
@@ -60,7 +71,7 @@ export default class DataMilestoneManager {
         DataAlarmManager.create(userId, {
             type: "milestone",
             location: "",
-            content: `${userId} create ${milestoneData.title} milestone (${milestoneData.startDate}~${milestoneData.endDate})`,
+            content: `${userId} create ${milestoneData.title} milestone (${milestoneData.startDate}~${milestoneData.dueDate})`,
             checkAlarm: fs
                 .readdirSync(`${DataDirectoryPath}/user`)
                 .map((userId) => {
@@ -79,7 +90,7 @@ export default class DataMilestoneManager {
             ...(this.getMilestoneInfo(milestoneUUID) as TMilestoneData),
             ...milestoneData,
         } as TMilestoneData;
-        if (!this.setMilestoneInfo(milestoneUUID, newMilestoneData)) {
+        if (!this.setMilestoneInfo(milestoneUUID, "add", newMilestoneData)) {
             log.error(`[DataMilestoneManager] update -> fail to setMilestoneInfo`);
             return { code: ResponseCode.internalError, message: "Failed to update milestone" };
         }
@@ -88,7 +99,7 @@ export default class DataMilestoneManager {
         DataAlarmManager.create(userId, {
             type: "milestone",
             location: "",
-            content: `${userId} update ${newMilestoneData.title} milestone (${newMilestoneData.startDate}~${newMilestoneData.endDate})`,
+            content: `${userId} update ${newMilestoneData.title} milestone (${newMilestoneData.startDate}~${newMilestoneData.dueDate})`,
             checkAlarm: fs
                 .readdirSync(`${DataDirectoryPath}/user`)
                 .map((userId) => {
@@ -112,8 +123,8 @@ export default class DataMilestoneManager {
         if (!Object.keys(milestoneListData).includes(milestoneUUID)) {
             log.error(`[DataMilestoneManager] delete -> milestoneUUID is not in ListData`);
         }
-        delete milestoneListData[milestoneUUID];
-        if (!setJsonData(this.getMilestonePath("milestoneListInfo.json"), milestoneListData)) {
+
+        if (!this.setMilestoneInfo(milestoneUUID, "delete")) {
             log.error(`[DataMilestoneManager] update -> fail to setMilestoneInfo`);
             return { code: ResponseCode.internalError, message: "Failed to delete milstone" };
         }

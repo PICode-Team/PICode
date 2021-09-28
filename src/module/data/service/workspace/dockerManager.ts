@@ -346,7 +346,7 @@ CMD ["./server-linux", "${socketPort}"]`;
             }
         } else {
             command += dockerInfo.bridgeId ? `--net ${dockerInfo.bridgeId} ` : ``;
-            const bridgeId = this.getNetworkById(dockerInfo.bridgeId)[0].name;
+            const bridgeId = this.getNetworkById(dockerInfo.bridgeId)[0]?.name;
             command += dockerInfo.bridgeId && dockerInfo.bridgeAlias && !["bridge", "host", "none"].includes(bridgeId) ? `--net-alias ${dockerInfo.bridgeAlias} ` : ``;
         }
 

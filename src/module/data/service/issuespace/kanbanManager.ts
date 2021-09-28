@@ -8,29 +8,30 @@ import DataWorkspaceManager from "../workspace/workspaceManager";
 import DataAlarmManager from "../alarm/alarmManager";
 import { ResponseCode } from "../../../../constants/response";
 
-export default class DataKanbanManager {
-    static isExists(kanbanUUID: string) {
-        return isExists(this.getKanbanPath(kanbanUUID));
-    }
+const kanbanInfoFileName = "kanbanInfo.json";
 
-    static getKanbanPath(kanbanUUID?: string, type: "kanbanInfo.json" | "" = "") {
-        const kanbanPath = kanbanUUID ? `${DataDirectoryPath}/issues/${kanbanUUID}` : `${DataDirectoryPath}/issues`;
-        return type !== "" ? `${kanbanPath}/${type}` : kanbanPath;
+export default class DataKanbanManager {
+    static getKanbanPath(kanbanUUID?: string) {
+        return kanbanUUID ? `${DataDirectoryPath}/issues/${kanbanUUID}` : `${DataDirectoryPath}/issues`;
     }
 
     static getKanbanInfo(kanbanUUID: string) {
-        if (!this.isExists(kanbanUUID)) {
+        const defaultPath = this.getKanbanPath(kanbanUUID);
+        const kanbanInfoPath = `${defaultPath}/${kanbanInfoFileName}`;
+        if (!isExists(kanbanInfoPath)) {
             return undefined;
         }
-        return getJsonData(this.getKanbanPath(kanbanUUID, "kanbanInfo.json")) as TkanbanData;
+        return getJsonData(kanbanInfoPath) as TkanbanData;
     }
 
     static setKanbanInfo(kanbanUUID: string, kanbanData: TkanbanData) {
-        if (!this.isExists(kanbanUUID)) {
+        const defaultPath = this.getKanbanPath(kanbanUUID);
+        const kanbanInfoPath = `${defaultPath}/${kanbanInfoFileName}`;
+        if (!isExists(defaultPath)) {
             return false;
         }
 
-        return setJsonData(this.getKanbanPath(kanbanUUID, "kanbanInfo.json"), kanbanData);
+        return setJsonData(kanbanInfoPath, kanbanData);
     }
 
     static updateIssueCount(kanbanUUID: string, type: "totalIssue" | "doneIssue", incOrDec: "increase" | "decrease") {
