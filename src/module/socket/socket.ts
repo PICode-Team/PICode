@@ -38,16 +38,12 @@ export function webSocketInit(server: expressWs.Application) {
             } catch {}
         },
         (ws, req) => {
-            const userId = "test"; //req.token.userId!;
+            const userId = req.token.userId!;
             if (userId === undefined) {
                 return ws.close();
             }
 
             ws.on("message", (msg) => {
-                // if (req.query.userId === undefined) {
-                //     return;
-                // }
-
                 try {
                     const data = JSON.parse(msg.toString()) as TSocketPacket;
                     if (data.category === "connect") {

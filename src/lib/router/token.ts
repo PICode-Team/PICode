@@ -7,10 +7,10 @@ const tokenRouter = express.Router()
 tokenRouter.all('*', (req, res, next)=>{
     try {
         req.token = verifyToken(req.cookies.authorization)
-        next()
-    } catch { }
-
-    return res.json({ code: ResponseCode.unauthorized })
+        return next()
+    } catch { 
+        return res.json({ code: ResponseCode.unauthorized })
+    }
 })
 
 export default tokenRouter
