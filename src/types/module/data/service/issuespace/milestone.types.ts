@@ -5,7 +5,7 @@ export interface TMilestoneData {
     title: string;
     content?: string;
     startDate: string;
-    endDate: string;
+    dueDate: string;
 }
 
 export type TMilestoneCreateData = TMilestoneData & { kanban?: string };

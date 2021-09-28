@@ -14,7 +14,7 @@ const issueLoadFuncs: {
 };
 
 function getIssue(userId: string, { kanbanUUID, options }: { kanbanUUID: string; options?: Partial<TIssueListData> }) {
-    const metaData = options?.uuid !== undefined ? DataIssueManager.getInfo(kanbanUUID, options.uuid) : DataIssueManager.getList(kanbanUUID, options);
+    const metaData = options?.uuid !== undefined ? DataIssueManager.getIssueInfo(kanbanUUID, options.uuid) : DataIssueManager.getList(kanbanUUID, options);
     const sendData = makePacket("issue", "getIssue", metaData ? { code: ResponseCode.ok, issues: metaData } : { code: ResponseCode.internalError });
     getSocket(userId).send(sendData);
 }

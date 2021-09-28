@@ -13,7 +13,7 @@ import alarm from "./alarm";
 import milestone from "./milestone";
 import note from "./note";
 import { verifyToken } from "../token";
-
+import calendar from "./calendar";
 const SocketFuncs = {
     chat,
     code,
@@ -25,39 +25,44 @@ const SocketFuncs = {
     alarm,
     milestone,
     note,
+    calendar,
 };
 
 export function webSocketInit(server: expressWs.Application) {
-    server.ws("/", (_, req, next)=>{
-        try {
-            req.token = verifyToken(req.cookies.authorization)
-            next()
-        } catch {}
-    }, (ws, req) => {
-        const userId = req.token.userId!
-        if (userId === undefined) {
-            return ws.close();
-        }
-
-        ws.on("message", (msg) => {
-            if (req.query.userId === undefined) {
-                return;
-            }
-
+    server.ws(
+        "/",
+        (_, req, next) => {
             try {
-                const data = JSON.parse(msg.toString()) as TSocketPacket;
-                if (data.category === "connect") {
-                    SocketInfo[userId] = ws as any;
-                    return;
-                }
-                SocketFuncs[data.category](userId, data);
-            } catch (e) {
-                log.error(e.stack);
+                req.token = verifyToken(req.cookies.authorization);
+                next();
+            } catch {}
+        },
+        (ws, req) => {
+            const userId = "test"; //req.token.userId!;
+            if (userId === undefined) {
+                return ws.close();
             }
-        });
 
-        ws.on("close", () => {
-            delete SocketInfo[userId];
-        });
-    });
+            ws.on("message", (msg) => {
+                // if (req.query.userId === undefined) {
+                //     return;
+                // }
+
+                try {
+                    const data = JSON.parse(msg.toString()) as TSocketPacket;
+                    if (data.category === "connect") {
+                        SocketInfo[userId] = ws as any;
+                        return;
+                    }
+                    SocketFuncs[data.category](userId, data);
+                } catch (e) {
+                    log.error(e.stack);
+                }
+            });
+
+            ws.on("close", () => {
+                delete SocketInfo[userId];
+            });
+        }
+    );
 }
