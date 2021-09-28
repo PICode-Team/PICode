@@ -54,7 +54,13 @@ export default class DataChatManager {
     }
 
     static getChatDataPath() {
-        return `${DataDirectoryPath}/chat`;
+        const defaultPath = `${DataDirectoryPath}/chat`
+
+        if (!fs.existsSync(defaultPath)) {
+            fs.mkdirSync(defaultPath, { recursive: true })
+        }
+
+        return defaultPath;
     }
 
     static getChatType(chatName: string): TChatType {
