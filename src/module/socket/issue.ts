@@ -4,9 +4,7 @@ import { TSocketPacket } from "../../types/module/socket.types";
 import DataIssueManager from "../data/service/issuespace/issueManager";
 import { getSocket, makePacket } from "./manager";
 
-const issueLoadFuncs: {
-    [key in string]: (userId: string, issueData: any) => void;
-} = {
+const issueLoadFuncs: Record<string, (userId: string, issueData: any) => void> = {
     getIssue,
     createIssue,
     updateIssue,

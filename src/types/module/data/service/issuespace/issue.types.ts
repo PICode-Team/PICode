@@ -1,8 +1,6 @@
 import { TReturnData } from "../../data.types";
 
-export type TIssueListJsonData = {
-    [key in string]: TIssueListData;
-};
+export type TIssueListJsonData = Record<string, TIssueListData>;
 
 export interface TIssueUpdateData {
     title: string;

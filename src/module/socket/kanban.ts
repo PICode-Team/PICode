@@ -4,7 +4,7 @@ import { TSocketPacket } from "../../types/module/socket.types";
 import DataKanbanManager from "../data/service/issuespace/kanbanManager";
 import { getSocket, makePacket } from "./manager";
 
-const kanbanLoadFuncs: { [key in string]: (userId: string, kanbanData: any) => void } = {
+const kanbanLoadFuncs: Record<string, (userId: string, kanbanData: any) => void> = {
     getKanban,
     createKanban,
     updateKanban,

@@ -4,12 +4,10 @@ import { TWorkInfo, TUserToWork } from "../../types/module/data/service/etc/work
 import DataUserManager from "../data/service/user/userManager";
 import { ResponseCode } from "../../constants/response";
 
-const workLoadFuncs: {
-    [key in string]: (userId: string, workingPath: any) => void;
-} = {
-    createInfo: createInfo,
-    getWorkingPath: getWorkingPath,
-    deleteInfo: deleteInfo,
+const workLoadFuncs: Record<string, (userId: string, workingPath: any) => void> = {
+    createInfo,
+    getWorkingPath,
+    deleteInfo,
 };
 
 function getWorkingPath(userId: string, workInfo: TWorkInfo) {

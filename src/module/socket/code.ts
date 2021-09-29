@@ -2,16 +2,14 @@ import { TSocketPacket } from "../../types/module/socket.types";
 import { getSocket, makePacket } from "./manager";
 import DataWorkspaceManager from "../data/service/workspace/workspaceManager";
 
-const codeLoadFuncs: {
-    [key in string]: (userId: string, workspaceInfo: any) => void;
-} = {
-    loadWorkspace: loadWorkspace,
-    getCode: getCode,
-    changeCode: changeCode,
-    moveFileOrDir: moveFileOrDir,
-    createDir: createDir,
-    createFile: createFile,
-    deleteFileOrDir: deleteFileOrDir,
+const codeLoadFuncs: Record<string, (userId: string, workspaceInfo: any) => void> = {
+    loadWorkspace,
+    getCode,
+    changeCode,
+    moveFileOrDir,
+    createDir,
+    createFile,
+    deleteFileOrDir,
 };
 
 function loadWorkspace(userId: string, data: { workspaceId: string }) {

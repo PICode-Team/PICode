@@ -3,7 +3,7 @@ import { TSocketPacket } from "../../types/module/socket.types";
 import DataMilestoneManager from "../data/service/issuespace/milestoneManager";
 import { getSocket, makePacket } from "./manager";
 
-const milestoneLoadFuncs: { [key in string]: (userId: string, mileStoneData: any) => void } = {
+const milestoneLoadFuncs: Record<string, (userId: string, mileStoneData: any) => void> = {
     getMilestone,
     createMilestone,
     updateMilestone,

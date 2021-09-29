@@ -3,7 +3,7 @@ import { TSocketPacket } from "../../types/module/socket.types";
 import DataAlarmManager from "../data/service/alarm/alarmManager";
 import { getSocket, makePacket } from "./manager";
 
-const alaramFunc: { [key in string]: (userId: string, packet: any) => void } = {
+const alaramFunc: Record<string, (userId: string, packet: any) => void> = {
     getAlarmData,
     checkAlarm,
     createAlarm,

@@ -1,13 +1,13 @@
-import { TCalendarData, TScheduleCreateData, TScheduleData } from "../../types/module/data/service/calendar/calendar.types";
+import { TScheduleCreateData, TScheduleData } from "../../types/module/data/service/calendar/calendar.types";
 import { TSocketPacket } from "../../types/module/socket.types";
 import DataCalendarManager from "../data/service/calendar/calendarManager";
 import { getSocket, makePacket } from "./manager";
 
 const calendarLoadFuncs: Record<string, (userId: string, scheduleData: any) => void> = {
-    getCalendar: getCalendar,
-    createCalendar: createSchedule,
-    updateCalendar: updateSchedule,
-    deleteCalendar: deleteSchedule,
+    getCalendar,
+    createSchedule,
+    updateSchedule,
+    deleteSchedule,
 };
 
 function getCalendar(userId: string, options?: Partial<TScheduleData>) {
@@ -16,7 +16,7 @@ function getCalendar(userId: string, options?: Partial<TScheduleData>) {
 }
 
 function createSchedule(userId: string, scheduleData: TScheduleCreateData) {
-    const sendData = makePacket("calendar", "createSchedule", DataCalendarManager.createSchedule(scheduleData));
+    const sendData = makePacket("calendar", "createSchedule", DataCalendarManager.createSchedule({ ...scheduleData, creator: userId }));
     getSocket(userId).send(sendData);
 }
 

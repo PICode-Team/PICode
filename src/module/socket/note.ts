@@ -3,7 +3,7 @@ import DataNoteManager from "../data/service/notespace/noteManager";
 import { GQLNote } from "../../types/module/data/service/notespace/note.types";
 import { getSocket, makePacket } from "./manager";
 
-const docuemntFunc: { [key in string]: (userId: string, packet: any) => void } = {
+const docuemntFunc: Record<string, (userId: string, packet: any) => void> = {
     getnote,
     createnote,
     updatenote,

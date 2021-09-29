@@ -11,6 +11,14 @@ export function updateDate(dateElement: string, value: number) {
     return getTime(date, "YY-MM-DD");
 }
 
+export function getDateArray(startDate: string, dueDate: string) {
+    let dateArray: string[] = [];
+    for (let dateElement = startDate; dateElement <= dueDate; dateElement = updateDate(dateElement, 1)) {
+        dateArray.push(dateElement);
+    }
+    return dateArray;
+}
+
 export function setDateFormat(date: string) {
     return date.split("-")[0]?.length !== 4 ? `20${date}` : date;
 }
