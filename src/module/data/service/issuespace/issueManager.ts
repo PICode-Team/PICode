@@ -151,7 +151,7 @@ export default class DataIssueManager {
             content: `${userId} create ${issueData.title} issue : creator ${issueData.creator}, assigner ${issueData.assigner}`,
             checkAlarm: { [issueData.creator]: true, [issueData.assigner]: true },
         });
-        return { code: ResponseCode.ok, uuid: issueUUID };
+        return { code: ResponseCode.ok, issue: issueData };
     }
 
     static update(
@@ -159,7 +159,7 @@ export default class DataIssueManager {
         kanbanUUID: string,
         { uuid, issueId, title, creator, assigner, label, column, content, milestone, startDate, dueDate }: Partial<TIssueData>,
         isCallSchedule: boolean = false
-    ): TReturnData {
+    ): TReturnIssueData {
         const issueListJsonData = this.getIssueListInfo(kanbanUUID);
         if (uuid === undefined || issueListJsonData === undefined) {
             log.error(`[dataIssueManager] update -> uuid or issueListJsonData is undefined`);
@@ -187,22 +187,21 @@ export default class DataIssueManager {
             log.error(`[dataIssueManager] update -> issueData is undefined`);
             return { code: ResponseCode.internalError, message: "Could not find issue" };
         }
-        if (
-            !this.setIssueInfo(kanbanUUID, uuid, {
-                uuid: uuid,
-                issueId: issueData.issueId,
-                title: title ?? issueData.title,
-                creator: creator ?? issueData.creator,
-                assigner: assigner ?? issueData.assigner,
-                label: label ?? issueData.label,
-                column: column ?? issueData.column,
-                content: content ?? issueData.content,
-                milestone: milestone ?? issueData.milestone,
-                kanban: issueData.kanban,
-                startDate: startDate ?? issueData.startDate,
-                dueDate: dueDate ?? issueData.dueDate,
-            } as TIssueData)
-        ) {
+        const updateIssueData = {
+            uuid: uuid,
+            issueId: issueData.issueId,
+            title: title ?? issueData.title,
+            creator: creator ?? issueData.creator,
+            assigner: assigner ?? issueData.assigner,
+            label: label ?? issueData.label,
+            column: column ?? issueData.column,
+            content: content ?? issueData.content,
+            milestone: milestone ?? issueData.milestone,
+            kanban: issueData.kanban,
+            startDate: startDate ?? issueData.startDate,
+            dueDate: dueDate ?? issueData.dueDate,
+        };
+        if (!this.setIssueInfo(kanbanUUID, uuid, updateIssueData as TIssueData)) {
             log.error(`[dataIssueManager] update -> fail to setIssueInfo`);
             return { code: ResponseCode.internalError, message: "Failed to update issue" };
         }
@@ -224,14 +223,14 @@ export default class DataIssueManager {
             }
         }
 
-        log.info(`[dataIssueManager] update -> issue updated`);
+        log.info(`[dataIssueManager] update -> issue updated : ${JSON.stringify(updateIssueData)}`);
         DataAlarmManager.create(userId, {
             type: "issue",
             location: "",
             content: `${userId} update ${title ?? issueData.title} issue`,
             checkAlarm: { [creator ?? issueData.creator]: true, [assigner ?? issueData.assigner]: true },
         });
-        return { code: ResponseCode.ok };
+        return { code: ResponseCode.ok, issue: updateIssueData };
     }
 
     static delete(userId: string, kanbanUUID: string, issueUUID: string, isCallSchedule: boolean = false): TReturnData {

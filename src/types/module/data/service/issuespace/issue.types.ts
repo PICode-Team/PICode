@@ -25,5 +25,5 @@ export type TIssueData = TIssueListData & {
 };
 
 export type TReturnIssueData = TReturnData & {
-    uuid?: string;
+    issue?: TIssueData;
 };
