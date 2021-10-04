@@ -226,7 +226,7 @@ export default class DataDockerManager {
     static setDockerInfo(workspaceId: string, dockerInfo: TDockerData) {
         const defaultPath = this.getDockerPath(workspaceId);
         const dockerInfoPath = `${defaultPath}/${dockerInfoFileName}`;
-        if (!isExists(dockerInfoPath)) {
+        if (!isExists(defaultPath)) {
             return false;
         }
 

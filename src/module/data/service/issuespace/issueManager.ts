@@ -129,7 +129,7 @@ export default class DataIssueManager {
         fs.mkdirSync(this.getIssueInfoPath(kanbanUUID, issueUUID), { recursive: true });
 
         startDate = startDate ?? getTime(undefined, "YY-MM-DD");
-        const issueData = { ...issueListData, content, milestone, kanban: kanbanUUID, startDate, dueDate } as TIssueData;
+        const issueData = { ...issueListData, content, milestone, kanban: kanbanUUID, startDate, dueDate, creation: startDate } as TIssueData;
         if (!this.setIssueInfo(kanbanUUID, issueUUID, issueData)) {
             log.error(`[dataIssueManager] create -> fail to setIssueInfo`);
             return { code: ResponseCode.internalError, message: "Failed to create issue" };

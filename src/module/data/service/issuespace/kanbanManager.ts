@@ -76,7 +76,8 @@ export default class DataKanbanManager {
                     kanban !== "milestoneListInfo.json" &&
                     (options.uuid === undefined || options.uuid === kanbanData?.uuid) &&
                     (options.column === undefined || (options.column as string) in (kanbanData?.columns as string[])) &&
-                    (options.workspaceId === undefined || options.workspaceId === kanbanData?.workspaceId)
+                    (options.workspaceId === undefined || options.workspaceId === kanbanData?.workspaceId) &&
+                    (options.title === undefined || options.title === kanbanData?.title)
                 );
             })
             .reduce((kanbanList: TkanbanData[], kanban: string) => {
