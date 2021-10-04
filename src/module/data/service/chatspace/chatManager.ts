@@ -4,6 +4,8 @@ import { TChatChannelData, TChatLogData, TChatLogDataParam, TChatType } from "..
 import { getJsonData, setJsonData } from "../etc/fileManager";
 import { getTime } from "../../../datetime";
 import { v4 as uuidv4 } from "uuid";
+import log from "../../../log";
+import chat from "../../../socket/chat";
 
 const ChatQueue: TChatLogDataParam[] = [];
 
@@ -100,6 +102,7 @@ export default class DataChatManager {
             return { message: "", time: "" };
         }
 
+        chatName = this.getChatType(chatName) === "channel" ? chatName : chatName.split("{sep}")[1];
         return this.getChatLog(
             userId,
             chatName,
@@ -107,8 +110,8 @@ export default class DataChatManager {
                 return preLog > curLog ? preLog : curLog;
             })
         )
-            .slice(-1)
-            .pop();
+            ?.slice(-1)
+            ?.pop();
     }
 
     static saveChat(sender: string, chatName: string, message: string, chatId?: string) {

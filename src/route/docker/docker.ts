@@ -9,8 +9,8 @@ const router = express.Router();
 router.get("/", (req, res) => {
     const workspaceId = req.query?.workspaceId as string;
 
-    const dockerInfo = DataDockerManager.get(workspaceId);
-    return res.json({ code: ResponseCode.ok, dockerInfo: dockerInfo });
+    const dockerList = DataDockerManager.get(workspaceId);
+    return res.json({ code: ResponseCode.ok, dockerList });
 });
 
 router.post("/", tokenRouter, (req, res) => {

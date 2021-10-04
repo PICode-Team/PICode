@@ -20,8 +20,8 @@ function createMilestone(userId: string, milestoneData: TMilestoneCreateData) {
     const sendData = makePacket("milestone", "createMilestone", metaData);
     getSocket(userId).send(sendData);
 }
-function updateMilestone(userId: string, { milestoneUUID, milestoneData }: { milestoneUUID: string; milestoneData: TMilestoneUpdateData }) {
-    const metaData = DataMilestoneManager.update(userId, milestoneUUID, milestoneData);
+function updateMilestone(userId: string, milestoneData: TMilestoneUpdateData) {
+    const metaData = DataMilestoneManager.update(userId, milestoneData.uuid, milestoneData);
     const sendData = makePacket("milestone", "updateMilestone", metaData);
     getSocket(userId).send(sendData);
 }

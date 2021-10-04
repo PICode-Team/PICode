@@ -12,7 +12,7 @@ router.get("/", tokenRouter, (req, res) => {
     const workspaceId = req.query?.workspaceId as string;
 
     const workspaceList = DataWorkspaceManager.get(userId, workspaceId);
-    return res.json({ code: ResponseCode.ok, workspaceList: workspaceList });
+    return res.json({ code: ResponseCode.ok, workspaceList });
 });
 
 router.post("/", tokenRouter, (req, res) => {
