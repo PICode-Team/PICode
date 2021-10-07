@@ -69,7 +69,7 @@ export default class DataMilestoneManager {
         }
         log.info(`milestoneData created: ${milestoneUUID}`);
         DataAlarmManager.create(userId, {
-            type: "milestone",
+            type: "issuespace",
             location: "",
             content: `${userId} create ${milestoneData.title} milestone (${milestoneData.startDate}~${milestoneData.dueDate})`,
             checkAlarm: fs
@@ -97,7 +97,7 @@ export default class DataMilestoneManager {
 
         log.info(`milestoneData updated: ${JSON.stringify(milestoneData)}`);
         DataAlarmManager.create(userId, {
-            type: "milestone",
+            type: "issuespace",
             location: "",
             content: `${userId} update ${newMilestoneData.title} milestone (${newMilestoneData.startDate}~${newMilestoneData.dueDate})`,
             checkAlarm: fs
@@ -130,7 +130,7 @@ export default class DataMilestoneManager {
         }
         log.info(`milestoneData deleted: ${JSON.stringify(milestoneUUID)}`);
         DataAlarmManager.create(userId, {
-            type: "milestone",
+            type: "issuespace",
             location: "",
             content: `${userId} delete ${deleteMilestoneTitle} milestone`,
             checkAlarm: fs

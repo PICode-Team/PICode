@@ -111,7 +111,7 @@ export default class DataKanbanManager {
         setJsonData(`${this.getKanbanPath(kanbanUUID)}/issueList.json`, {});
         log.info(`kanbandata created: ${kanbanUUID}`);
         DataAlarmManager.create(userId, {
-            type: "kanban",
+            type: "issuespace",
             location: "",
             content: `${userId} create ${kanbanData.title} kanban at ${kanbanData.workspaceId}`,
             checkAlarm: (DataWorkspaceManager.getWorkspaceInfo(kanbanData.workspaceId)?.participants as string[]).reduce((list: { [ket in string]: boolean }, member) => {
@@ -138,7 +138,7 @@ export default class DataKanbanManager {
         log.info(`kanbandata updated: ${JSON.stringify(updateKanbanData)}`);
         if (userId !== "") {
             DataAlarmManager.create(userId, {
-                type: "kanban",
+                type: "issuespace",
                 location: "",
                 content: `${userId} update ${kanbanData.title ?? this.getKanbanInfo(kanbanUUID)?.title} kanban at ${kanbanData.workspaceId}`,
                 checkAlarm: (DataWorkspaceManager.getWorkspaceInfo(kanbanData.workspaceId ?? (updateKanbanData.workspaceId as string))?.participants as string[]).reduce(
@@ -162,7 +162,7 @@ export default class DataKanbanManager {
         fs.rmdirSync(this.getKanbanPath(kanbanUUID), { recursive: true });
         log.info(`kanbandata deleted: kanbanUUID: ${kanbanUUID}`);
         DataAlarmManager.create(userId, {
-            type: "kanban",
+            type: "issuespace",
             location: "",
             content: `${userId} delete ${kanbanData.title} kanban at ${kanbanData.workspaceId}`,
             checkAlarm: (DataWorkspaceManager.getWorkspaceInfo(kanbanData.workspaceId)?.participants as string[]).reduce((list: { [ket in string]: boolean }, member) => {

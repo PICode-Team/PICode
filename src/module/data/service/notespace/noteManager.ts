@@ -3,7 +3,8 @@ import { GQLNote } from "../../../../types/module/data/service/notespace/note.ty
 import { getJsonData, isExists, setJsonData } from "../etc/fileManager";
 import fs from "fs";
 import { AutoMergeSystem } from "../../../merge";
-import log from "../../../log";
+import { v4 as uuidv4 } from "uuid";
+import { adhocExecTask } from "simple-git/src/lib/tasks/task";
 
 const noteDataFileName = "noteData.json";
 
@@ -35,6 +36,7 @@ export default class DataNoteManager {
 
     static create(data: GQLNote) {
         const originData = this.get();
+        data = { ...data, noteId: data.path };
 
         return setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, [...originData, data]);
     }
