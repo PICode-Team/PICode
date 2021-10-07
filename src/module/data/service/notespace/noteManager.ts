@@ -1,23 +1,45 @@
 import { DataDirectoryPath } from "../../../../types/module/data/data.types";
 import { GQLNote } from "../../../../types/module/data/service/notespace/note.types";
-import { getJsonData, setJsonData } from "../etc/fileManager";
+import { getJsonData, isExists, setJsonData } from "../etc/fileManager";
+import fs from "fs";
+import { AutoMergeSystem } from "../../../merge";
+import log from "../../../log";
+
+const noteDataFileName = "noteData.json";
 
 export default class DataNoteManager {
-    static getnoteDataPath() {
+    static noteMergeManager: AutoMergeSystem;
+    static run() {
+        if (!isExists(this.getNoteDataPath())) {
+            fs.mkdirSync(this.getNoteDataPath(), { recursive: true });
+        }
+        this.noteMergeManager = new AutoMergeSystem(this.getNoteDataPath());
+    }
+
+    static getNoteDataPath() {
         return `${DataDirectoryPath}/note`;
     }
 
     static get(noteId?: string) {
-        return ((getJsonData(`${this.getnoteDataPath()}/noteData.json`) ?? []) as GQLNote[]).filter((v: GQLNote) => noteId === undefined || v.noteId === noteId);
+        const defaultPath = this.getNoteDataPath();
+        const noteDataPath = `${defaultPath}/${noteDataFileName}`;
+        if (!isExists(defaultPath)) {
+            fs.mkdirSync(defaultPath, { recursive: true });
+        }
+
+        if (!isExists(noteDataPath)) {
+            return [];
+        }
+        return ((getJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`) ?? []) as GQLNote[]).filter((v: GQLNote) => noteId === undefined || v.noteId === noteId);
     }
 
     static create(data: GQLNote) {
         const originData = this.get();
 
-        return setJsonData(`${this.getnoteDataPath()}/noteData.json`, [...originData, data]);
+        return setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, [...originData, data]);
     }
 
-    static update(noteId: string, newData: TDatanoteUpdataSet) {
+    static update(noteId: string, newData: TDataNoteUpdataSet) {
         const originData = this.get();
         const targetData = originData.find((v: GQLNote) => v.noteId === noteId);
 
@@ -25,11 +47,11 @@ export default class DataNoteManager {
             return false;
         }
 
-        for (const key of (Object.keys(newData) as (keyof TDatanoteUpdataSet)[]).filter((v) => newData[v] !== undefined)) {
+        for (const key of (Object.keys(newData) as (keyof TDataNoteUpdataSet)[]).filter((v) => newData[v] !== undefined)) {
             targetData[key] = newData[key];
         }
 
-        return setJsonData(`${this.getnoteDataPath()}/noteData.json`, originData);
+        return setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, originData);
     }
 
     static delete(noteId: string) {
@@ -43,11 +65,11 @@ export default class DataNoteManager {
 
         originData.splice(targetIndex, 1);
 
-        return setJsonData(`${this.getnoteDataPath()}/noteData.json`, originData);
+        return setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, originData);
     }
 }
 
-interface TDatanoteUpdataSet {
+interface TDataNoteUpdataSet {
     content?: string;
     path?: string;
 }

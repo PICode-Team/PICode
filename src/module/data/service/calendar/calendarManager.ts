@@ -11,10 +11,20 @@ import DataIssueManager from "../issuespace/issueManager";
 const calendarInfoFileName = "calendarInfo.json";
 
 export default class DataCalendarManager {
+    /**
+     *
+     * @description get Calendar path
+     * @returns calender path
+     */
     static getCalendarPath() {
         return `${DataDirectoryPath}/calendar`;
     }
 
+    /**
+     *
+     * @description get Calendar Infomation
+     * @returns calendarInfo if calendar info file exists, undefined if not
+     */
     static getCalendarInfo() {
         const defaultPath = this.getCalendarPath();
         const calendarInfoPath = `${defaultPath}/${calendarInfoFileName}`;
@@ -24,6 +34,12 @@ export default class DataCalendarManager {
         return getJsonData(calendarInfoPath) as TCalendarData;
     }
 
+    /**
+     *
+     * @param calendarData calendarData you want to set
+     * @description set calendar data to calendar info file
+     * @returns true if succeed to set calendar data to calendar info file, false if not
+     */
     static setCalendarInfo(calendarData: TCalendarData) {
         const defaultPath = this.getCalendarPath();
         if (!isExists(defaultPath)) {
@@ -34,6 +50,12 @@ export default class DataCalendarManager {
         return setJsonData(calendarInfoPath, calendarData);
     }
 
+    /**
+     *
+     * @param scheduleId schedule ID to get schedule
+     * @description get schedule which ID is scheduleId
+     * @returns schedule infomation which ID is scheduleId
+     */
     static getScheduleInfo(scheduleId: string) {
         const calendarInfo = this.getCalendarInfo();
         return Object.values(calendarInfo)
@@ -45,6 +67,12 @@ export default class DataCalendarManager {
             ?.find((scheduleInfo: TScheduleData) => scheduleInfo.scheduleId === scheduleId);
     }
 
+    /**
+     *
+     * @param issueUUID issue ID to get schedule
+     * @description get schedule which issue ID is issueUUID
+     * @returns schedule infomation which issue ID is issueUUID
+     */
     static getScheduleIdByIssueUUID(issueUUID: string) {
         const calendarInfo = this.getCalendarInfo();
         return Object.values(calendarInfo)
@@ -56,6 +84,13 @@ export default class DataCalendarManager {
             ?.find((scheduleInfo: TScheduleData) => scheduleInfo.issue === issueUUID).scheduleId;
     }
 
+    /**
+     *
+     * @param calendarInfo calendar infomation
+     * @param scheduleId schedule ID to delete from calendarInfo
+     * @param date
+     * @returns
+     */
     static deleteScheduleInfo(calendarInfo: TCalendarData, scheduleId: string, date: string) {
         calendarInfo[date] === undefined ? (calendarInfo[date] = []) : undefined;
         const index = calendarInfo[date]?.findIndex((scheduleInfo: TScheduleData) => {

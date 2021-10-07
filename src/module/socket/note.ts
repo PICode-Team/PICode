@@ -4,32 +4,32 @@ import { GQLNote } from "../../types/module/data/service/notespace/note.types";
 import { getSocket, makePacket } from "./manager";
 
 const docuemntFunc: Record<string, (userId: string, packet: any) => void> = {
-    getnote,
-    createnote,
-    updatenote,
-    deletenote,
+    getNote,
+    createNote,
+    updateNote,
+    deleteNote,
 };
 
-function getnote(userId: string, packet: any) {
-    const sendData = makePacket("note", "getnote", DataNoteManager.get(packet.noteId));
+function getNote(userId: string, packet: any) {
+    const sendData = makePacket("note", "getNote", DataNoteManager.get(packet.NoteId));
     getSocket(userId).send(sendData);
 }
 
-function createnote(userId: string, packet: GQLNote) {
-    const sendData = makePacket("note", "createnote", DataNoteManager.create(packet));
+function createNote(userId: string, packet: GQLNote) {
+    const sendData = makePacket("note", "createNote", DataNoteManager.create(packet));
     getSocket(userId).send(sendData);
 }
 
-function updatenote(userId: string, packet: any) {
-    const sendData = makePacket("note", "updatenote", DataNoteManager.update(packet.noteId, packet.note));
+function updateNote(userId: string, packet: any) {
+    const sendData = makePacket("note", "updateNote", DataNoteManager.update(packet.NoteId, packet.Note));
     getSocket(userId).send(sendData);
 }
 
-function deletenote(userId: string, packet: any) {
-    const sendData = makePacket("note", "deletenote", DataNoteManager.delete(packet.noteId));
+function deleteNote(userId: string, packet: any) {
+    const sendData = makePacket("note", "deleteNote", DataNoteManager.delete(packet.NoteId));
     getSocket(userId).send(sendData);
 }
 
-export default function note(userId: string, packet: TSocketPacket) {
+export default function Note(userId: string, packet: TSocketPacket) {
     docuemntFunc[packet.type](userId, packet.data);
 }

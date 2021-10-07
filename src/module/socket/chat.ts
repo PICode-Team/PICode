@@ -6,7 +6,7 @@ import { getTime } from "../datetime";
 import { getSocket, makePacket } from "./manager";
 
 function sendMessage(sender: string, target: string, { message, parentChatId }: { message: string; parentChatId?: string }) {
-    const sendData = makePacket("chat", "sendMessage", { message, sender, parentChatId, time: getTime() });
+    const sendData = makePacket("chat", "sendMessage", { message, sender, parentChatId, time: getTime(), chatName: target });
     DataChatManager.saveChat(sender, target, message, parentChatId);
 
     if (DataChatManager.getChatType(target) === "direct") {

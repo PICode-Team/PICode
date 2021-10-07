@@ -233,7 +233,7 @@ export default class DataIssueManager {
         return { code: ResponseCode.ok, issue: updateIssueData };
     }
 
-    static delete(userId: string, kanbanUUID: string, issueUUID: string, isCallSchedule: boolean = false): TReturnData {
+    static delete(userId: string, kanbanUUID: string, issueUUID: string, isCallSchedule: boolean = false): TReturnIssueData {
         const issueListJsonData = this.getIssueListInfo(kanbanUUID);
         if (issueListJsonData === undefined || issueUUID == undefined) {
             log.error(`[dataIssueManager] delete -> isueListJsonData is undefined`);
@@ -249,6 +249,7 @@ export default class DataIssueManager {
             return { code: ResponseCode.invaildRequest, message: "Could not find issue" };
         }
 
+        const issueData = this.getIssueInfo(kanbanUUID, issueUUID);
         if (!this.setIssueListInfo(kanbanUUID, issueUUID, "delete")) {
             log.error(`[dataIssueManager] delete -> fail to delete issueData from issueList.json`);
             return { code: ResponseCode.internalError, message: "Failed to delete issue" };
@@ -271,6 +272,6 @@ export default class DataIssueManager {
             content: `${userId} delete ${deleteIssueInfo.title} issue`,
             checkAlarm: { [deleteIssueInfo.creator]: true, [deleteIssueInfo.assigner]: true },
         });
-        return { code: ResponseCode.ok };
+        return { code: ResponseCode.ok, issue: issueData };
     }
 }
