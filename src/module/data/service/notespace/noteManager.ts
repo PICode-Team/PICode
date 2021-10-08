@@ -1,10 +1,8 @@
 import { DataDirectoryPath } from "../../../../types/module/data/data.types";
-import { GQLNote } from "../../../../types/module/data/service/notespace/note.types";
+import { TNoteData } from "../../../../types/module/data/service/notespace/note.types";
 import { getJsonData, isExists, setJsonData } from "../etc/fileManager";
 import fs from "fs";
 import { AutoMergeSystem } from "../../../merge";
-import { v4 as uuidv4 } from "uuid";
-import { adhocExecTask } from "simple-git/src/lib/tasks/task";
 
 const noteDataFileName = "noteData.json";
 
@@ -31,10 +29,10 @@ export default class DataNoteManager {
         if (!isExists(noteDataPath)) {
             return [];
         }
-        return ((getJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`) ?? []) as GQLNote[]).filter((v: GQLNote) => noteId === undefined || v.noteId === noteId);
+        return ((getJsonData(`${noteDataPath}`) ?? []) as TNoteData[]).filter((v: TNoteData) => noteId === undefined || v.noteId === noteId);
     }
 
-    static create(data: GQLNote) {
+    static create(data: TNoteData) {
         const originData = this.get();
         data = { ...data, noteId: data.path };
 
@@ -43,7 +41,7 @@ export default class DataNoteManager {
 
     static update(noteId: string, newData: TDataNoteUpdataSet) {
         const originData = this.get();
-        const targetData = originData.find((v: GQLNote) => v.noteId === noteId);
+        const targetData = originData.find((v: TNoteData) => v.noteId === noteId);
 
         if (targetData === undefined) {
             return false;
@@ -59,7 +57,7 @@ export default class DataNoteManager {
     static delete(noteId: string) {
         const originData = this.get();
 
-        const targetIndex = originData.findIndex((v: GQLNote) => v.noteId === noteId);
+        const targetIndex = originData.findIndex((v: TNoteData) => v.noteId === noteId);
 
         if (targetIndex < 0) {
             return false;

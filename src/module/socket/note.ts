@@ -1,6 +1,6 @@
 import { TSocketPacket } from "../../types/module/socket.types";
 import DataNoteManager from "../data/service/notespace/noteManager";
-import { GQLNote } from "../../types/module/data/service/notespace/note.types";
+import { TNoteData } from "../../types/module/data/service/notespace/note.types";
 import { getSocket, makePacket } from "./manager";
 
 const docuemntFunc: Record<string, (userId: string, packet: any) => void> = {
@@ -15,7 +15,7 @@ function getNote(userId: string, packet: any) {
     getSocket(userId).send(sendData);
 }
 
-function createNote(userId: string, packet: GQLNote) {
+function createNote(userId: string, packet: TNoteData) {
     const sendData = makePacket("note", "createNote", DataNoteManager.create(packet));
     getSocket(userId).send(sendData);
 }

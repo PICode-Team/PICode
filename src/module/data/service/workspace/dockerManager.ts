@@ -55,7 +55,12 @@ export default class DataDockerManager {
         return commandDocker.stdout.toString().replace(/\n/gi, "");
     }
 
-    static runDockerCommand(command: string, stdout: (result: Buffer) => void, stderr: (error: any) => void, close: (code: any) => void = () => {}) {
+    static runDockerCommand(
+        command: string,
+        stdout: (result: Buffer) => void,
+        stderr: (error: any) => void,
+        close: (code: any) => void = () => {}
+    ) {
         const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
         const commandDocker = spawn(shell, [command]);
         commandDocker.stdout.on("data", stdout);
@@ -101,25 +106,24 @@ export default class DataDockerManager {
             fs.mkdirSync(this.getDockerNetworkPath(), { recursive: true });
         }
         ["host", "bridge", "none"].map((networkName) => {
-            const command = `docker network inspect --format="{{".IPAM.Config"}} {{.Id}}" ${networkName}`;
+            const command = `docker network inspect --format="{{".IPAM.Config"}}" ${networkName}`;
             this.runDockerCommand(
                 command,
                 (result: Buffer) => {
-                    const networkInfo = result.toString().replace(/\n/gi, "").split(" ");
-
-                    networkInfo?.[0] === "[]"
-                        ? this.setDockerNetWorkInfo({
-                              name: networkName,
-                              networkId: networkInfo?.[1],
-                          })
-                        : networkInfo?.[1] !== undefined
-                        ? this.setDockerNetWorkInfo({
-                              name: networkName,
-                              subnet: networkInfo?.[1].split(":")[1].replace(/]/gi, ""),
-                              gateway: networkInfo?.[0].split(":")[1],
-                              networkId: networkInfo?.[2],
-                          })
-                        : undefined;
+                    const networkInfo = result
+                        .toString()
+                        .replace(/\n/gi, "")
+                        .replace(/\[/gi, "")
+                        .replace(/\]/gi, "")
+                        .replace(/\{/gi, "")
+                        .replace(/\}/gi, "")
+                        .split(" ");
+                    this.setDockerNetWorkInfo({
+                        name: networkName,
+                        subnet: networkInfo?.[0]?.split(",")[0],
+                        gateway: networkInfo?.[0]?.split(",")[1],
+                        networkId: this.runDockerCommandSync(`docker network inspect --format="{{.Id}}" ${networkName}`),
+                    });
                 },
                 (error) => {
                     log.error(error);
@@ -134,8 +138,13 @@ export default class DataDockerManager {
             if (dockerInfo !== undefined) {
                 this.setDockerInfo(workspaceId, {
                     ...dockerInfo,
-                    status: this.runDockerCommandSync(`docker inspect --format="{{.State.Status}}" ${dockerInfo.containerName}`) as "created" | "running" | "exited",
-                    containerIP: this.runDockerCommandSync(`docker inspect --format="{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${dockerInfo.containerName}`),
+                    status: this.runDockerCommandSync(`docker inspect --format="{{.State.Status}}" ${dockerInfo.containerName}`) as
+                        | "created"
+                        | "running"
+                        | "exited",
+                    containerIP: this.runDockerCommandSync(
+                        `docker inspect --format="{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${dockerInfo.containerName}`
+                    ),
                 });
             }
         });
@@ -170,10 +179,13 @@ export default class DataDockerManager {
         command += dockerNetworkInfo.gateway ? `--gateway=${dockerNetworkInfo.gateway} ` : ``;
         command += `${dockerNetworkInfo.name}`;
 
+        log.debug(`command : ${command}`);
         this.runDockerCommand(
             command,
             (networkId: Buffer) => {
-                const networkInfo = this.runDockerCommandSync(`docker network inspect --format="{{".IPAM.Config"}} {{".Containers"}}" ${dockerNetworkInfo.name}`).split(" ");
+                const networkInfo = this.runDockerCommandSync(
+                    `docker network inspect --format="{{".IPAM.Config"}} {{".Containers"}}" ${dockerNetworkInfo.name}`
+                ).split(" ");
                 log.debug(`create network result: ${networkInfo}`);
                 this.setDockerNetWorkInfo({
                     ...dockerNetworkInfo,
@@ -248,7 +260,11 @@ export default class DataDockerManager {
     static createPkgProgram(
         userId: string,
         dockerInfo: TDockerCreateData,
-        { workspaceId, workspaceName, workspaceParticipants }: { workspaceId: string; workspaceName: string; workspaceParticipants: string[] }
+        {
+            workspaceId,
+            workspaceName,
+            workspaceParticipants,
+        }: { workspaceId: string; workspaceName: string; workspaceParticipants: string[] }
     ) {
         if (!fs.existsSync(`${DataDirectoryPath}/docker`)) {
             fs.mkdirSync(`${DataDirectoryPath}/docker`, { recursive: true });
@@ -277,7 +293,11 @@ export default class DataDockerManager {
     static createDockerFile(
         userId: string,
         dockerInfo: TDockerCreateData,
-        { workspaceId, workspaceName, workspaceParticipants }: { workspaceId: string; workspaceName: string; workspaceParticipants: string[] }
+        {
+            workspaceId,
+            workspaceName,
+            workspaceParticipants,
+        }: { workspaceId: string; workspaceName: string; workspaceParticipants: string[] }
     ) {
         const socketPort = Math.floor(Math.random() * (49998 - 40000 + 1)) + 40000;
         let dockerFileContent = `FROM ${dockerInfo.image}:${dockerInfo.tag ?? "latest"}
@@ -315,13 +335,19 @@ CMD ["./server-linux", "${socketPort}"]`;
     static create(
         userId: string,
         dockerInfo: TDockerCreateData,
-        { workspaceId, workspaceName, workspaceParticipants }: { workspaceId: string; workspaceName: string; workspaceParticipants: string[] }
+        {
+            workspaceId,
+            workspaceName,
+            workspaceParticipants,
+        }: { workspaceId: string; workspaceName: string; workspaceParticipants: string[] }
     ) {
         const tag = dockerInfo.tag ?? "latest";
         const workspacePath = DataWorkspaceManager.getWorkspaceWorkPath(workspaceId);
         const containerName = dockerInfo.containerName ?? workspaceName;
 
-        let command = `docker run -itd --volume="${path.resolve(path.normalize(workspacePath))}:/home/${workspaceName}" -w /home/${workspaceName} `;
+        let command = `docker run -itd --volume="${path.resolve(
+            path.normalize(workspacePath)
+        )}:/home/${workspaceName}" -w /home/${workspaceName} `;
         if (dockerInfo.portInfo !== undefined) {
             Object.keys(dockerInfo.portInfo).map((hostPort: string) => {
                 command += `-p ${hostPort}:${(dockerInfo.portInfo as TPortMappingData)[hostPort]} `;
@@ -336,18 +362,26 @@ CMD ["./server-linux", "${socketPort}"]`;
                 linkContainerInfo?.containers.push(containerName);
                 this.setDockerInfo(linkworkspaceId, linkContainerInfo);
                 const bridgeId =
-                    dockerInfo.bridgeId !== undefined && Object.keys(linkContainerInfo.bridgeInfo).includes(dockerInfo.bridgeId) ? dockerInfo.bridgeId : Object.keys(linkContainerInfo.bridgeInfo)[0];
+                    dockerInfo.bridgeId !== undefined && Object.keys(linkContainerInfo.bridgeInfo).includes(dockerInfo.bridgeId)
+                        ? dockerInfo.bridgeId
+                        : Object.keys(linkContainerInfo.bridgeInfo)[0];
 
                 dockerInfo.bridgeId = bridgeId;
                 command += `--net ${bridgeId} `;
 
                 command += `--link ${dockerInfo.linkContainer} `;
-                command += dockerInfo.bridgeAlias !== undefined && !["bridge", "host", "none"].includes(bridgeId) ? `--net-alias ${dockerInfo.bridgeAlias} ` : ``;
+                command +=
+                    dockerInfo.bridgeAlias !== undefined && !["bridge", "host", "none"].includes(bridgeId)
+                        ? `--net-alias ${dockerInfo.bridgeAlias} `
+                        : ``;
             }
         } else {
             command += dockerInfo.bridgeId ? `--net ${dockerInfo.bridgeId} ` : ``;
             const bridgeId = this.getNetworkById(dockerInfo.bridgeId)[0]?.name;
-            command += dockerInfo.bridgeId && dockerInfo.bridgeAlias && !["bridge", "host", "none"].includes(bridgeId) ? `--net-alias ${dockerInfo.bridgeAlias} ` : ``;
+            command +=
+                dockerInfo.bridgeId && dockerInfo.bridgeAlias && !["bridge", "host", "none"].includes(bridgeId)
+                    ? `--net-alias ${dockerInfo.bridgeAlias} `
+                    : ``;
         }
 
         command += `--name ${containerName} ${dockerInfo.image}:${dockerInfo.tag ?? "latest"}`;
@@ -356,13 +390,18 @@ CMD ["./server-linux", "${socketPort}"]`;
             command,
             (containerId: Buffer) => {
                 const bridgeInfo: TBridgeInfo = {};
-                bridgeInfo[dockerInfo.bridgeId ?? this.getNetworkByName("bridge")[0].networkId] = dockerInfo.bridgeAlias ? dockerInfo.bridgeAlias : "";
+                bridgeInfo[dockerInfo.bridgeId ?? this.getNetworkByName("bridge")[0]?.networkId] = dockerInfo.bridgeAlias
+                    ? dockerInfo.bridgeAlias
+                    : "";
                 this.setDockerInfo(workspaceId, {
                     containerName: containerName,
                     image: dockerInfo.image,
                     tag: tag,
                     containerId: containerId.toString().replace("\n", ""),
-                    status: this.runDockerCommandSync(`docker inspect --format="{{.State.Status}}" ${containerName}`) as "created" | "running" | "exited",
+                    status: this.runDockerCommandSync(`docker inspect --format="{{.State.Status}}" ${containerName}`) as
+                        | "created"
+                        | "running"
+                        | "exited",
                     bridgeInfo: bridgeInfo,
                     containers: dockerInfo.linkContainer ? [dockerInfo.linkContainer] : [],
                     portInfo: dockerInfo.portInfo,
@@ -400,7 +439,10 @@ CMD ["./server-linux", "${socketPort}"]`;
 
     static getworkspaceId(userId: string, containerId: string) {
         return fs.readdirSync(DataWorkspaceManager.getWorkspaceDefaultPath()).find((workspaceId) => {
-            return this.getDockerInfo(workspaceId)?.containerId === containerId && DataWorkspaceManager.canEditWorkspace(userId, workspaceId, true);
+            return (
+                this.getDockerInfo(workspaceId)?.containerId === containerId &&
+                DataWorkspaceManager.canEditWorkspace(userId, workspaceId, true)
+            );
         });
     }
 
@@ -416,7 +458,10 @@ CMD ["./server-linux", "${socketPort}"]`;
         this.runDockerCommand(
             `docker ${dockerCommand} ${dockerInfo.containerName}`,
             () => {
-                const status = this.runDockerCommandSync(`docker inspect --format="{{.State.Status}}" ${dockerInfo.containerName}`) as "created" | "running" | "exited";
+                const status = this.runDockerCommandSync(`docker inspect --format="{{.State.Status}}" ${dockerInfo.containerName}`) as
+                    | "created"
+                    | "running"
+                    | "exited";
                 if (this.setDockerInfo(workspaceId, { ...dockerInfo, status })) {
                     log.error(`[DataDockerManager] manage -> fail to setDockerInfo`);
                 }
@@ -424,10 +469,13 @@ CMD ["./server-linux", "${socketPort}"]`;
                     type: "workspace",
                     location: "",
                     content: `${userId} commands ${dockerCommand} to ${dockerInfo.containerName}`,
-                    checkAlarm: (DataWorkspaceManager.getWorkspaceInfo(workspaceId)?.participants as string[]).reduce((list: { [ket in string]: boolean }, member) => {
-                        list[member] = true;
-                        return list;
-                    }, {}),
+                    checkAlarm: (DataWorkspaceManager.getWorkspaceInfo(workspaceId)?.participants as string[]).reduce(
+                        (list: { [ket in string]: boolean }, member) => {
+                            list[member] = true;
+                            return list;
+                        },
+                        {}
+                    ),
                 });
             },
             (error) => {
@@ -452,7 +500,11 @@ CMD ["./server-linux", "${socketPort}"]`;
             return false;
         }
 
-        if (dockerInfo.bridgeId !== undefined && Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeId) && dockerInfo.connect === false) {
+        if (
+            dockerInfo.bridgeId !== undefined &&
+            Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeId) &&
+            dockerInfo.connect === false
+        ) {
             updateOption.disconnect = true;
             this.runDockerCommand(
                 `docker network disconnect ${dockerInfo.bridgeId} ${newDockerInfo.containerName}`,
@@ -467,7 +519,12 @@ CMD ["./server-linux", "${socketPort}"]`;
             );
         }
 
-        if (dockerInfo.linkContainer !== undefined && dockerInfo.bridgeId !== undefined && !newDockerInfo.containers.includes(dockerInfo.linkContainer) && dockerInfo.connect === true) {
+        if (
+            dockerInfo.linkContainer !== undefined &&
+            dockerInfo.bridgeId !== undefined &&
+            !newDockerInfo.containers.includes(dockerInfo.linkContainer) &&
+            dockerInfo.connect === true
+        ) {
             const linkworkspaceId = fs.readdirSync(DataWorkspaceManager.getWorkspaceDefaultPath()).find((id) => {
                 return id !== workspaceId && (this.getDockerInfo(id) as TDockerData)?.containerId === dockerInfo.linkContainer;
             });
@@ -491,7 +548,12 @@ CMD ["./server-linux", "${socketPort}"]`;
             }
         }
 
-        if (dockerInfo.bridgeId !== undefined && dockerInfo.linkContainer === undefined && !Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeId) && dockerInfo.connect === true) {
+        if (
+            dockerInfo.bridgeId !== undefined &&
+            dockerInfo.linkContainer === undefined &&
+            !Object.keys(newDockerInfo.bridgeInfo).includes(dockerInfo.bridgeId) &&
+            dockerInfo.connect === true
+        ) {
             updateOption.connect = true;
             let command = `docker network connect `;
             command += dockerInfo.bridgeAlias ? `--alias ${dockerInfo.bridgeAlias} ` : ``;
@@ -527,7 +589,10 @@ CMD ["./server-linux", "${socketPort}"]`;
         log.debug(`updateOption : ${JSON.stringify(updateOption)}`);
         updateOption.disconnect ? delete newDockerInfo.bridgeInfo[dockerInfo.bridgeId as string] : undefined;
         updateOption.connect ? (newDockerInfo.bridgeInfo[dockerInfo.bridgeId as string] = dockerInfo.bridgeAlias ?? "") : undefined;
-        updateOption.link ? ((newDockerInfo.bridgeInfo[dockerInfo.bridgeId as string] = dockerInfo.bridgeAlias ?? ""), newDockerInfo.containers.push(dockerInfo.linkContainer as string)) : undefined;
+        updateOption.link
+            ? ((newDockerInfo.bridgeInfo[dockerInfo.bridgeId as string] = dockerInfo.bridgeAlias ?? ""),
+              newDockerInfo.containers.push(dockerInfo.linkContainer as string))
+            : undefined;
         updateOption.rename ? (newDockerInfo.containerName = dockerInfo.containerName ?? newDockerInfo.containerName) : undefined;
 
         log.info(`docker update complete ${JSON.stringify({ newDockerInfo })}`);
@@ -535,10 +600,13 @@ CMD ["./server-linux", "${socketPort}"]`;
             type: "workspace",
             location: "",
             content: `${userId} update ${workspaceId} : ${dockerInfo.containerName} infomation`,
-            checkAlarm: (DataWorkspaceManager.getWorkspaceInfo(workspaceId)?.participants as string[]).reduce((list: { [ket in string]: boolean }, member) => {
-                list[member] = true;
-                return list;
-            }, {}),
+            checkAlarm: (DataWorkspaceManager.getWorkspaceInfo(workspaceId)?.participants as string[]).reduce(
+                (list: { [ket in string]: boolean }, member) => {
+                    list[member] = true;
+                    return list;
+                },
+                {}
+            ),
         });
         return this.setDockerInfo(workspaceId, newDockerInfo) ? true : false;
     }
@@ -559,10 +627,13 @@ CMD ["./server-linux", "${socketPort}"]`;
                             type: "workspace",
                             location: "",
                             content: `${userId} remove workspace : workspaceId ${workspaceId}, containerId ${dockerInfo.containerId}`,
-                            checkAlarm: (DataWorkspaceManager.getWorkspaceInfo(workspaceId)?.participants as string[]).reduce((list: { [ket in string]: boolean }, member) => {
-                                list[member] = true;
-                                return list;
-                            }, {}),
+                            checkAlarm: (DataWorkspaceManager.getWorkspaceInfo(workspaceId)?.participants as string[]).reduce(
+                                (list: { [ket in string]: boolean }, member) => {
+                                    list[member] = true;
+                                    return list;
+                                },
+                                {}
+                            ),
                         });
                         removeData(DataWorkspaceManager.getWorkspaceDataPath(workspaceId));
                     },
@@ -618,11 +689,15 @@ CMD ["./server-linux", "${socketPort}"]`;
                 name: networkInfo.name,
                 networkId: networkInfo.networkId,
                 ip: networkInfo.subnet,
-                containers: fs.readdirSync(DataWorkspaceManager.getWorkspaceDefaultPath()).reduce((containerIdList: string[], workspaceId: string) => {
-                    const dockerInfo = this.getDockerInfo(workspaceId) as TDockerData;
-                    Object.keys(dockerInfo?.bridgeInfo).includes(networkInfo.name) ? containerIdList.push(dockerInfo?.containerId) : undefined;
-                    return containerIdList;
-                }, []),
+                containers: fs
+                    .readdirSync(DataWorkspaceManager.getWorkspaceDefaultPath())
+                    .reduce((containerIdList: string[], workspaceId: string) => {
+                        const dockerInfo = this.getDockerInfo(workspaceId) as TDockerData;
+                        Object.keys(dockerInfo?.bridgeInfo).includes(networkInfo.name)
+                            ? containerIdList.push(dockerInfo?.containerId)
+                            : undefined;
+                        return containerIdList;
+                    }, []),
             } as TDockerNetworkVisualData;
             visualizationInfo.network.push(newNetworkInfo);
         });
