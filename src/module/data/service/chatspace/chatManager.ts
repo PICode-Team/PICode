@@ -5,7 +5,7 @@ import { getJsonData, setJsonData } from "../etc/fileManager";
 import { getTime } from "../../../datetime";
 import { v4 as uuidv4 } from "uuid";
 import log from "../../../log";
-import chat from "../../../socket/chat";
+import chat from "../../../socket/service/chatspace/chat";
 
 const ChatQueue: TChatLogDataParam[] = [];
 
@@ -56,10 +56,10 @@ export default class DataChatManager {
     }
 
     static getChatDataPath() {
-        const defaultPath = `${DataDirectoryPath}/chat`
+        const defaultPath = `${DataDirectoryPath}/chat`;
 
         if (!fs.existsSync(defaultPath)) {
-            fs.mkdirSync(defaultPath, { recursive: true })
+            fs.mkdirSync(defaultPath, { recursive: true });
         }
 
         return defaultPath;
@@ -84,14 +84,20 @@ export default class DataChatManager {
 
             const type = this.getChatType(name);
 
-            return (type === "channel" && name === chatName) || (type === "direct" && name === this.getDirectMessageDirName(userId, chatName));
+            return (
+                (type === "channel" && name === chatName) || (type === "direct" && name === this.getDirectMessageDirName(userId, chatName))
+            );
         };
 
         return chattingList
             .filter((v) => nameFilter(v))
             .map((v) => {
                 const recentMessageInfo = this.getRecentMessageInfo(userId, v);
-                return { ...(getJsonData(`${this.getChatDataPath()}/${v}/chatInfo.json`) as TChatChannelData), recentMessage: recentMessageInfo?.message, recentTime: recentMessageInfo?.time };
+                return {
+                    ...(getJsonData(`${this.getChatDataPath()}/${v}/chatInfo.json`) as TChatChannelData),
+                    recentMessage: recentMessageInfo?.message,
+                    recentTime: recentMessageInfo?.time,
+                };
             })
             .filter((v) => v.chatParticipant.indexOf(userId) > -1);
     }
@@ -144,7 +150,10 @@ export default class DataChatManager {
             return false;
         }
 
-        const result = setJsonData(`${this.getChatDataPath()}/${this.getDirName(channelData.userId, channelData.chatName)}/chatInfo.json`, { ...channelData, creation: getTime() });
+        const result = setJsonData(`${this.getChatDataPath()}/${this.getDirName(channelData.userId, channelData.chatName)}/chatInfo.json`, {
+            ...channelData,
+            creation: getTime(),
+        });
 
         if (result) {
             fs.mkdirSync(`${this.getChatDataPath()}/${this.getDirName(channelData.userId, channelData.chatName)}/log`, { recursive: true });

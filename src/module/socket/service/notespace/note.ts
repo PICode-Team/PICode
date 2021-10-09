@@ -1,7 +1,8 @@
-import { TSocketPacket } from "../../types/module/socket.types";
-import DataNoteManager from "../data/service/notespace/noteManager";
-import { TNoteData } from "../../types/module/data/service/notespace/note.types";
-import { getSocket, makePacket } from "./manager";
+import { TSocketPacket } from "../../../../types/module/socket.types";
+import DataNoteManager from "../../../data/service/notespace/noteManager";
+import { TNoteData } from "../../../../types/module/data/service/notespace/note.types";
+import { getSocket, makePacket } from "../etc/manager";
+import log from "../../../log";
 
 const docuemntFunc: Record<string, (userId: string, packet: any) => void> = {
     getNote,
@@ -11,7 +12,7 @@ const docuemntFunc: Record<string, (userId: string, packet: any) => void> = {
 };
 
 function getNote(userId: string, packet: any) {
-    const sendData = makePacket("note", "getNote", DataNoteManager.get(packet.NoteId));
+    const sendData = makePacket("note", "getNote", DataNoteManager.get(packet.noteId));
     getSocket(userId).send(sendData);
 }
 
@@ -21,12 +22,12 @@ function createNote(userId: string, packet: TNoteData) {
 }
 
 function updateNote(userId: string, packet: any) {
-    const sendData = makePacket("note", "updateNote", DataNoteManager.update(packet.NoteId, packet.Note));
+    const sendData = makePacket("note", "updateNote", DataNoteManager.update(packet.noteId, packet.note));
     getSocket(userId).send(sendData);
 }
 
 function deleteNote(userId: string, packet: any) {
-    const sendData = makePacket("note", "deleteNote", DataNoteManager.delete(packet.NoteId));
+    const sendData = makePacket("note", "deleteNote", DataNoteManager.delete(packet.noteId));
     getSocket(userId).send(sendData);
 }
 

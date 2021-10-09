@@ -1,19 +1,19 @@
 import expressWs from "express-ws";
 import { TSocketPacket } from "../../types/module/socket.types";
-import { SocketInfo } from "./manager";
+import { SocketInfo } from "./service/etc/manager";
 import log from "../log";
-import chat from "./chat";
-import code from "./code";
-import work from "./work";
-import terminal from "./terminal";
-import user from "./user";
-import issue from "./issue";
-import kanban from "./kanban";
-import alarm from "./alarm";
-import milestone from "./milestone";
-import note from "./note";
+import chat from "./service/chatspace/chat";
+import code from "./service/codespace/code";
+import work from "./service/etc/work";
+import terminal from "./service/codespace/terminal";
+import user from "./service/etc/user";
+import issue from "./service/issuespace/issue";
+import kanban from "./service/issuespace/kanban";
+import alarm from "./service/alarm/alarm";
+import milestone from "./service/issuespace/milestone";
+import note from "./service/notespace/note";
 import { verifyToken } from "../token";
-import calendar from "./calendar";
+import calendar from "./service/calendar/calendar";
 const SocketFuncs = {
     chat,
     code,

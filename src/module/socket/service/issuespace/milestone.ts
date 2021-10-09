@@ -1,7 +1,11 @@
-import { TMilestoneCreateData, TMilestoneData, TMilestoneUpdateData } from "../../types/module/data/service/issuespace/milestone.types";
-import { TSocketPacket } from "../../types/module/socket.types";
-import DataMilestoneManager from "../data/service/issuespace/milestoneManager";
-import { getSocket, makePacket } from "./manager";
+import {
+    TMilestoneCreateData,
+    TMilestoneData,
+    TMilestoneUpdateData,
+} from "../../../../types/module/data/service/issuespace/milestone.types";
+import { TSocketPacket } from "../../../../types/module/socket.types";
+import DataMilestoneManager from "../../../data/service/issuespace/milestoneManager";
+import { getSocket, makePacket } from "../etc/manager";
 
 const milestoneLoadFuncs: Record<string, (userId: string, mileStoneData: any) => void> = {
     getMilestone,

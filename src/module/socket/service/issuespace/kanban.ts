@@ -1,8 +1,8 @@
-import { ResponseCode } from "../../constants/response";
-import { TkanbanCreateData, TkanbanData } from "../../types/module/data/service/issuespace/kanban.types";
-import { TSocketPacket } from "../../types/module/socket.types";
-import DataKanbanManager from "../data/service/issuespace/kanbanManager";
-import { getSocket, makePacket } from "./manager";
+import { ResponseCode } from "../../../../constants/response";
+import { TkanbanCreateData, TkanbanData } from "../../../../types/module/data/service/issuespace/kanban.types";
+import { TSocketPacket } from "../../../../types/module/socket.types";
+import DataKanbanManager from "../../../data/service/issuespace/kanbanManager";
+import { getSocket, makePacket } from "../etc/manager";
 
 const kanbanLoadFuncs: Record<string, (userId: string, kanbanData: any) => void> = {
     getKanban,
