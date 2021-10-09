@@ -1,5 +1,5 @@
-import { TSocketPacket } from "../../types/module/socket.types";
-import DataUserManager from "../data/service/user/userManager";
+import { TSocketPacket } from "../../../../types/module/socket.types";
+import DataUserManager from "../../../data/service/user/userManager";
 import { getSocket } from "./manager";
 
 export function sendAllUserPacket(packet: TSocketPacket, userList: string[] | undefined = undefined) {

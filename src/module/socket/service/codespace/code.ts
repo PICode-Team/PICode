@@ -1,7 +1,7 @@
-import { TSocketPacket } from "../../types/module/socket.types";
-import { getSocket, makePacket } from "./manager";
-import DataCodeManager from "../data/service/codespace/codeManager";
-import { TReadyQueueItem } from "../merge";
+import { TSocketPacket } from "../../../../types/module/socket.types";
+import { getSocket, makePacket } from "../etc/manager";
+import DataCodeManager from "../../../data/service/codespace/codeManager";
+import { TReadyQueueItem } from "../../../merge";
 
 const codeLoadFuncs: Record<string, (userId: string, workspaceInfo: any) => void> = {
     getAllFilePath,

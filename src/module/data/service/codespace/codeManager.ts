@@ -1,8 +1,8 @@
 import { ResponseCode } from "../../../../constants/response";
 import { TReturnData, WorkDirectoryPath } from "../../../../types/module/data/data.types";
 import { TFile, TFileData, TReturnFileData } from "../../../../types/module/data/service/etc/file.types";
-import { AutoMergeSystem, TReadyQueueItem, TUpdateContentItem } from "../../../merge";
-import { getAllChildren, isExists, readCodesFromFile, writeCodeToFile } from "../etc/fileManager";
+import { AutoMergeSystem, TReadyQueueItem } from "../../../merge";
+import { getAllChildren, isExists, readFromFile, writeCodeToFile } from "../etc/fileManager";
 import DataWorkspaceManager from "../workspace/workspaceManager";
 import path from "path";
 import fs from "fs";
@@ -15,10 +15,11 @@ export default class DataCodeManager {
      * @description start codespace's auto merge system
      */
     static run() {
-        if (!isExists(this.getCodePath())) {
-            fs.mkdirSync(this.getCodePath(), { recursive: true });
+        const codeDefaultPath = this.getCodePath();
+        if (!isExists(codeDefaultPath)) {
+            fs.mkdirSync(codeDefaultPath, { recursive: true });
         }
-        this.codeMergeManager = new AutoMergeSystem(this.getCodePath());
+        this.codeMergeManager = new AutoMergeSystem(codeDefaultPath);
     }
 
     /**
@@ -54,7 +55,7 @@ export default class DataCodeManager {
             return checkError;
         }
         const fileData: TFileData = {};
-        const codeData = readCodesFromFile(DataWorkspaceManager.getWorkspaceWorkPath(workspaceId), filePath);
+        const codeData = readFromFile(DataWorkspaceManager.getWorkspaceWorkPath(workspaceId), filePath);
         if (codeData !== undefined) {
             fileData["filePath"] = filePath;
             fileData["fileContent"] = codeData;
@@ -71,7 +72,10 @@ export default class DataCodeManager {
      * @description save code to user workspace's file path
      * @returns {TReturnFileData } : code based on the result and message if function has error
      */
-    static changeCode(userId: string, { workspaceId, filePath, code }: { workspaceId: string; filePath: string; code: string }): TReturnFileData {
+    static changeCode(
+        userId: string,
+        { workspaceId, filePath, code }: { workspaceId: string; filePath: string; code: string }
+    ): TReturnFileData {
         const checkError = this.checkError(userId, workspaceId);
         if (checkError.code !== ResponseCode.ok) {
             return checkError;
@@ -91,7 +95,10 @@ export default class DataCodeManager {
      * @description update code using updateContent and auto merge system
      * @returns {TReturnFileData} : code based on the result and message if function has error
      */
-    static updateCode(userId: string, { workspaceId, updateContent }: { workspaceId: string; updateContent: TReadyQueueItem }): TReturnFileData {
+    static updateCode(
+        userId: string,
+        { workspaceId, updateContent }: { workspaceId: string; updateContent: TReadyQueueItem }
+    ): TReturnFileData {
         const checkError = this.checkError(userId, workspaceId);
         if (checkError.code !== ResponseCode.ok) {
             return checkError;
@@ -119,7 +126,10 @@ export default class DataCodeManager {
      * @description move file or directory from old path to new path
      * @returns {TReturnFileData } : code based on the result and message if function has error
      */
-    static moveFileOrDir(userId: string, { workspaceId, oldPath, newPath }: { workspaceId: string; oldPath: string; newPath: string }): TReturnFileData {
+    static moveFileOrDir(
+        userId: string,
+        { workspaceId, oldPath, newPath }: { workspaceId: string; oldPath: string; newPath: string }
+    ): TReturnFileData {
         const checkError = this.checkError(userId, workspaceId);
         if (checkError.code !== ResponseCode.ok) {
             return checkError;
@@ -148,7 +158,10 @@ export default class DataCodeManager {
      * @description remove file or directory from workspace
      * @returns {TReturnFileData } : code based on the result and message if function has error
      */
-    static deleteFileOrDir(userId: string, { workspaceId, deletePath, recursive }: { workspaceId: string; deletePath: string; recursive?: boolean }): TReturnFileData {
+    static deleteFileOrDir(
+        userId: string,
+        { workspaceId, deletePath, recursive }: { workspaceId: string; deletePath: string; recursive?: boolean }
+    ): TReturnFileData {
         const checkError = this.checkError(userId, workspaceId);
         if (checkError.code !== ResponseCode.ok) {
             return checkError;

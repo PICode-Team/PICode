@@ -1,7 +1,7 @@
-import { TScheduleCreateData, TScheduleData } from "../../types/module/data/service/calendar/calendar.types";
-import { TSocketPacket } from "../../types/module/socket.types";
-import DataCalendarManager from "../data/service/calendar/calendarManager";
-import { getSocket, makePacket } from "./manager";
+import { TScheduleCreateData, TScheduleData } from "../../../../types/module/data/service/calendar/calendar.types";
+import { TSocketPacket } from "../../../../types/module/socket.types";
+import DataCalendarManager from "../../../data/service/calendar/calendarManager";
+import { getSocket, makePacket } from "../etc/manager";
 
 const calendarLoadFuncs: Record<string, (userId: string, scheduleData: any) => void> = {
     getCalendar,

@@ -1,6 +1,6 @@
 import { TCommandData, UUIDToWorker } from "../../../../types/module/data/service/codespace/terminal.types";
 import { Worker } from "worker_threads";
-import { getSocket, makePacket } from "../../../socket/manager";
+import { getSocket, makePacket } from "../../../socket/service/etc/manager";
 import log from "../../../log";
 import DataWorkspaceManager from "../workspace/workspaceManager";
 import path from "path";
@@ -30,11 +30,18 @@ export default class DataTerminalManager {
     }
 
     static listenToTerminalWorker(userId: string, uuid: string, workspaceId: string, worker: Worker, size: { cols: number; rows: number }) {
-        worker.postMessage({ type: "setup", setupData: { workspacePath: DataWorkspaceManager.getWorkspaceWorkPath(workspaceId), size: size } } as TCommandData);
+        worker.postMessage({
+            type: "setup",
+            setupData: { workspacePath: DataWorkspaceManager.getWorkspaceWorkPath(workspaceId), size: size },
+        } as TCommandData);
         worker.on("message", (message: TCommandData) => {
             switch (message.type) {
                 case "command": {
-                    const sendData = makePacket("terminal", "commandTerminal", { code: ResponseCode.ok, message: message.command, uuid: uuid });
+                    const sendData = makePacket("terminal", "commandTerminal", {
+                        code: ResponseCode.ok,
+                        message: message.command,
+                        uuid: uuid,
+                    });
                     getSocket(userId).send(sendData);
                     break;
                 }

@@ -18,9 +18,11 @@
         "express": "^4.17.1",
         "express-ws": "^5.0.2",
         "jsonwebtoken": "^8.5.1",
+        "memory-disk": "^1.0.3",
         "moment": "^2.29.1",
         "multer": "^1.4.2",
         "node-pty": "^0.10.1",
+        "open-graph": "^0.2.6",
         "simple-git": "^2.41.1",
         "source-map-support": "^0.5.20",
         "uuid": "^8.3.2",
@@ -28,6 +30,7 @@
         "zip-a-folder": "^1.1.0"
     },
     "devDependencies": {
+        "@types/open-graph": "^0.2.2",
         "@types/adm-zip": "^0.4.34",
         "@types/compression": "^1.7.0",
         "@types/cookie-parser": "^1.4.2",
