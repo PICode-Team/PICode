@@ -9,10 +9,11 @@ const noteDataFileName = "noteData.json";
 export default class DataNoteManager {
     static noteMergeManager: AutoMergeSystem;
     static run() {
-        if (!isExists(this.getNoteDataPath())) {
-            fs.mkdirSync(this.getNoteDataPath(), { recursive: true });
+        const noteDefaultPath = this.getNoteDataPath();
+        if (!isExists(noteDefaultPath)) {
+            fs.mkdirSync(noteDefaultPath, { recursive: true });
         }
-        this.noteMergeManager = new AutoMergeSystem(this.getNoteDataPath());
+        this.noteMergeManager = new AutoMergeSystem(noteDefaultPath);
     }
 
     static getNoteDataPath() {

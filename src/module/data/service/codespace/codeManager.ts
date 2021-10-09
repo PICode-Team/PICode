@@ -15,10 +15,11 @@ export default class DataCodeManager {
      * @description start codespace's auto merge system
      */
     static run() {
-        if (!isExists(this.getCodePath())) {
-            fs.mkdirSync(this.getCodePath(), { recursive: true });
+        const codeDefaultPath = this.getCodePath();
+        if (!isExists(codeDefaultPath)) {
+            fs.mkdirSync(codeDefaultPath, { recursive: true });
         }
-        this.codeMergeManager = new AutoMergeSystem(this.getCodePath());
+        this.codeMergeManager = new AutoMergeSystem(codeDefaultPath);
     }
 
     /**
