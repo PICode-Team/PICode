@@ -5,6 +5,7 @@ import fs from "fs";
 import { AutoMergeSystem, TReadyQueueItem } from "../../../merge";
 import path from "path";
 import log from "../../../log";
+import { ResponseCode } from "../../../../constants/response";
 
 const noteDataFileName = "noteData.json";
 
@@ -65,7 +66,10 @@ export default class DataNoteManager {
 
         data = { ...data, noteId, content: this.getContent(noteId) };
 
-        return setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, [...originData, data]);
+        if (!setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, [...originData, data])) {
+            return { code: ResponseCode.internalError, message: "Failed to create note" };
+        }
+        return { code: ResponseCode.ok, noteId };
     }
 
     static update(noteId: string, newData: TReadyQueueItem) {
