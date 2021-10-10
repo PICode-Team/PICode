@@ -8,7 +8,7 @@
       "esModuleInterop": true,
       "sourceMap": true,
       "typeRoots": [
-          "../node_modules/@types/express",
+          "./node_modules/@types",
           "./src/define"
       ],
       "allowJs": true
