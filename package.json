@@ -8,7 +8,8 @@
         "build": "npx tsc",
         "lint": "eslint --ext .js,.ts ./src",
         "lint:fix": "eslint --ext .js,.ts ./src --fix",
-        "test": "mocha -r ts-node/register ./test/**/*.test.ts"
+        "test": "mocha -r ts-node/register ./test/**/*.test.ts",
+        "test:codecov": "nyc --reporter=lcov npm run test"
     },
     "dependencies": {
         "adm-zip": "^0.5.5",
@@ -45,6 +46,7 @@
         "chai": "^4.3.4",
         "eslint": "7.29.0",
         "mocha": "^9.1.2",
+        "nyc": "^15.1.0",
         "ts-node": "^10.2.1",
         "tsc-watch": "^4.4.0",
         "typescript": "4.3.4"
