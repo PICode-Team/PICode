@@ -24,6 +24,7 @@ import { ResponseCode } from "../../../../constants/response";
 
 const dockerNetworkFileName = "dockerNetworkList.json";
 const dockerInfoFileName = "dockerInfo.json";
+const defaultNetwork = ["host", "bridge", "none"];
 
 export default class DataDockerManager {
     static getDockerNetworkPath() {
@@ -105,7 +106,7 @@ export default class DataDockerManager {
         if (!isExists(this.getDockerNetworkPath())) {
             fs.mkdirSync(this.getDockerNetworkPath(), { recursive: true });
         }
-        ["host", "bridge", "none"].map((networkName) => {
+        defaultNetwork.map((networkName) => {
             const command = `docker network inspect --format="{{".IPAM.Config"}}" ${networkName}`;
             this.runDockerCommand(
                 command,
@@ -499,6 +500,14 @@ CMD ["./server-linux", "${socketPort}"]`;
         const updateOption = { disconnect: false, connect: false, link: false, rename: false };
         const newDockerInfo = this.getDockerInfo(workspaceId) as TDockerData;
         if (newDockerInfo === undefined) {
+            return false;
+        }
+
+        const networkInfo = this.getDockerNetworkInfo();
+        const defaultNetworkIdList = defaultNetwork.map((networkName: string) => {
+            return networkInfo[networkName].networkId;
+        });
+        if (defaultNetworkIdList.includes(dockerInfo.bridgeId)) {
             return false;
         }
 
