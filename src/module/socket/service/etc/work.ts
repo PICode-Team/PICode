@@ -1,8 +1,8 @@
-import { TSocketPacket } from "../../types/module/socket.types";
+import { TSocketPacket } from "../../../../types/module/socket.types";
 import { makePacket, getSocket, userWorkInfo, getUserWork, SocketInfo } from "./manager";
-import { TWorkInfo, TUserToWork } from "../../types/module/data/service/etc/work.types";
-import DataUserManager from "../data/service/user/userManager";
-import { ResponseCode } from "../../constants/response";
+import { TWorkInfo, TUserToWork } from "../../../../types/module/data/service/etc/work.types";
+import DataUserManager from "../../../data/service/user/userManager";
+import { ResponseCode } from "../../../../constants/response";
 
 const workLoadFuncs: Record<string, (userId: string, workingPath: any) => void> = {
     createInfo,
@@ -16,7 +16,11 @@ function getWorkingPath(userId: string, workInfo: TWorkInfo) {
     Object.keys(userWorkInfo)
         .filter((userIdElement) => Object.keys(SocketInfo).includes(userIdElement))
         .forEach((userIdElement) => {
-            const otherWorkInfo = { userId: userIdElement, workInfo: getUserWork(userIdElement), userThumbnail: DataUserManager.get(userIdElement)?.userThumbnail };
+            const otherWorkInfo = {
+                userId: userIdElement,
+                workInfo: getUserWork(userIdElement),
+                userThumbnail: DataUserManager.get(userIdElement)?.userThumbnail,
+            };
             sendData.push(otherWorkInfo);
         });
     Object.keys(userWorkInfo)

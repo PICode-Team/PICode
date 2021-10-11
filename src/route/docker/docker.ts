@@ -6,7 +6,7 @@ import log from "../../module/log";
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
+router.get("/", tokenRouter, (req, res) => {
     const workspaceId = req.query?.workspaceId as string;
 
     const dockerList = DataDockerManager.get(workspaceId);

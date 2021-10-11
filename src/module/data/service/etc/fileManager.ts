@@ -162,9 +162,9 @@ export function handle(
     return true;
 }
 
-export function readCodesFromFile(serverPath: string, clientPath: string) {
+export function readFromFile(serverPath: string, clientPath: string) {
     const fullPath = path.join(serverPath, clientPath);
-    if (!isExists(fullPath)) return undefined;
+    if (!isExists(fullPath)) return "";
     return fs.readFileSync(fullPath).toString();
 }
 
@@ -185,5 +185,8 @@ export function getAllChildren(workspaceId: string, workspacePath: string, loopP
     const replacePath = fullPath.replace(path.join(DataWorkspaceManager.getWorkspaceWorkPath(workspaceId)).replace(".", ""), "");
     const children: string[] | undefined = fs.statSync(fullPath).isDirectory() ? fs.readdirSync(fullPath) : undefined;
 
-    return { path: replacePath !== "" ? replacePath : "/", children: children ? children.map((v) => getAllChildren(workspaceId, fullPath, v)) : undefined };
+    return {
+        path: replacePath !== "" ? replacePath : "/",
+        children: children ? children.map((v) => getAllChildren(workspaceId, fullPath, v)) : undefined,
+    };
 }

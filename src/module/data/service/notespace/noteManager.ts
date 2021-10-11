@@ -1,41 +1,118 @@
-import { DataDirectoryPath } from "../../../../types/module/data/data.types";
-import { GQLNote } from "../../../../types/module/data/service/notespace/note.types";
-import { getJsonData, setJsonData } from "../etc/fileManager";
+import { DataDirectoryPath, WorkDirectoryPath } from "../../../../types/module/data/data.types";
+import { TNoteData } from "../../../../types/module/data/service/notespace/note.types";
+import { getJsonData, isExists, readFromFile, setJsonData } from "../etc/fileManager";
+import fs from "fs";
+import { AutoMergeSystem, TReadyQueueItem } from "../../../merge";
+import path from "path";
+import log from "../../../log";
+import { ResponseCode } from "../../../../constants/response";
+
+const noteDataFileName = "noteData.json";
 
 export default class DataNoteManager {
-    static getnoteDataPath() {
+    static noteMergeManager: AutoMergeSystem;
+    static run() {
+        const noteDefaultPath = this.getNoteDataPath();
+        if (!isExists(noteDefaultPath)) {
+            fs.mkdirSync(noteDefaultPath, { recursive: true });
+        }
+        this.noteMergeManager = new AutoMergeSystem(noteDefaultPath);
+    }
+
+    static getNoteDataPath() {
         return `${DataDirectoryPath}/note`;
     }
 
+    static getNoteWorkPath() {
+        return `${WorkDirectoryPath}/note`;
+    }
+
+    static getContent(noteId?: string) {
+        if (noteId === undefined) {
+            return "";
+        }
+        const defaultPath = this.getNoteWorkPath();
+        return readFromFile(defaultPath, `${noteId}.txt`);
+    }
+
     static get(noteId?: string) {
-        return ((getJsonData(`${this.getnoteDataPath()}/noteData.json`) ?? []) as GQLNote[]).filter((v: GQLNote) => noteId === undefined || v.noteId === noteId);
+        const defaultPath = this.getNoteDataPath();
+        const noteDataPath = `${defaultPath}/${noteDataFileName}`;
+        if (!isExists(defaultPath)) {
+            fs.mkdirSync(defaultPath, { recursive: true });
+        }
+
+        if (!isExists(noteDataPath)) {
+            return [];
+        }
+        return ((getJsonData(`${noteDataPath}`) ?? []) as TNoteData[])
+            .filter((v: TNoteData) => noteId === undefined || v.noteId === noteId)
+            .map((v: TNoteData) => {
+                return { ...v, content: this.getContent(v.noteId) };
+            });
     }
 
-    static create(data: GQLNote) {
+    static create(data: TNoteData) {
         const originData = this.get();
+        const noteId = data.path;
 
-        return setJsonData(`${this.getnoteDataPath()}/noteData.json`, [...originData, data]);
+        const defaultPath = this.getNoteWorkPath();
+        const notePath = path.join(defaultPath, noteId) as string;
+        const dirPath = path.dirname(notePath);
+        
+        if (!isExists(dirPath)) {
+            fs.mkdirSync(dirPath, { recursive: true });
+        }
+        fs.openSync(`${notePath}.txt`, "w");
+
+        data = { ...data, noteId, content: this.getContent(noteId) };
+
+        if (!setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, [...originData, data])) {
+            return { code: ResponseCode.internalError, message: "Failed to create note" };
+        }
+        return { code: ResponseCode.ok, noteId };
     }
 
-    static update(noteId: string, newData: TDatanoteUpdataSet) {
+    static merge(updateContent: TReadyQueueItem) {
+        const defaultPath = this.getNoteWorkPath();
+        const notePath = path.join(defaultPath, updateContent.path);
+        try {
+            this.noteMergeManager.update(notePath, updateContent.content);
+            return { code: ResponseCode.ok };
+        } catch (err) {
+            log.error(err);
+            return { code: ResponseCode.internalError, message: "Failed to merge note" };
+        }
+    }
+
+    static update(noteId: string, newNotePath: string) {
         const originData = this.get();
-        const targetData = originData.find((v: GQLNote) => v.noteId === noteId);
+        const targetData = originData.find((v: TNoteData) => v.noteId === noteId);
 
         if (targetData === undefined) {
             return false;
         }
+        const oldPath = path.join(this.getNoteWorkPath(), `${targetData.path}.txt`);
+        const newPath = path.join(this.getNoteWorkPath(), `${newNotePath}.txt`);
 
-        for (const key of (Object.keys(newData) as (keyof TDatanoteUpdataSet)[]).filter((v) => newData[v] !== undefined)) {
-            targetData[key] = newData[key];
+        log.debug(`oldPath : ${oldPath}, newPath : ${newPath}`);
+        try {
+            fs.renameSync(oldPath, newPath);
+        } catch (err) {
+            log.error(err);
+            return { code: ResponseCode.internalError, message: "Failed to move data" };
         }
 
-        return setJsonData(`${this.getnoteDataPath()}/noteData.json`, originData);
+        targetData.path = newPath;
+        targetData.noteId = newPath;
+
+        return setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, originData);
     }
 
     static delete(noteId: string) {
         const originData = this.get();
 
-        const targetIndex = originData.findIndex((v: GQLNote) => v.noteId === noteId);
+        const targetIndex = originData.findIndex((v: TNoteData) => v.noteId === noteId);
 
         if (targetIndex < 0) {
             return false;
@@ -43,11 +120,10 @@ export default class DataNoteManager {
 
         originData.splice(targetIndex, 1);
 
-        return setJsonData(`${this.getnoteDataPath()}/noteData.json`, originData);
-    }
-}
+        const defaultPath = this.getNoteWorkPath();
+        const notePath = path.join(defaultPath, noteId);
+        fs.unlinkSync(notePath);
 
-interface TDatanoteUpdataSet {
-    content?: string;
-    path?: string;
+        return setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, originData);
+    }
 }

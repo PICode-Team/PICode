@@ -1,12 +1,12 @@
-import { TChatChannelData } from "../../types/module/data/service/chatspace/chat.types";
-import { TSocketPacket } from "../../types/module/socket.types";
-import DataAlarmManager from "../data/service/alarm/alarmManager";
-import DataChatManager from "../data/service/chatspace/chatManager";
-import { getTime } from "../datetime";
-import { getSocket, makePacket } from "./manager";
+import { TChatChannelData } from "../../../../types/module/data/service/chatspace/chat.types";
+import { TSocketPacket } from "../../../../types/module/socket.types";
+import DataAlarmManager from "../../../data/service/alarm/alarmManager";
+import DataChatManager from "../../../data/service/chatspace/chatManager";
+import { getTime } from "../../../datetime";
+import { getSocket, makePacket } from "../etc/manager";
 
 function sendMessage(sender: string, target: string, { message, parentChatId }: { message: string; parentChatId?: string }) {
-    const sendData = makePacket("chat", "sendMessage", { message, sender, parentChatId, time: getTime() });
+    const sendData = makePacket("chat", "sendMessage", { message, sender, parentChatId, time: getTime(), chatName: target });
     DataChatManager.saveChat(sender, target, message, parentChatId);
 
     if (DataChatManager.getChatType(target) === "direct") {

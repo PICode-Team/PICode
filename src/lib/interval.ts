@@ -1,9 +1,13 @@
 import DataChatManager from "../module/data/service/chatspace/chatManager";
-//import DataDockerManager from "../module/data/service/workspace/dockerManager";
+import DataCodeManager from "../module/data/service/codespace/codeManager";
+import DataNoteManager from "../module/data/service/Notespace/NoteManager";
+import DataDockerManager from "../module/data/service/workspace/dockerManager";
 
 export default class IntervalManager {
     static run() {
         DataChatManager.run();
-        //DataDockerManager.run();
+        DataCodeManager.run();
+        DataNoteManager.run();
+        DataDockerManager.run();
     }
 }

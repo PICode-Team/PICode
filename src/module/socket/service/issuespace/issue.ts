@@ -1,8 +1,8 @@
-import { ResponseCode } from "../../constants/response";
-import { TIssueData, TIssueListData } from "../../types/module/data/service/issuespace/issue.types";
-import { TSocketPacket } from "../../types/module/socket.types";
-import DataIssueManager from "../data/service/issuespace/issueManager";
-import { getSocket, makePacket } from "./manager";
+import { ResponseCode } from "../../../../constants/response";
+import { TIssueData, TIssueListData } from "../../../../types/module/data/service/issuespace/issue.types";
+import { TSocketPacket } from "../../../../types/module/socket.types";
+import DataIssueManager from "../../../data/service/issuespace/issueManager";
+import { getSocket, makePacket } from "../etc/manager";
 
 const issueLoadFuncs: Record<string, (userId: string, issueData: any) => void> = {
     getIssue,
@@ -12,8 +12,15 @@ const issueLoadFuncs: Record<string, (userId: string, issueData: any) => void> =
 };
 
 function getIssue(userId: string, { kanbanUUID, options }: { kanbanUUID: string; options?: Partial<TIssueListData> }) {
-    const metaData = options?.uuid !== undefined ? DataIssueManager.getIssueInfo(kanbanUUID, options.uuid) : DataIssueManager.getList(kanbanUUID, options);
-    const sendData = makePacket("issue", "getIssue", metaData ? { code: ResponseCode.ok, issues: metaData } : { code: ResponseCode.internalError });
+    const metaData =
+        options?.uuid !== undefined
+            ? DataIssueManager.getIssueInfo(kanbanUUID, options.uuid)
+            : DataIssueManager.getList(kanbanUUID, options);
+    const sendData = makePacket(
+        "issue",
+        "getIssue",
+        metaData ? { code: ResponseCode.ok, issues: metaData } : { code: ResponseCode.internalError }
+    );
     getSocket(userId).send(sendData);
 }
 

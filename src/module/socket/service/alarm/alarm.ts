@@ -1,7 +1,7 @@
-import { TAlarmSet } from "../../types/module/data/service/alarm/alarm.types";
-import { TSocketPacket } from "../../types/module/socket.types";
-import DataAlarmManager from "../data/service/alarm/alarmManager";
-import { getSocket, makePacket } from "./manager";
+import { TAlarmSet } from "../../../../types/module/data/service/alarm/alarm.types";
+import { TSocketPacket } from "../../../../types/module/socket.types";
+import DataAlarmManager from "../../../data/service/alarm/alarmManager";
+import { getSocket, makePacket } from "../etc/manager";
 
 const alaramFunc: Record<string, (userId: string, packet: any) => void> = {
     getAlarmData,

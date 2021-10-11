@@ -1,5 +1,5 @@
-import { TSocketCategory, TSocketInfo, TSocketPacket } from "../../types/module/socket.types";
-import { TUserWorkInfo } from "../../types/module/data/service/etc/work.types";
+import { TSocketCategory, TSocketInfo, TSocketPacket } from "../../../../types/module/socket.types";
+import { TUserWorkInfo } from "../../../../types/module/data/service/etc/work.types";
 
 export const SocketInfo: TSocketInfo = {};
 export const userWorkInfo: TUserWorkInfo = {};

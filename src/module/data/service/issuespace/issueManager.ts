@@ -146,7 +146,7 @@ export default class DataIssueManager {
 
         log.info(`issue created: issueUUID ${issueData.uuid}`);
         DataAlarmManager.create(userId, {
-            type: "issue",
+            type: "issuespace",
             location: "",
             content: `${userId} create ${issueData.title} issue : creator ${issueData.creator}, assigner ${issueData.assigner}`,
             checkAlarm: { [issueData.creator]: true, [issueData.assigner]: true },
@@ -225,7 +225,7 @@ export default class DataIssueManager {
 
         log.info(`[dataIssueManager] update -> issue updated : ${JSON.stringify(updateIssueData)}`);
         DataAlarmManager.create(userId, {
-            type: "issue",
+            type: "issuespace",
             location: "",
             content: `${userId} update ${title ?? issueData.title} issue`,
             checkAlarm: { [creator ?? issueData.creator]: true, [assigner ?? issueData.assigner]: true },
@@ -233,7 +233,7 @@ export default class DataIssueManager {
         return { code: ResponseCode.ok, issue: updateIssueData };
     }
 
-    static delete(userId: string, kanbanUUID: string, issueUUID: string, isCallSchedule: boolean = false): TReturnData {
+    static delete(userId: string, kanbanUUID: string, issueUUID: string, isCallSchedule: boolean = false): TReturnIssueData {
         const issueListJsonData = this.getIssueListInfo(kanbanUUID);
         if (issueListJsonData === undefined || issueUUID == undefined) {
             log.error(`[dataIssueManager] delete -> isueListJsonData is undefined`);
@@ -249,6 +249,7 @@ export default class DataIssueManager {
             return { code: ResponseCode.invaildRequest, message: "Could not find issue" };
         }
 
+        const issueData = this.getIssueInfo(kanbanUUID, issueUUID);
         if (!this.setIssueListInfo(kanbanUUID, issueUUID, "delete")) {
             log.error(`[dataIssueManager] delete -> fail to delete issueData from issueList.json`);
             return { code: ResponseCode.internalError, message: "Failed to delete issue" };
@@ -266,11 +267,11 @@ export default class DataIssueManager {
 
         log.info(`issue deleted: ${issueUUID}`);
         DataAlarmManager.create(userId, {
-            type: "issue",
+            type: "issuespace",
             location: "",
             content: `${userId} delete ${deleteIssueInfo.title} issue`,
             checkAlarm: { [deleteIssueInfo.creator]: true, [deleteIssueInfo.assigner]: true },
         });
-        return { code: ResponseCode.ok };
+        return { code: ResponseCode.ok, issue: issueData };
     }
 }

@@ -1,4 +1,4 @@
-export interface GQLNote {
+export interface TNoteData {
     noteId?: string;
     path?: string;
     creator?: string;
