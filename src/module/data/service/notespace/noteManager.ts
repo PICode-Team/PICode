@@ -57,8 +57,9 @@ export default class DataNoteManager {
         const noteId = data.path;
 
         const defaultPath = this.getNoteWorkPath();
-        const notePath = path.join(defaultPath, noteId);
+        const notePath = path.join(defaultPath, noteId) as string;
         const dirPath = path.dirname(notePath);
+        
         if (!isExists(dirPath)) {
             fs.mkdirSync(dirPath, { recursive: true });
         }
@@ -72,17 +73,38 @@ export default class DataNoteManager {
         return { code: ResponseCode.ok, noteId };
     }
 
-    static update(noteId: string, newData: TReadyQueueItem) {
+    static merge(updateContent: TReadyQueueItem) {
         const defaultPath = this.getNoteWorkPath();
-        const notePath = path.join(defaultPath, newData.path);
-        this.noteMergeManager.update(notePath, newData.content);
+        const notePath = path.join(defaultPath, updateContent.path);
+        try {
+            this.noteMergeManager.update(notePath, updateContent.content);
+            return { code: ResponseCode.ok };
+        } catch (err) {
+            log.error(err);
+            return { code: ResponseCode.internalError, message: "Failed to merge note" };
+        }
+    }
 
+    static update(noteId: string, newNotePath: string) {
         const originData = this.get();
         const targetData = originData.find((v: TNoteData) => v.noteId === noteId);
 
         if (targetData === undefined) {
             return false;
         }
+        const oldPath = path.join(this.getNoteWorkPath(), `${targetData.path}.txt`);
+        const newPath = path.join(this.getNoteWorkPath(), `${newNotePath}.txt`);
+
+        log.debug(`oldPath : ${oldPath}, newPath : ${newPath}`);
+        try {
+            fs.renameSync(oldPath, newPath);
+        } catch (err) {
+            log.error(err);
+            return { code: ResponseCode.internalError, message: "Failed to move data" };
+        }
+
+        targetData.path = newPath;
+        targetData.noteId = newPath;
 
         return setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, originData);
     }

@@ -462,8 +462,10 @@ CMD ["./server-linux", "${socketPort}"]`;
                     | "created"
                     | "running"
                     | "exited";
-                if (this.setDockerInfo(workspaceId, { ...dockerInfo, status })) {
+
+                if (!this.setDockerInfo(workspaceId, { ...dockerInfo, status })) {
                     log.error(`[DataDockerManager] manage -> fail to setDockerInfo`);
+                    return { code: ResponseCode.internalError, message: "Failed to update docker infomation, but status update" };
                 }
                 DataAlarmManager.create(userId, {
                     type: "workspace",
