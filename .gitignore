@@ -106,5 +106,4 @@ dist
 # data & work
 work
 data/**
-test/**
 temp
