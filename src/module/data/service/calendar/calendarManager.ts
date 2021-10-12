@@ -75,6 +75,9 @@ export default class DataCalendarManager {
      */
     static getScheduleIdByIssueUUID(issueUUID: string) {
         const calendarInfo = this.getCalendarInfo();
+        if (calendarInfo === undefined || calendarInfo === {}) {
+            return undefined;
+        }
         return Object.values(calendarInfo)
             .find((scheduleListInfo: TScheduleData[]) => {
                 return scheduleListInfo.find((scheduleInfo: TScheduleData) => {
@@ -121,7 +124,10 @@ export default class DataCalendarManager {
         const calendarInfo = this.getCalendarInfo() ? this.getCalendarInfo() : {};
         return Object.keys(calendarInfo)
             .filter((date) => {
-                return (options.startDate === undefined && options.dueDate === undefined) || (options.startDate <= date && date <= options.dueDate);
+                return (
+                    (options.startDate === undefined && options.dueDate === undefined) ||
+                    (options.startDate <= date && date <= options.dueDate)
+                );
             })
             .reduce((calendarData: TCalendarData, date: string) => {
                 const scheduleInfo = calendarInfo[date].filter((scheduleData: TScheduleData) => {
@@ -147,15 +153,24 @@ export default class DataCalendarManager {
             log.error(`[DataCalendarManager] create : startdate or dueDate is undefined `);
             return { code: ResponseCode.missingParameter, message: "Please input start date and due date" };
         }
+        let startDate = scheduleData.startDate;
+        startDate = startDate.split("-")[0]?.length === 4 ? startDate.substr(2) : startDate;
+        let dueDate = scheduleData.dueDate;
+        dueDate = dueDate.split("-")[0]?.length === 4 ? dueDate.substr(2) : dueDate;
+
         const calendarInfo = this.getCalendarInfo() ? this.getCalendarInfo() : {};
         const scheduleId = uuidv4();
         try {
-            getDateArray(scheduleData.startDate, scheduleData.dueDate).forEach((dateElement) => {
+            getDateArray(startDate, dueDate).forEach((dateElement) => {
                 const calendarCreateData: TScheduleData = { ...scheduleData, scheduleId };
-                calendarInfo[dateElement] ? calendarInfo[dateElement].push(calendarCreateData) : (calendarInfo[dateElement] = [calendarCreateData]);
+                calendarInfo[dateElement]
+                    ? calendarInfo[dateElement].push(calendarCreateData)
+                    : (calendarInfo[dateElement] = [calendarCreateData]);
             });
             log.info(`[DataCalendarManager] create : Create schedule`);
-            return this.setCalendarInfo(calendarInfo) ? { code: ResponseCode.ok, uuid: scheduleId } : { code: ResponseCode.internalError, message: "Failed to create schedule data" };
+            return this.setCalendarInfo(calendarInfo)
+                ? { code: ResponseCode.ok, uuid: scheduleId }
+                : { code: ResponseCode.internalError, message: "Failed to create schedule data" };
         } catch (err) {
             log.error(err.stack);
             return { code: ResponseCode.internalError, message: "Failed to create schedule data" };
@@ -171,12 +186,18 @@ export default class DataCalendarManager {
         let scheduleInfo: TScheduleData = this.getScheduleInfo(scheduleData.scheduleId);
 
         if (scheduleData.startDate !== undefined && scheduleData.dueDate !== undefined) {
-            getDateArray(scheduleInfo.startDate, scheduleInfo.dueDate).forEach((dateElement) => (newCalendarInfo = this.deleteScheduleInfo(newCalendarInfo, scheduleInfo.scheduleId, dateElement)));
+            getDateArray(scheduleInfo.startDate, scheduleInfo.dueDate).forEach(
+                (dateElement) => (newCalendarInfo = this.deleteScheduleInfo(newCalendarInfo, scheduleInfo.scheduleId, dateElement))
+            );
             scheduleInfo = { ...scheduleInfo, ...scheduleData };
-            getDateArray(scheduleInfo.startDate, scheduleInfo.dueDate).forEach((dateElement) => (newCalendarInfo = this.addScheduleInfo(newCalendarInfo, scheduleInfo, dateElement)));
+            getDateArray(scheduleInfo.startDate, scheduleInfo.dueDate).forEach(
+                (dateElement) => (newCalendarInfo = this.addScheduleInfo(newCalendarInfo, scheduleInfo, dateElement))
+            );
         } else if (scheduleData.startDate === undefined && scheduleData.dueDate === undefined) {
             scheduleInfo = { ...scheduleInfo, ...scheduleData };
-            getDateArray(scheduleData.startDate, scheduleData.dueDate).forEach((dateElement) => (newCalendarInfo = this.addScheduleInfo(newCalendarInfo, scheduleInfo, dateElement)));
+            getDateArray(scheduleData.startDate, scheduleData.dueDate).forEach(
+                (dateElement) => (newCalendarInfo = this.addScheduleInfo(newCalendarInfo, scheduleInfo, dateElement))
+            );
         } else {
         }
 
@@ -228,7 +249,9 @@ export default class DataCalendarManager {
             }
         }
 
-        getDateArray(scheduleInfo.startDate, scheduleInfo.dueDate).forEach((dateElement) => (calendarInfo = this.deleteScheduleInfo(calendarInfo, scheduleId, dateElement)));
+        getDateArray(scheduleInfo.startDate, scheduleInfo.dueDate).forEach(
+            (dateElement) => (calendarInfo = this.deleteScheduleInfo(calendarInfo, scheduleId, dateElement))
+        );
         if (!this.setCalendarInfo(calendarInfo)) {
             log.error(`[DataCalendarManager] delete : update calendar info`);
             return { code: ResponseCode.internalError, message: "Failed to delete schedule" };
