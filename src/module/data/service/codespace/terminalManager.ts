@@ -38,8 +38,8 @@ export default class DataTerminalManager {
         worker.on("message", (message: TCommandData) => {
             switch (message.type) {
                 case "command": {
-                    const replacePath = path.resolve(workspacePath).replace(/\//gi, "\\\\\\\\");
-                    const re = new RegExp(`\/b${replacePath}/\b`, "gi");
+                    const replacePath = path.resolve(workspacePath).replace(/\\/g, "\\\\");
+                    const re = new RegExp(replacePath, "gi");
                     const sendData = makePacket("terminal", "commandTerminal", {
                         code: ResponseCode.ok,
                         message: message.command.replace(re, "."),
