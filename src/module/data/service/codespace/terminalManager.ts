@@ -16,7 +16,7 @@ export default class DataTerminalManager {
     }
 
     static createTerminal(userId: string, uuid: string) {
-        const worker = new Worker(path.resolve(__dirname, "../terminal.js"));
+        const worker = new Worker("./lib/terminal.js");
         try {
             terminalInfo[uuid] = {
                 socket: getSocket(userId),
@@ -30,16 +30,19 @@ export default class DataTerminalManager {
     }
 
     static listenToTerminalWorker(userId: string, uuid: string, workspaceId: string, worker: Worker, size: { cols: number; rows: number }) {
+        const workspacePath = DataWorkspaceManager.getWorkspaceWorkPath(workspaceId);
         worker.postMessage({
             type: "setup",
-            setupData: { workspacePath: DataWorkspaceManager.getWorkspaceWorkPath(workspaceId), size: size },
+            setupData: { workspacePath, size: size },
         } as TCommandData);
         worker.on("message", (message: TCommandData) => {
             switch (message.type) {
                 case "command": {
+                    const replacePath = path.resolve(workspacePath).replace(/\//gi, "\\\\\\\\");
+                    const re = new RegExp(`\/b${replacePath}/\b`, "gi");
                     const sendData = makePacket("terminal", "commandTerminal", {
                         code: ResponseCode.ok,
-                        message: message.command,
+                        message: message.command.replace(re, "."),
                         uuid: uuid,
                     });
                     getSocket(userId).send(sendData);

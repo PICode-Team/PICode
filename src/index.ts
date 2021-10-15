@@ -22,6 +22,7 @@ async function main() {
     server.use(logging);
     server.use("/api", route);
     server.use("/api/temp", express.static("./static"));
+    server.use("/api/download", express.static("./export"));
 
     webSocketInit(expressWs(server).app);
 
