@@ -18,12 +18,13 @@ import log from "../../../log";
 import os from "os";
 import fs from "fs";
 import { getJsonData, isExists, removeData, setJsonData } from "../etc/fileManager";
-import { DataDirectoryPath, TReturnData } from "../../../../types/module/data/data.types";
+import { DataDirectoryPath, ExportDirectoryPath, TReturnData } from "../../../../types/module/data/data.types";
 import DataAlarmManager from "../alarm/alarmManager";
 import { ResponseCode } from "../../../../constants/response";
 
 const dockerNetworkFileName = "dockerNetworkList.json";
 const dockerInfoFileName = "dockerInfo.json";
+const defaultNetwork = ["host", "bridge", "none"];
 
 export default class DataDockerManager {
     static getDockerNetworkPath() {
@@ -105,7 +106,7 @@ export default class DataDockerManager {
         if (!isExists(this.getDockerNetworkPath())) {
             fs.mkdirSync(this.getDockerNetworkPath(), { recursive: true });
         }
-        ["host", "bridge", "none"].map((networkName) => {
+        defaultNetwork.map((networkName) => {
             const command = `docker network inspect --format="{{".IPAM.Config"}}" ${networkName}`;
             this.runDockerCommand(
                 command,
@@ -462,8 +463,10 @@ CMD ["./server-linux", "${socketPort}"]`;
                     | "created"
                     | "running"
                     | "exited";
-                if (this.setDockerInfo(workspaceId, { ...dockerInfo, status })) {
+
+                if (!this.setDockerInfo(workspaceId, { ...dockerInfo, status })) {
                     log.error(`[DataDockerManager] manage -> fail to setDockerInfo`);
+                    return { code: ResponseCode.internalError, message: "Failed to update docker infomation, but status update" };
                 }
                 DataAlarmManager.create(userId, {
                     type: "workspace",
@@ -497,6 +500,14 @@ CMD ["./server-linux", "${socketPort}"]`;
         const updateOption = { disconnect: false, connect: false, link: false, rename: false };
         const newDockerInfo = this.getDockerInfo(workspaceId) as TDockerData;
         if (newDockerInfo === undefined) {
+            return false;
+        }
+
+        const networkInfo = this.getDockerNetworkInfo();
+        const defaultNetworkIdList = defaultNetwork.map((networkName: string) => {
+            return networkInfo[networkName].networkId;
+        });
+        if (defaultNetworkIdList.includes(dockerInfo.bridgeId)) {
             return false;
         }
 
@@ -703,6 +714,45 @@ CMD ["./server-linux", "${socketPort}"]`;
         });
 
         return visualizationInfo;
+    }
+
+    static export(userId: string, { containerId, imageName, tagName }: { containerId: string; imageName: string; tagName: string }) {
+        imageName = imageName ?? containerId;
+        tagName = tagName ?? "latest";
+        try {
+            this.runDockerCommand(
+                `docker commit ${containerId} ${imageName}:${tagName}`,
+                () => {
+                    this.runDockerCommand(
+                        `docker save -o ${ExportDirectoryPath}/${imageName}.tar ${imageName}:${tagName}`,
+                        () => {},
+                        () => {},
+                        (code) => {
+                            code === 0
+                                ? DataAlarmManager.create(userId, {
+                                      type: "workspace",
+                                      location: `/api/download/${imageName}.tar`,
+                                      content: `Export workspace container complete`,
+                                      checkAlarm: { [userId]: true },
+                                  })
+                                : DataAlarmManager.create(userId, {
+                                      type: "workspace",
+                                      location: ``,
+                                      content: `Failed to export workspace container`,
+                                      checkAlarm: { [userId]: true },
+                                  });
+                        }
+                    );
+                },
+                (error) => {
+                    log.error(error);
+                }
+            );
+            return true;
+        } catch (err) {
+            log.error(err.stack);
+            return false;
+        }
     }
 
     static async run() {

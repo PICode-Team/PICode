@@ -2,17 +2,18 @@
 name: Development Report
 about: Developments for this project
 title: ''
-labels: dev
+labels: enhancement
 assignees: ''
 
 ---
 
-** Summary of development **
+**Summary of development**
+
 A brief description of the development.
 
-** Development Progress **
-[ ] Dev1
-[ ] Dev2
+**Development Progress**
+- [ ] Dev1
+- [ ] Dev2
 
-** Additional Comments **
+**Additional Comments**
 Other descriptions
