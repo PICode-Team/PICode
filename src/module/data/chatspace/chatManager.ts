@@ -1,11 +1,11 @@
-import { DataDirectoryPath } from "../../../../types/module/data/data.types";
+import { DataDirectoryPath } from "../../../types/module/data/data.types";
 import fs from "fs";
-import { TChatChannelData, TChatLogData, TChatLogDataParam, TChatType } from "../../../../types/module/data/service/chatspace/chat.types";
+import { TChatChannelData, TChatLogData, TChatLogDataParam, TChatType } from "../../../types/module/data/service/chatspace/chat.types";
 import { getJsonData, setJsonData } from "../etc/fileManager";
-import { getTime } from "../../../datetime";
+import { getTime } from "../../datetime";
 import { v4 as uuidv4 } from "uuid";
-import log from "../../../log";
-import chat from "../../../socket/service/chatspace/chat";
+import log from "../../log";
+import chat from "../../socket/service/chatspace/chat";
 
 const ChatQueue: TChatLogDataParam[] = [];
 

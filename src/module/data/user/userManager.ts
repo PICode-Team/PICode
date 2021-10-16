@@ -1,5 +1,5 @@
-import { DataDirectoryPath, StaticDirectoryPath, UploadDirectoryPath } from "../../../../types/module/data/data.types";
-import { TUserData } from "../../../../types/module/data/service/user/user.types";
+import { DataDirectoryPath, StaticDirectoryPath, UploadDirectoryPath } from "../../../types/module/data/data.types";
+import { TUserData } from "../../../types/module/data/service/user/user.types";
 import { getJsonData, handle, isExists, removeData, setJsonData } from "../etc/fileManager";
 import { readdirSync } from "fs";
 import DataUploadManager from "../etc/uploadManager";
@@ -53,7 +53,9 @@ export default class DataUserManager {
                 });
             }
             const extension = DataUploadManager.UploadFileManager[userInfo.userThumbnail].originalname.split(".").pop();
-            if (!handle(`${UploadDirectoryPath}/${userInfo.userThumbnail}`, `${StaticDirectoryPath}/${userInfo.userThumbnail}.${extension}`)) {
+            if (
+                !handle(`${UploadDirectoryPath}/${userInfo.userThumbnail}`, `${StaticDirectoryPath}/${userInfo.userThumbnail}.${extension}`)
+            ) {
                 return false;
             }
             DataUploadManager.deleteUploadFileInfo(userInfo.userThumbnail);
@@ -75,7 +77,9 @@ export default class DataUserManager {
 
         if (userInfo.userThumbnail !== undefined && path.parse(userData.userThumbnail as string).name !== userInfo.userThumbnail) {
             const extension = DataUploadManager.UploadFileManager[userInfo.userThumbnail].originalname.split(".").pop();
-            if (!handle(`${UploadDirectoryPath}/${userInfo.userThumbnail}`, `${StaticDirectoryPath}/${userInfo.userThumbnail}.${extension}`)) {
+            if (
+                !handle(`${UploadDirectoryPath}/${userInfo.userThumbnail}`, `${StaticDirectoryPath}/${userInfo.userThumbnail}.${extension}`)
+            ) {
                 return false;
             }
             if (userData.userThumbnail !== undefined) {

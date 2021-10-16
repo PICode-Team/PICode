@@ -1,12 +1,12 @@
-import { DataDirectoryPath } from "../../../../types/module/data/data.types";
-import { TkanbanCreateData, TkanbanData, TReturnKanbanData } from "../../../../types/module/data/service/issuespace/kanban.types";
+import { DataDirectoryPath } from "../../../types/module/data/data.types";
+import { TkanbanCreateData, TkanbanData, TReturnKanbanData } from "../../../types/module/data/service/issuespace/kanban.types";
 import { getJsonData, isExists, setJsonData } from "../etc/fileManager";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
-import log from "../../../log";
+import log from "../../log";
 import DataWorkspaceManager from "../workspace/workspaceManager";
 import DataAlarmManager from "../alarm/alarmManager";
-import { ResponseCode } from "../../../../constants/response";
+import { ResponseCode } from "../../../constants/response";
 
 const kanbanInfoFileName = "kanbanInfo.json";
 
@@ -114,10 +114,13 @@ export default class DataKanbanManager {
             type: "issuespace",
             location: "",
             content: `${userId} create ${kanbanData.title} kanban at ${kanbanData.workspaceId}`,
-            checkAlarm: (DataWorkspaceManager.getWorkspaceInfo(kanbanData.workspaceId)?.participants as string[]).reduce((list: { [ket in string]: boolean }, member) => {
-                list[member] = true;
-                return list;
-            }, {}),
+            checkAlarm: (DataWorkspaceManager.getWorkspaceInfo(kanbanData.workspaceId)?.participants as string[]).reduce(
+                (list: { [ket in string]: boolean }, member) => {
+                    list[member] = true;
+                    return list;
+                },
+                {}
+            ),
         });
         return { code: ResponseCode.ok, uuid: kanbanUUID };
     }
@@ -140,14 +143,16 @@ export default class DataKanbanManager {
             DataAlarmManager.create(userId, {
                 type: "issuespace",
                 location: "",
-                content: `${userId} update ${kanbanData.title ?? this.getKanbanInfo(kanbanUUID)?.title} kanban at ${kanbanData.workspaceId}`,
-                checkAlarm: (DataWorkspaceManager.getWorkspaceInfo(kanbanData.workspaceId ?? (updateKanbanData.workspaceId as string))?.participants as string[]).reduce(
-                    (list: { [ket in string]: boolean }, member) => {
-                        list[member] = true;
-                        return list;
-                    },
-                    {}
-                ),
+                content: `${userId} update ${kanbanData.title ?? this.getKanbanInfo(kanbanUUID)?.title} kanban at ${
+                    kanbanData.workspaceId
+                }`,
+                checkAlarm: (
+                    DataWorkspaceManager.getWorkspaceInfo(kanbanData.workspaceId ?? (updateKanbanData.workspaceId as string))
+                        ?.participants as string[]
+                ).reduce((list: { [ket in string]: boolean }, member) => {
+                    list[member] = true;
+                    return list;
+                }, {}),
             });
         }
         return { code: ResponseCode.ok };
@@ -165,10 +170,13 @@ export default class DataKanbanManager {
             type: "issuespace",
             location: "",
             content: `${userId} delete ${kanbanData.title} kanban at ${kanbanData.workspaceId}`,
-            checkAlarm: (DataWorkspaceManager.getWorkspaceInfo(kanbanData.workspaceId)?.participants as string[]).reduce((list: { [ket in string]: boolean }, member) => {
-                list[member] = true;
-                return list;
-            }, {}),
+            checkAlarm: (DataWorkspaceManager.getWorkspaceInfo(kanbanData.workspaceId)?.participants as string[]).reduce(
+                (list: { [ket in string]: boolean }, member) => {
+                    list[member] = true;
+                    return list;
+                },
+                {}
+            ),
         });
         return { code: ResponseCode.ok };
     }

@@ -1,7 +1,7 @@
 import express from "express";
 import { ResponseCode } from "../../../constants/response";
 import tokenRouter from "../../../lib/router/token";
-import DataWorkspaceManager from "../../../module/data/service/workspace/workspaceManager";
+import DataWorkspaceManager from "../../../module/data/workspace/workspaceManager";
 
 const router = express.Router();
 

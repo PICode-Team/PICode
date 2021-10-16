@@ -11,16 +11,16 @@ import {
     TDockerPortVisualData,
     TDockerNetworkVisualData,
     TPortMappingData,
-} from "../../../../types/module/data/service/workspace/docker.types";
+} from "../../../types/module/data/service/workspace/docker.types";
 import path from "path";
 import DataWorkspaceManager from "./workspaceManager";
-import log from "../../../log";
+import log from "../../log";
 import os from "os";
 import fs from "fs";
 import { getJsonData, isExists, removeData, setJsonData } from "../etc/fileManager";
-import { DataDirectoryPath, ExportDirectoryPath, TReturnData } from "../../../../types/module/data/data.types";
+import { DataDirectoryPath, ExportDirectoryPath, TReturnData } from "../../../types/module/data/data.types";
 import DataAlarmManager from "../alarm/alarmManager";
-import { ResponseCode } from "../../../../constants/response";
+import { ResponseCode } from "../../../constants/response";
 
 const dockerNetworkFileName = "dockerNetworkList.json";
 const dockerInfoFileName = "dockerInfo.json";

@@ -1,4 +1,4 @@
-import log from "../../../log";
+import log from "../../log";
 import {
     UploadDirectoryPath,
     WorkDirectoryPath,
@@ -6,20 +6,20 @@ import {
     StaticDirectoryPath,
     TReturnData,
     ExportDirectoryPath,
-} from "../../../../types/module/data/data.types";
-import { TWorkspaceCreateData, TWorkspaceUpdateData, TWorkspaceData } from "../../../../types/module/data/service/workspace/workspace.type";
+} from "../../../types/module/data/data.types";
+import { TWorkspaceCreateData, TWorkspaceUpdateData, TWorkspaceData } from "../../../types/module/data/service/workspace/workspace.type";
 import { setJsonData, getJsonData, isExists, removeData, handle, searchWorkspaceFiles } from "../etc/fileManager";
 import DataUploadManager from "../etc/uploadManager";
 import fs from "fs";
 import simpleGit from "simple-git";
 import { zip } from "zip-a-folder";
-import { TUploadFileLanguageToSize } from "../../../../types/module/data/service/etc/file.types";
+import { TUploadFileLanguageToSize } from "../../../types/module/data/service/etc/file.types";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import { TDockerCreateData, TDockerUpdateData } from "../../../../types/module/data/service/workspace/docker.types";
+import { TDockerCreateData, TDockerUpdateData } from "../../../types/module/data/service/workspace/docker.types";
 import DataDockerManager from "./dockerManager";
-import { ResponseCode } from "../../../../constants/response";
-import { getTime } from "../../../datetime";
+import { ResponseCode } from "../../../constants/response";
+import { getTime } from "../../datetime";
 import os from "os";
 import DataAlarmManager from "../alarm/alarmManager";
 

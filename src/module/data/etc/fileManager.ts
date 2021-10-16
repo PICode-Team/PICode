@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { TUploadFileLanguageToSize, TUploadMimeType, TLanguageList, TFile } from "../../../../types/module/data/service/etc/file.types";
-import log from "../../../log";
+import { TUploadFileLanguageToSize, TUploadMimeType, TLanguageList, TFile } from "../../../types/module/data/service/etc/file.types";
+import log from "../../log";
 import admZip from "adm-zip";
 import DataWorkspaceManager from "../workspace/workspaceManager";
 import DataUploadManager from "./uploadManager";

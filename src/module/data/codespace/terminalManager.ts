@@ -1,10 +1,10 @@
-import { TCommandData, UUIDToWorker } from "../../../../types/module/data/service/codespace/terminal.types";
+import { TCommandData, UUIDToWorker } from "../../../types/module/data/service/codespace/terminal.types";
 import { Worker } from "worker_threads";
-import { getSocket, makePacket } from "../../../socket/service/etc/manager";
-import log from "../../../log";
+import { getSocket, makePacket } from "../../socket/service/etc/manager";
+import log from "../../log";
 import DataWorkspaceManager from "../workspace/workspaceManager";
 import path from "path";
-import { ResponseCode } from "../../../../constants/response";
+import { ResponseCode } from "../../../constants/response";
 
 const terminalInfo: UUIDToWorker = {};
 
@@ -42,7 +42,7 @@ export default class DataTerminalManager {
                     const re = new RegExp(replacePath, "gi");
                     const sendData = makePacket("terminal", "commandTerminal", {
                         code: ResponseCode.ok,
-                        message: message.command.replace(re, "."),
+                        message: message.command.replace(re, ".") + "\r\n",
                         uuid: uuid,
                     });
                     getSocket(userId).send(sendData);

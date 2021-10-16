@@ -1,12 +1,12 @@
-import { ResponseCode } from "../../../../constants/response";
-import { TReturnData, WorkDirectoryPath } from "../../../../types/module/data/data.types";
-import { TFile, TFileData, TReturnFileData } from "../../../../types/module/data/service/etc/file.types";
-import { AutoMergeSystem, TReadyQueueItem } from "../../../merge";
+import { ResponseCode } from "../../../constants/response";
+import { TReturnData, WorkDirectoryPath } from "../../../types/module/data/data.types";
+import { TFile, TFileData, TReturnFileData } from "../../../types/module/data/service/etc/file.types";
+import { AutoMergeSystem, TReadyQueueItem } from "../../merge";
 import { getAllChildren, isExists, readFromFile, writeCodeToFile } from "../etc/fileManager";
 import DataWorkspaceManager from "../workspace/workspaceManager";
 import path from "path";
 import fs from "fs";
-import log from "../../../log";
+import log from "../../log";
 
 export default class DataCodeManager {
     static codeMergeManager: AutoMergeSystem;

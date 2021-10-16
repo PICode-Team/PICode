@@ -1,5 +1,5 @@
 import { TSocketPacket } from "../../../../types/module/socket.types";
-import DataNoteManager from "../../../data/service/notespace/noteManager";
+import DataNoteManager from "../../../data/notespace/noteManager";
 import { TNoteData } from "../../../../types/module/data/service/notespace/note.types";
 import { getSocket, makePacket } from "../etc/manager";
 

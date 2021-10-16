@@ -1,13 +1,18 @@
-import { DataDirectoryPath } from "../../../../types/module/data/data.types";
-import { TMilestoneCreateData, TMilestoneData, TMilestoneJsonData, TMilestoneUpdateData } from "../../../../types/module/data/service/issuespace/milestone.types";
+import { DataDirectoryPath } from "../../../types/module/data/data.types";
+import {
+    TMilestoneCreateData,
+    TMilestoneData,
+    TMilestoneJsonData,
+    TMilestoneUpdateData,
+} from "../../../types/module/data/service/issuespace/milestone.types";
 import { getJsonData, isExists, setJsonData } from "../etc/fileManager";
 import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
-import log from "../../../log";
+import log from "../../log";
 import DataAlarmManager from "../alarm/alarmManager";
 import DataUserManager from "../user/userManager";
-import { ResponseCode } from "../../../../constants/response";
-import { TReturnMilestoneData } from "../../../../types/module/data/service/issuespace/milestone.types";
+import { ResponseCode } from "../../../constants/response";
+import { TReturnMilestoneData } from "../../../types/module/data/service/issuespace/milestone.types";
 
 const milestoneInfoFileName = "milestoneListInfo.json";
 

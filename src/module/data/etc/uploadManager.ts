@@ -1,5 +1,5 @@
-import { DataDirectoryPath } from "../../../../types/module/data/data.types";
-import { TUploadManager } from "../../../../types/module/data/service/etc/file.types";
+import { DataDirectoryPath } from "../../../types/module/data/data.types";
+import { TUploadManager } from "../../../types/module/data/service/etc/file.types";
 import { getJsonData, setJsonData } from "./fileManager";
 import fs from "fs";
 
