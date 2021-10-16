@@ -1,7 +1,7 @@
 import { TChatChannelData } from "../../../../types/module/data/service/chatspace/chat.types";
 import { TSocketPacket } from "../../../../types/module/socket.types";
-import DataAlarmManager from "../../../data/service/alarm/alarmManager";
-import DataChatManager from "../../../data/service/chatspace/chatManager";
+import DataAlarmManager from "../../../data/alarm/alarmManager";
+import DataChatManager from "../../../data/chatspace/chatManager";
 import { getTime } from "../../../datetime";
 import { getSocket, makePacket } from "../etc/manager";
 

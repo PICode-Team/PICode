@@ -1,7 +1,7 @@
 import express from "express";
 import { ResponseCode } from "../../constants/response";
 import tokenRouter from "../../lib/router/token";
-import DataUserManager from "../../module/data/service/user/userManager";
+import DataUserManager from "../../module/data/user/userManager";
 import log from "../../module/log";
 
 const router = express.Router();
@@ -60,7 +60,7 @@ router.delete("/", tokenRouter, (req, res) => {
     DataUserManager.delete(userId);
     log.info(`Delete user account (userId: "${userId}")`);
 
-    res.clearCookie('authorization')
+    res.clearCookie("authorization");
     return res.json({ code: ResponseCode.ok });
 });
 

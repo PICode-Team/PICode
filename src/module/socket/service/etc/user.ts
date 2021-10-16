@@ -1,5 +1,5 @@
 import { TSocketPacket } from "../../../../types/module/socket.types";
-import DataUserManager from "../../../data/service/user/userManager";
+import DataUserManager from "../../../data/user/userManager";
 import { getSocket, makePacket } from "./manager";
 
 export default function user(userId: string, packet: TSocketPacket) {

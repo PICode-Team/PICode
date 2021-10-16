@@ -1,7 +1,7 @@
 import express from "express";
 import { ResponseCode } from "../../constants/response";
 import tokenRouter from "../../lib/router/token";
-import DataWorkspaceManager from "../../module/data/service/workspace/workspaceManager";
+import DataWorkspaceManager from "../../module/data/workspace/workspaceManager";
 import log from "../../module/log";
 import { TWorkspaceUpdateData } from "../../types/module/data/service/workspace/workspace.type";
 
@@ -40,7 +40,9 @@ router.put("/", tokenRouter, (req, res) => {
 
     const result = DataWorkspaceManager.update(userId, workspaceId, false, workspaceInfo, dockerInfo);
     if (result.code === ResponseCode.ok) {
-        log.info(`workspaceInfo changed (workspaceName: "${workspaceInfo.name}", workspaceDescription : "${workspaceInfo.description}", workspaceThumbnail : "${workspaceInfo.thumbnail}")`);
+        log.info(
+            `workspaceInfo changed (workspaceName: "${workspaceInfo.name}", workspaceDescription : "${workspaceInfo.description}", workspaceThumbnail : "${workspaceInfo.thumbnail}")`
+        );
     }
 
     return res.json(result);
