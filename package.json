@@ -8,7 +8,7 @@
         "build": "npx tsc",
         "lint": "eslint --ext .js,.ts ./src",
         "lint:fix": "eslint --ext .js,.ts ./src --fix",
-        "test": "mocha -r ts-node/register ./test/**/*.test.ts",
+        "test": "mocha -r ts-node/register \"./test/**/*.test.ts\"",
         "test:codecov": "nyc --reporter=lcov npm run test"
     },
     "dependencies": {
@@ -32,7 +32,6 @@
         "zip-a-folder": "^1.1.0"
     },
     "devDependencies": {
-        "@types/open-graph": "^0.2.2",
         "@types/adm-zip": "^0.4.34",
         "@types/chai": "^4.2.22",
         "@types/compression": "^1.7.0",
@@ -43,6 +42,7 @@
         "@types/jsonwebtoken": "^8.5.5",
         "@types/mocha": "^9.0.0",
         "@types/multer": "^1.4.7",
+        "@types/open-graph": "^0.2.2",
         "@types/uuid": "^8.3.1",
         "@typescript-eslint/eslint-plugin": "^4.31.1",
         "@typescript-eslint/parser": "^4.31.1",

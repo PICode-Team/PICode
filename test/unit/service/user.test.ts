@@ -1,26 +1,54 @@
 import { assert } from "chai";
 import DataUserManager from "../../../src/module/data/user/userManager";
+import { TUserData } from '../../../src/types/module/data/service/user/user.types';
 
 describe("User Test", () => {
+    const userId1 = 'test1@example.com';
+    const userId2 = 'test2@example.com';
+
+    const testcase1: TUserData = {
+        userId: userId1,
+        passwd: '1q2w3e4r',
+        userName: 'testUser',
+        userThumbnail: undefined,
+    }
+
+    const testcase2: TUserData = { 
+        userId: userId2,
+        passwd: '1q2w3e4r',
+        userName: 'testUser2',
+        userThumbnail: undefined,
+    }
+
+    const createTest1 = createUser(testcase1)
+    const createTest2 = createUser(testcase2);
+    const getTest1 = DataUserManager.get(userId1);
+    const getTest2 = DataUserManager.get(userId2);
+    const deleteTest1 = DataUserManager.delete(userId1);
+    const deleteTest2 = DataUserManager.delete(userId2);
+
     it("create test", () => {
-        // const userId = "test@example.com";
-        // const passwd = "1q2w3e4r";
-        // const userName = "testUser";
-        // const userInfo = { userId, passwd, userName, userThumbnail: undefined };
-        // const result = DataUserManager.create(userInfo);
-        // assert.equal(true, result);
-        // const userId2 = "test2@example.com";
-        // const passwd2 = "1q2w3e4r";
-        // const userName2 = "testUser2";
-        // const userInfo2 = { userId: userId2, passwd: passwd2, userName: userName2, userThumbnail: undefined };
-        // const result2 = DataUserManager.create(userInfo2);
-        // assert.equal(true, result2);
+        assert.equal(createTest1, true);
+        assert.equal(createTest2, true);
     });
+    
     it("get test", () => {
-        // const userId = "test";
-        // const result = DataUserManager.get(userId);
-        // assert.equal("test", result.userId);
-        // assert.equal("1q2w3e4r", result.passwd);
-        // assert.equal("testUser", result.userName);
+        assert.equal(testcase1.userId, getTest1.userId);
+        assert.equal(testcase1.passwd, getTest1.passwd);
+        assert.equal(testcase1.userName, getTest1.userName);
+
+        assert.equal(testcase2.userId, getTest2.userId);
+        assert.equal(testcase2.passwd, getTest2.passwd);
+        assert.equal(testcase2.userName, getTest2.userName);
     });
+
+    it("delete test", ()=>{
+        assert.equal(deleteTest1, true);
+        assert.equal(deleteTest2, true);
+    })
 });
+
+
+function createUser({ userId, userName, passwd }: TUserData) {
+    return DataUserManager.create({ userId, userName, passwd, userThumbnail: undefined });
+}
