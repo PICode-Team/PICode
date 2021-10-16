@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { ResponseCode } from "../../../src/constants/response";
-import DataWorkspaceManager from "../../../src/module/data/service/workspace/workspaceManager";
+import DataWorkspaceManager from "../../../src/module/data/workspace/workspaceManager";
 
 describe("Workspace Test", () => {
     it("create test", () => {

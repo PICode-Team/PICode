@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { ResponseCode } from "../../../src/constants/response";
-import DataIssueManager from "../../../src/module/data/service/issuespace/issueManager";
-import DataKanbanManager from "../../../src/module/data/service/issuespace/kanbanManager";
+import DataIssueManager from "../../../src/module/data/issuespace/issueManager";
+import DataKanbanManager from "../../../src/module/data/issuespace/kanbanManager";
 import { TIssueData } from "../../../src/types/module/data/service/issuespace/issue.types";
 import fs from "fs";
 

@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import DataChatManager from "../../../src/module/data/service/chatspace/chatManager";
+import DataChatManager from "../../../src/module/data/chatspace/chatManager";
 
 describe("Chat Test", () => {
     it("create test", () => {

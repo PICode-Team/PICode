@@ -1,8 +1,6 @@
 import { assert } from "chai";
 import { v4 as uuidv4 } from "uuid";
-import { ResponseCode } from "../../../src/constants/response";
-import DataTerminalManager from "../../../src/module/data/service/codespace/terminalManager";
-import DataWorkspaceManager from "../../../src/module/data/service/workspace/workspaceManager";
+import DataTerminalManager from "../../../src/module/data/codespace/terminalManager";
 
 describe("Terminal Test", () => {
     it("create test", () => {

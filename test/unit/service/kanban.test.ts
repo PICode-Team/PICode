@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { ResponseCode } from "../../../src/constants/response";
-import DataKanbanManager from "../../../src/module/data/service/issuespace/kanbanManager";
-import DataWorkspaceManager from "../../../src/module/data/service/workspace/workspaceManager";
+import DataKanbanManager from "../../../src/module/data/issuespace/kanbanManager";
+import DataWorkspaceManager from "../../../src/module/data/workspace/workspaceManager";
 import { TkanbanCreateData } from "../../../src/types/module/data/service/issuespace/kanban.types";
 
 describe("Kanban Test", () => {

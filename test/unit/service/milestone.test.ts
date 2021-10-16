@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { ResponseCode } from "../../../src/constants/response";
-import DataMilestoneManager from "../../../src/module/data/service/issuespace/milestoneManager";
+import DataMilestoneManager from "../../../src/module/data/issuespace/milestoneManager";
 import { TMilestoneCreateData } from "../../../src/types/module/data/service/issuespace/milestone.types";
 
 describe("Milestone Test", () => {

@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import DataUserManager from "../../../src/module/data/service/user/userManager";
+import DataUserManager from "../../../src/module/data/user/userManager";
 
 describe("User Test", () => {
     it("create test", () => {

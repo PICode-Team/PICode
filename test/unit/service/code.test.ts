@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { ResponseCode } from "../../../src/constants/response";
-import DataCodeManager from "../../../src/module/data/service/codespace/codeManager";
-import DataWorkspaceManager from "../../../src/module/data/service/workspace/workspaceManager";
+import DataCodeManager from "../../../src/module/data/codespace/codeManager";
+import DataWorkspaceManager from "../../../src/module/data/workspace/workspaceManager";
 
 describe("Code Test", () => {
     it("create file test", () => {

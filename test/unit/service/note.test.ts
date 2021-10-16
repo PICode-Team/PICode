@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { ResponseCode } from "../../../src/constants/response";
-import DataNoteManager from "../../../src/module/data/service/notespace/noteManager";
+import DataNoteManager from "../../../src/module/data/notespace/noteManager";
 import { TNoteData } from "../../../src/types/module/data/service/notespace/note.types";
 
 describe("Note Test", () => {
