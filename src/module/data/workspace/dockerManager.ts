@@ -717,14 +717,15 @@ CMD ["./server-linux", "${socketPort}"]`;
     }
 
     static export(userId: string, { containerId, imageName, tagName }: { containerId: string; imageName: string; tagName: string }) {
-        imageName = imageName ?? containerId;
+        imageName = (imageName ?? containerId)?.toLowerCase();
         tagName = tagName ?? "latest";
         try {
             this.runDockerCommand(
                 `docker commit ${containerId} ${imageName}:${tagName}`,
                 () => {
+                    const workspaceId = this.getworkspaceId(userId, containerId);
                     this.runDockerCommand(
-                        `docker save -o ${ExportDirectoryPath}/${imageName}.tar ${imageName}:${tagName}`,
+                        `docker save -o ${ExportDirectoryPath}/${workspaceId}.tar ${imageName}:${tagName}`,
                         () => {},
                         () => {},
                         (code) => {
@@ -741,6 +742,7 @@ CMD ["./server-linux", "${socketPort}"]`;
                                       content: `Failed to export workspace container`,
                                       checkAlarm: { [userId]: true },
                                   });
+                            this.runDockerCommandSync(`docker rmi ${imageName}:${tagName}`);
                         }
                     );
                 },

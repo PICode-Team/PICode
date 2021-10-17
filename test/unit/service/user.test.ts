@@ -1,26 +1,16 @@
 import { assert } from "chai";
 import DataUserManager from "../../../src/module/data/user/userManager";
-import { TUserData } from '../../../src/types/module/data/service/user/user.types';
+import { TUserData } from "../../../src/types/module/data/service/user/user.types";
+import { getTestUser } from "../../testConstant";
 
 describe("User Test", () => {
-    const userId1 = 'test1@example.com';
-    const userId2 = 'test2@example.com';
+    const userId1 = "test1@example.com";
+    const userId2 = "test2@example.com";
 
-    const testcase1: TUserData = {
-        userId: userId1,
-        passwd: '1q2w3e4r',
-        userName: 'testUser',
-        userThumbnail: undefined,
-    }
+    const testcase1: TUserData = getTestUser(userId1);
+    const testcase2: TUserData = getTestUser(userId2);
 
-    const testcase2: TUserData = { 
-        userId: userId2,
-        passwd: '1q2w3e4r',
-        userName: 'testUser2',
-        userThumbnail: undefined,
-    }
-
-    const createTest1 = createUser(testcase1)
+    const createTest1 = createUser(testcase1);
     const createTest2 = createUser(testcase2);
     const getTest1 = DataUserManager.get(userId1);
     const getTest2 = DataUserManager.get(userId2);
@@ -31,7 +21,7 @@ describe("User Test", () => {
         assert.equal(createTest1, true);
         assert.equal(createTest2, true);
     });
-    
+
     it("get test", () => {
         assert.equal(testcase1.userId, getTest1.userId);
         assert.equal(testcase1.passwd, getTest1.passwd);
@@ -42,13 +32,12 @@ describe("User Test", () => {
         assert.equal(testcase2.userName, getTest2.userName);
     });
 
-    it("delete test", ()=>{
+    it("delete test", () => {
         assert.equal(deleteTest1, true);
         assert.equal(deleteTest2, true);
-    })
+    });
 });
 
-
-function createUser({ userId, userName, passwd }: TUserData) {
+export function createUser({ userId, userName, passwd }: TUserData) {
     return DataUserManager.create({ userId, userName, passwd, userThumbnail: undefined });
 }

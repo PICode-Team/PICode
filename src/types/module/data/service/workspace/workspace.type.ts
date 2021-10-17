@@ -1,3 +1,4 @@
+import { TReturnData } from "../../data.types";
 import { TUploadFileLanguageToSize } from "../etc/file.types";
 
 export interface TWorkspaceCreateData {
@@ -15,4 +16,8 @@ export type TWorkspaceUpdateData = TWorkspaceCreateData & {
 export type TWorkspaceData = TWorkspaceUpdateData & {
     workspaceId: string;
     creation: string;
+};
+
+export type TReturnWorkspaceData = TReturnData & {
+    workspaceId?: string;
 };
