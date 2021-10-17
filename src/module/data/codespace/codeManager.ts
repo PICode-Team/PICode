@@ -187,21 +187,24 @@ export default class DataCodeManager {
      * @param workspaceId workspace ID to get workspace path
      * @param filePath file path to create file
      * @description create file at file path of workspace
-     * @returns {TReturnFileData } : code based on the result and message if function has error
+     * @returns { TReturnFileData } : code based on the result and message if function has error
      */
     static createFile(userId: string, { workspaceId, filePath }: { workspaceId: string; filePath: string }): TReturnFileData {
         const checkError = this.checkError(userId, workspaceId);
         if (checkError.code !== ResponseCode.ok) {
             return checkError;
         }
+        const fullPath = path.join(DataWorkspaceManager.getWorkspaceWorkPath(workspaceId), filePath?.replace(/\\/g, '/'));
 
         try {
-            const fullPath = path.join(DataWorkspaceManager.getWorkspaceWorkPath(workspaceId), filePath);
-            fs.openSync(fullPath, "w");
-        } catch (e: any) {
-            log.error(e.stack);
+            fs.openSync(fullPath, 'w');
+            if(!fs.existsSync(fullPath)) {
+                throw new Error('Not exists file.')
+            }    
+        } catch {
             return { code: ResponseCode.internalError, message: "Failed to create file" };
         }
+
         return { code: ResponseCode.ok, path: filePath };
     }
 
