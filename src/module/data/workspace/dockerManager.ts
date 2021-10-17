@@ -50,9 +50,18 @@ export default class DataDockerManager {
         return setJsonData(networkFilePath, dockerNetworkJsonData);
     }
 
+    static getSpawnParams(command: string) {
+        if (os.platform() === 'win32') {
+            return { mainCommand: 'powershell.exe', subCommand: [command] };
+        }
+
+        const splitData = command.split(' ');
+        return { mainCommand: splitData?.[0], subCommand: splitData?.slice(1) }
+    }
+
     static runDockerCommandSync(command: string) {
-        const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
-        const commandDocker = spawnSync(shell, [command]);
+        const params = this.getSpawnParams(command);
+        const commandDocker = spawnSync(params.mainCommand, params.subCommand);
         return commandDocker.stdout.toString().replace(/\n/gi, "");
     }
 
@@ -62,8 +71,8 @@ export default class DataDockerManager {
         stderr: (error: any) => void,
         close: (code: any) => void = () => {}
     ) {
-        const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
-        const commandDocker = spawn(shell, [command]);
+        const params = this.getSpawnParams(command);
+        const commandDocker = spawn(params.mainCommand, params.subCommand);
         commandDocker.stdout.on("data", stdout);
         commandDocker.stderr.on("data", stderr);
         if (close !== undefined) {
