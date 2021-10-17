@@ -7,7 +7,12 @@ import {
     TReturnData,
     ExportDirectoryPath,
 } from "../../../types/module/data/data.types";
-import { TWorkspaceCreateData, TWorkspaceUpdateData, TWorkspaceData } from "../../../types/module/data/service/workspace/workspace.type";
+import {
+    TWorkspaceCreateData,
+    TWorkspaceUpdateData,
+    TWorkspaceData,
+    TReturnWorkspaceData,
+} from "../../../types/module/data/service/workspace/workspace.type";
 import { setJsonData, getJsonData, isExists, removeData, handle, searchWorkspaceFiles } from "../etc/fileManager";
 import DataUploadManager from "../etc/uploadManager";
 import fs from "fs";
@@ -317,7 +322,7 @@ export default class DataWorkspaceManager {
                 isExtract?: boolean;
             };
         }
-    ): TReturnData {
+    ): TReturnWorkspaceData {
         if (!fs.existsSync(this.getWorkspaceDefaultPath())) {
             fs.mkdirSync(this.getWorkspaceDefaultPath(), { recursive: true });
         }
@@ -368,11 +373,11 @@ export default class DataWorkspaceManager {
                 return { code: ResponseCode.internalError, message: `Failed to create workspace with ${source.type}` };
             }
             DataDockerManager.create(userId, dockerInfo, { workspaceId, workspaceName: name, workspaceParticipants });
+            return { code: ResponseCode.ok, workspaceId };
         } catch (err: any) {
             log.error(err.stack);
             return { code: ResponseCode.internalError, message: "Error occured" };
         }
-        return { code: ResponseCode.ok };
     }
 
     /**
