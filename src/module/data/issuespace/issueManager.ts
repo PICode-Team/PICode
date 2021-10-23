@@ -119,7 +119,8 @@ export default class DataIssueManager {
     static create(
         userId: string,
         kanbanUUID: string,
-        { title, creator, assigner, label, column, content, milestone, startDate, dueDate }: Omit<TIssueData, "issueId">
+        { title, creator, assigner, label, column, content, milestone, startDate, dueDate }: Omit<TIssueData, "issueId">,
+        isCallSchedule: boolean = false
     ): TReturnIssueData {
         const issueUUID = uuidv4();
         const issueNumber = this.getIssueNumber(kanbanUUID);
@@ -151,12 +152,27 @@ export default class DataIssueManager {
             log.error(`[dataIssueManager] create -> fail to setIssueInfo`);
             return { code: ResponseCode.internalError, message: "Failed to create issue" };
         }
-        if (
-            DataCalendarManager.createSchedule({ type: "public", title, content, startDate, dueDate, milestone, creator, issue: issueUUID })
-                .code !== ResponseCode.ok
-        ) {
-            log.error(`[dataIssueManager] create -> fail to create schedule`);
-            return { code: ResponseCode.internalError, message: "Failed to create issue" };
+        if (isCallSchedule !== true) {
+            if (
+                DataCalendarManager.createSchedule(
+                    {
+                        type: "public",
+                        title,
+                        content,
+                        startDate,
+                        dueDate,
+                        milestone,
+                        creator,
+                        assigner,
+                        issue: issueUUID,
+                        kanban: kanbanUUID,
+                    },
+                    true
+                ).code !== ResponseCode.ok
+            ) {
+                log.error(`[dataIssueManager] create -> fail to create schedule`);
+                return { code: ResponseCode.internalError, message: "Failed to create issue" };
+            }
         }
 
         DataKanbanManager.updateIssueCount(kanbanUUID, "totalIssue", "increase");
@@ -238,8 +254,10 @@ export default class DataIssueManager {
                 return { code: ResponseCode.internalError, message: "scheduleId is undefined" };
             }
             if (
-                DataCalendarManager.updateSchedule({ scheduleId, issue: uuid, title, creator, content, milestone, startDate, dueDate })
-                    .code !== ResponseCode.ok
+                DataCalendarManager.updateSchedule(
+                    { scheduleId, issue: uuid, title, creator, content, milestone, startDate, dueDate },
+                    true
+                ).code !== ResponseCode.ok
             ) {
                 log.error(`[dataIssueManager] update -> Failed to update schedule`);
                 return { code: ResponseCode.internalError, message: "Failed to update schedule" };
@@ -282,7 +300,7 @@ export default class DataIssueManager {
 
         if (isCallSchedule !== true) {
             const scheduleId = DataCalendarManager.getScheduleIdByIssueUUID(issueUUID);
-            if (DataCalendarManager.deleteSchedule({ scheduleId }).code !== ResponseCode.ok) {
+            if (DataCalendarManager.deleteSchedule({ scheduleId }, true).code !== ResponseCode.ok) {
                 log.error(`[dataIssueManager] delete -> Failed to delete schedule`);
                 return { code: ResponseCode.internalError, message: "Failed to delete schedule" };
             }
