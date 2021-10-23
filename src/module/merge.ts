@@ -1,5 +1,6 @@
 import { MemoryDisk } from "memory-disk";
 import { v4 } from "uuid";
+import { EOL } from 'os';
 
 /**
  * @description It is an auto-merge object. It is an object for simultaneous editing, and data is managed in memory and on disk.
@@ -33,8 +34,7 @@ export class AutoMergeSystem {
         const orgContent = this.memoryDisk.read(path) as string;
         const updContent = item.content;
 
-        const newLineCharacter = "\r\n";
-        const orgDataList = typeof orgContent !== "number" ? orgContent.split(newLineCharacter) : [];
+        const orgDataList = typeof orgContent !== "number" ? orgContent.split(EOL) : [];
 
         for (const updateItem of updContent.sort((a, b) => a.line - b.line)) {
             if (orgDataList.length < updateItem.line) {
@@ -45,7 +45,7 @@ export class AutoMergeSystem {
             orgDataList[updateItem.line - 1] = updateItem.updateContent;
         }
 
-        this.memoryDisk.write(path, orgDataList.filter((v) => v !== undefined).join(newLineCharacter));
+        this.memoryDisk.write(path, orgDataList.filter((v) => v !== undefined).join(EOL));
         this.memoryDisk.saveDiskAll();
     }
 
