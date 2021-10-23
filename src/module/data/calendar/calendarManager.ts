@@ -162,6 +162,26 @@ export default class DataCalendarManager {
 
         const calendarInfo = this.getCalendarInfo() ? this.getCalendarInfo() : {};
         const scheduleId = uuidv4();
+        if (isCalledIssue !== true && scheduleData.kanban !== undefined) {
+            const createIssueResult = DataIssueManager.create(
+                scheduleData.creator,
+                scheduleData.kanban,
+                {
+                    title: scheduleData.title,
+                    creator: scheduleData.creator,
+                    assigner: scheduleData.assigner,
+                    startDate: scheduleData.startDate,
+                    dueDate: scheduleData.dueDate,
+                    kanban: scheduleData.kanban,
+                    milestone: scheduleData.milestone,
+                } as Omit<TIssueData, "issueId">,
+                true
+            );
+            if (createIssueResult.code === ResponseCode.ok) {
+                scheduleData = { ...scheduleData, issue: createIssueResult.issue.uuid };
+            }
+        }
+
         try {
             getDateArray(startDate, dueDate).forEach((dateElement) => {
                 const calendarCreateData: TScheduleData = { ...scheduleData, scheduleId };
@@ -177,22 +197,7 @@ export default class DataCalendarManager {
             log.error(err.stack);
             return { code: ResponseCode.internalError, message: "Failed to create schedule data" };
         }
-        if (isCalledIssue !== true && scheduleData.kanban !== undefined) {
-            DataIssueManager.create(
-                scheduleData.creator,
-                scheduleData.kanban,
-                {
-                    title: scheduleData.title,
-                    creator: scheduleData.creator,
-                    assigner: scheduleData.assigner,
-                    startDate: scheduleData.startDate,
-                    dueDate: scheduleData.dueDate,
-                    kanban: scheduleData.kanban,
-                    milestone: scheduleData.milestone,
-                } as Omit<TIssueData, "issueId">,
-                true
-            );
-        }
+
         return { code: ResponseCode.ok, uuid: scheduleId };
     }
 
