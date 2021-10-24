@@ -5,7 +5,9 @@ export interface TScheduleCreateData {
     startDate: string;
     dueDate: string;
     milestone?: string;
+    kanban?: string;
     creator: string;
+    assigner: string;
     issue?: string;
 }
 

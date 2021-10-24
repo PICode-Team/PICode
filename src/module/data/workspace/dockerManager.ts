@@ -51,12 +51,12 @@ export default class DataDockerManager {
     }
 
     static getSpawnParams(command: string) {
-        if (os.platform() === 'win32') {
-            return { mainCommand: 'powershell.exe', subCommand: [command] };
+        if (os.platform() === "win32") {
+            return { mainCommand: "powershell.exe", subCommand: [command] };
         }
 
-        const splitData = command.split(' ');
-        return { mainCommand: splitData?.[0], subCommand: splitData?.slice(1) }
+        const splitData = command.split(" ");
+        return { mainCommand: splitData?.[0], subCommand: splitData?.slice(1) };
     }
 
     static runDockerCommandSync(command: string) {
@@ -355,9 +355,8 @@ CMD ["./server-linux", "${socketPort}"]`;
         const workspacePath = DataWorkspaceManager.getWorkspaceWorkPath(workspaceId);
         const containerName = dockerInfo.containerName ?? workspaceName;
 
-        let command = `docker run -itd --volume="${path.resolve(
-            path.normalize(workspacePath)
-        )}:/home/${workspaceName}" -w /home/${workspaceName} `;
+        let command = `docker run -itd -v ${path.resolve(path.normalize(workspacePath))}:/home/${workspaceName} -w /home/${workspaceName} `;
+
         if (dockerInfo.portInfo !== undefined) {
             Object.keys(dockerInfo.portInfo).map((hostPort: string) => {
                 command += `-p ${hostPort}:${(dockerInfo.portInfo as TPortMappingData)[hostPort]} `;
