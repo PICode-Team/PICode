@@ -36,6 +36,6 @@ function deleteNote(userId: string, packet: any) {
     getSocket(userId).send(sendData);
 }
 
-export default function Note(userId: string, packet: TSocketPacket) {
+export default function note(userId: string, packet: TSocketPacket) {
     docuemntFunc[packet.type](userId, packet.data);
 }
