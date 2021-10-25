@@ -74,7 +74,7 @@ export default class DataAlarmManager {
 
         this.saveAlarmData(alarmRoom, [newAlarm, ...alarmObject.alarmList]);
         Object.keys(alarmData.checkAlarm).map((user) => {
-            getSocket(user)?.send(makePacket("alarm", "createAlarm", alarmData));
+            getSocket(user)?.send(makePacket("alarm", "createAlarm", newAlarm));
         });
     }
 
