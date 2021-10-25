@@ -37,6 +37,13 @@ export default class DataIssueManager {
         return getJsonData(issueListPath) as TIssueListJsonData;
     }
 
+    static getIssueOnlyIssueUUID(issueUUID: string) {
+        const kanbanUUID = fs.readdirSync(this.getIssueListPath()).find((kanban) => {
+            return this.getIssueInfo(kanban, issueUUID) !== undefined;
+        });
+        return this.getIssueInfo(kanbanUUID, issueUUID);
+    }
+
     static getIssueInfo(kanbanUUID: string, issueUUID: string) {
         if (!fs.existsSync(this.getIssueListPath(kanbanUUID))) {
             fs.mkdirSync(this.getIssueListPath(kanbanUUID), { recursive: true });
