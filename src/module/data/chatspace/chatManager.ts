@@ -91,8 +91,14 @@ export default class DataChatManager {
             .filter((v) => nameFilter(v))
             .map((v) => {
                 const recentMessageInfo = this.getRecentMessageInfo(userId, v);
+                const chatInfo = getJsonData(`${this.getChatDataPath()}/${v}/chatInfo.json`) as TChatChannelData;
+
+                if (this.getChatType(chatInfo.chatName) === "direct") {
+                    chatInfo.chatName = (chatInfo.chatParticipant ?? []).find((v) => v !== userId);
+                }
+
                 return {
-                    ...(getJsonData(`${this.getChatDataPath()}/${v}/chatInfo.json`) as TChatChannelData),
+                    ...chatInfo,
                     recentMessage: recentMessageInfo?.message,
                     recentTime: recentMessageInfo?.time,
                 };
@@ -106,7 +112,7 @@ export default class DataChatManager {
             return { message: "", time: "" };
         }
 
-        chatName = this.getChatType(chatName) === "channel" ? chatName : chatName.split("{sep}")?.find(v=>userId !== v);
+        chatName = this.getChatType(chatName) === "channel" ? chatName : chatName.split("{sep}")?.find((v) => userId !== v);
         return this.getChatLog(
             userId,
             chatName,
