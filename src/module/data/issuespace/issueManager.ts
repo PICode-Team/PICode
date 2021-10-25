@@ -183,7 +183,7 @@ export default class DataIssueManager {
         log.info(`issue created: issueUUID ${issueData.uuid}`);
         DataAlarmManager.create(userId, {
             type: "issuespace",
-            location: "",
+            location: `/issuespace/detail?issueUUID=${issueUUID}`,
             content: `${userId} create ${issueData.title} issue : creator ${issueData.creator}, assigner ${issueData.assigner}`,
             checkAlarm: { [issueData.creator]: true, [issueData.assigner]: true },
         });
@@ -267,7 +267,7 @@ export default class DataIssueManager {
         log.info(`[dataIssueManager] update -> issue updated : ${JSON.stringify(updateIssueData)}`);
         DataAlarmManager.create(userId, {
             type: "issuespace",
-            location: "",
+            location: `/issuespace/detail?issueUUID=${issueData.uuid}`,
             content: `${userId} update ${title ?? issueData.title} issue`,
             checkAlarm: { [creator ?? issueData.creator]: true, [assigner ?? issueData.assigner]: true },
         });
@@ -309,7 +309,7 @@ export default class DataIssueManager {
         log.info(`issue deleted: ${issueUUID}`);
         DataAlarmManager.create(userId, {
             type: "issuespace",
-            location: "",
+            location: `/issuespace`,
             content: `${userId} delete ${deleteIssueInfo.title} issue`,
             checkAlarm: { [deleteIssueInfo.creator]: true, [deleteIssueInfo.assigner]: true },
         });
