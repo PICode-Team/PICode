@@ -13,7 +13,6 @@ import DataAlarmManager from "../alarm/alarmManager";
 import DataUserManager from "../user/userManager";
 import { ResponseCode } from "../../../constants/response";
 import { TReturnMilestoneData } from "../../../types/module/data/service/issuespace/milestone.types";
-import milestone from "../../socket/service/issuespace/milestone";
 
 const milestoneInfoFileName = "milestoneListInfo.json";
 
@@ -85,7 +84,7 @@ export default class DataMilestoneManager {
         log.info(`milestoneData created: ${milestoneUUID}`);
         DataAlarmManager.create(userId, {
             type: "issuespace",
-            location: "",
+            location: `/issuespace?type=Milestone`,
             content: `${userId} create ${milestoneData.title} milestone (${milestoneData.startDate}~${milestoneData.dueDate})`,
             checkAlarm: fs
                 .readdirSync(`${DataDirectoryPath}/user`)
@@ -113,7 +112,7 @@ export default class DataMilestoneManager {
         log.info(`milestoneData updated: ${JSON.stringify(milestoneData)}`);
         DataAlarmManager.create(userId, {
             type: "issuespace",
-            location: "",
+            location: `/issuespace?type=Milestone`,
             content: `${userId} update ${newMilestoneData.title} milestone (${newMilestoneData.startDate}~${newMilestoneData.dueDate})`,
             checkAlarm: fs
                 .readdirSync(`${DataDirectoryPath}/user`)
@@ -146,7 +145,7 @@ export default class DataMilestoneManager {
         log.info(`milestoneData deleted: ${JSON.stringify(milestoneUUID)}`);
         DataAlarmManager.create(userId, {
             type: "issuespace",
-            location: "",
+            location: `/issuespace?type=Milestone`,
             content: `${userId} delete ${deleteMilestoneTitle} milestone`,
             checkAlarm: fs
                 .readdirSync(`${DataDirectoryPath}/user`)

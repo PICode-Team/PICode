@@ -86,7 +86,7 @@ export default class DataDockerManager {
             const dockerInfo = this.getDockerInfo(workspaceId) ? this.getDockerInfo(workspaceId) : undefined;
             if (dockerInfo !== undefined) {
                 const getRam = this.runDockerCommand(
-                    `docker stats --format "{{.MemPerc}}" ${dockerInfo.containerName}`,
+                    `docker stats --format '{{.MemPerc}}' ${dockerInfo.containerName}`,
                     (result: Buffer) => {
                         const ramUsage = result
                             ?.toString("utf8")
@@ -116,7 +116,7 @@ export default class DataDockerManager {
             fs.mkdirSync(this.getDockerNetworkPath(), { recursive: true });
         }
         defaultNetwork.map((networkName) => {
-            const command = `docker network inspect --format="{{".IPAM.Config"}}" ${networkName}`;
+            const command = `docker network inspect --format='{{.IPAM.Config}}' ${networkName}`;
             this.runDockerCommand(
                 command,
                 (result: Buffer) => {
@@ -132,7 +132,7 @@ export default class DataDockerManager {
                         name: networkName,
                         subnet: networkInfo?.[0]?.split(",")[0],
                         gateway: networkInfo?.[0]?.split(",")[1],
-                        networkId: this.runDockerCommandSync(`docker network inspect --format="{{.Id}}" ${networkName}`),
+                        networkId: this.runDockerCommandSync(`docker network inspect --format='{{.Id}}' ${networkName}`),
                     });
                 },
                 (error) => {
@@ -148,12 +148,12 @@ export default class DataDockerManager {
             if (dockerInfo !== undefined) {
                 this.setDockerInfo(workspaceId, {
                     ...dockerInfo,
-                    status: this.runDockerCommandSync(`docker inspect --format="{{.State.Status}}" ${dockerInfo.containerName}`) as
+                    status: this.runDockerCommandSync(`docker inspect --format='{{.State.Status}}' ${dockerInfo.containerName}`) as
                         | "created"
                         | "running"
                         | "exited",
                     containerIP: this.runDockerCommandSync(
-                        `docker inspect --format="{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${dockerInfo.containerName}`
+                        `docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${dockerInfo.containerName}`
                     ),
                 });
             }
@@ -194,7 +194,7 @@ export default class DataDockerManager {
             command,
             (networkId: Buffer) => {
                 const networkInfo = this.runDockerCommandSync(
-                    `docker network inspect --format="{{".IPAM.Config"}} {{".Containers"}}" ${dockerNetworkInfo.name}`
+                    `docker network inspect --format='{{.IPAM.Config}} {{.Containers}}' ${dockerNetworkInfo.name}`
                 ).split(" ");
                 log.debug(`create network result: ${networkInfo}`);
                 this.setDockerNetWorkInfo({
@@ -407,7 +407,7 @@ CMD ["./server-linux", "${socketPort}"]`;
                     image: dockerInfo.image,
                     tag: tag,
                     containerId: containerId.toString().replace("\n", ""),
-                    status: this.runDockerCommandSync(`docker inspect --format="{{.State.Status}}" ${containerName}`) as
+                    status: this.runDockerCommandSync(`docker inspect --format='{{.State.Status}}' ${containerName}`) as
                         | "created"
                         | "running"
                         | "exited",
@@ -467,7 +467,7 @@ CMD ["./server-linux", "${socketPort}"]`;
         this.runDockerCommand(
             `docker ${dockerCommand} ${dockerInfo.containerName}`,
             () => {
-                const status = this.runDockerCommandSync(`docker inspect --format="{{.State.Status}}" ${dockerInfo.containerName}`) as
+                const status = this.runDockerCommandSync(`docker inspect --format='{{.State.Status}}' ${dockerInfo.containerName}`) as
                     | "created"
                     | "running"
                     | "exited";

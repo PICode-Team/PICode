@@ -112,7 +112,7 @@ export default class DataKanbanManager {
         log.info(`kanbandata created: ${kanbanUUID}`);
         DataAlarmManager.create(userId, {
             type: "issuespace",
-            location: "",
+            location: `/issuespace?type=Kanban`,
             content: `${userId} create ${kanbanData.title} kanban at ${kanbanData.workspaceId}`,
             checkAlarm: (DataWorkspaceManager.getWorkspaceInfo(kanbanData.workspaceId)?.participants as string[]).reduce(
                 (list: { [ket in string]: boolean }, member) => {
@@ -142,7 +142,7 @@ export default class DataKanbanManager {
         if (userId !== "") {
             DataAlarmManager.create(userId, {
                 type: "issuespace",
-                location: "",
+                location: `/issuespace?type=Kanban`,
                 content: `${userId} update ${kanbanData.title ?? this.getKanbanInfo(kanbanUUID)?.title} kanban at ${
                     kanbanData.workspaceId
                 }`,
@@ -168,7 +168,7 @@ export default class DataKanbanManager {
         log.info(`kanbandata deleted: kanbanUUID: ${kanbanUUID}`);
         DataAlarmManager.create(userId, {
             type: "issuespace",
-            location: "",
+            location: `/issuespace?type=Kanban`,
             content: `${userId} delete ${kanbanData.title} kanban at ${kanbanData.workspaceId}`,
             checkAlarm: (DataWorkspaceManager.getWorkspaceInfo(kanbanData.workspaceId)?.participants as string[]).reduce(
                 (list: { [ket in string]: boolean }, member) => {
