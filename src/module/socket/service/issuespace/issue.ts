@@ -14,7 +14,7 @@ const issueLoadFuncs: Record<string, (userId: string, issueData: any) => void> =
 
 function getIssueDetail(userId: string, { issueUUID }: { issueUUID: string }) {
     const metaData = DataIssueManager.getIssueOnlyIssueUUID(issueUUID);
-    const sendData = makePacket("issue", "getIssue", metaData);
+    const sendData = makePacket("issue", "getIssueDetail", metaData);
     getSocket(userId).send(sendData);
 }
 
