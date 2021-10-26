@@ -3,7 +3,6 @@ import {
     UploadDirectoryPath,
     WorkDirectoryPath,
     DataDirectoryPath,
-    StaticDirectoryPath,
     TReturnData,
     ExportDirectoryPath,
 } from "../../../types/module/data/data.types";
@@ -342,13 +341,13 @@ export default class DataWorkspaceManager {
             fs.mkdirSync(this.getWorkspaceDataPath(workspaceId), { recursive: true });
 
             if (thumbnail !== undefined) {
-                if (!fs.existsSync(StaticDirectoryPath)) {
-                    fs.mkdirSync(StaticDirectoryPath, {
+                if (!fs.existsSync(UploadDirectoryPath)) {
+                    fs.mkdirSync(UploadDirectoryPath, {
                         recursive: true,
                     });
                 }
                 const extension = DataUploadManager.UploadFileManager[thumbnail].originalname.split(".").pop();
-                if (!handle(`${UploadDirectoryPath}/${thumbnail}`, `${StaticDirectoryPath}/${thumbnail}.${extension}`)) {
+                if (!handle(`${UploadDirectoryPath}/${thumbnail}`, `${UploadDirectoryPath}/${thumbnail}.${extension}`)) {
                     return { code: ResponseCode.internalError, message: "Failed to handle thumbnail image" };
                 }
                 thumbnail = `${thumbnail}.${extension}`;
@@ -413,13 +412,13 @@ export default class DataWorkspaceManager {
                 if (
                     !handle(
                         `${UploadDirectoryPath}/${workspaceInfo.thumbnail}`,
-                        `${StaticDirectoryPath}/${workspaceInfo.thumbnail}.${extension}`
+                        `${UploadDirectoryPath}/${workspaceInfo.thumbnail}.${extension}`
                     )
                 ) {
                     return { code: ResponseCode.internalError, message: "Failed to handle thumbnail image" };
                 }
                 if (workspaceData.thumbnail !== undefined) {
-                    fs.unlinkSync(`${StaticDirectoryPath}/${workspaceData.thumbnail}`);
+                    fs.unlinkSync(`${UploadDirectoryPath}/${workspaceData.thumbnail}`);
                 }
                 workspaceData.thumbnail = `${workspaceInfo.thumbnail}.${extension}`;
                 DataUploadManager.deleteUploadFileInfo(workspaceInfo.thumbnail);

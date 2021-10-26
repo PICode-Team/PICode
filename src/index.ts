@@ -7,6 +7,7 @@ import envConfig from "./config/env";
 import expressWs from "express-ws";
 import { webSocketInit } from "./module/socket/socket";
 import IntervalManager from "./lib/interval";
+import { ExportDirectoryPath, UploadDirectoryPath } from "./types/module/data/data.types";
 
 if (process.env.NODE_ENV !== "production") {
     require("source-map-support").install();
@@ -21,8 +22,8 @@ async function main() {
     server.use(setting);
     server.use(logging);
     server.use("/api", route);
-    server.use("/api/temp", express.static("./static"));
-    server.use("/api/download", express.static("./export"));
+    server.use("/api/temp", express.static(`${UploadDirectoryPath}`));
+    server.use("/api/download", express.static(`${ExportDirectoryPath}`));
 
     webSocketInit(expressWs(server).app);
 
