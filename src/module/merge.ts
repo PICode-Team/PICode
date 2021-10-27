@@ -1,6 +1,5 @@
 import { MemoryDisk } from "memory-disk";
 import { v4 } from "uuid";
-import { EOL } from 'os';
 
 /**
  * @description It is an auto-merge object. It is an object for simultaneous editing, and data is managed in memory and on disk.
@@ -31,21 +30,18 @@ export class AutoMergeSystem {
         const item = this.readyQueue.shift();
         const path = item.path;
 
-        const orgContent = this.memoryDisk.read(path) as string;
+        let orgContent = this.memoryDisk.read(path) as string;
         const updContent = item.content;
 
-        const orgDataList = typeof orgContent !== "number" ? orgContent.split(EOL) : [];
+        orgContent = typeof orgContent === 'number' ? '' : orgContent;
 
-        for (const updateItem of updContent.sort((a, b) => a.line - b.line)) {
-            if (orgDataList.length < updateItem.line) {
-                orgDataList.push(updateItem.updateContent);
-                continue;
-            }
-
-            orgDataList[updateItem.line - 1] = updateItem.updateContent;
+        for (const updateItem of updContent) {
+            const strIndex = this.findIndex(orgContent, updateItem);
+            console.log(orgContent, updateItem);
+            orgContent = this.strReplace(orgContent, strIndex.start, strIndex.end, updateItem.data);
+            this.memoryDisk.write(path, orgContent);
         }
 
-        this.memoryDisk.write(path, orgDataList.filter((v) => v !== undefined).join(EOL));
         this.memoryDisk.saveDiskAll();
     }
 
@@ -85,6 +81,35 @@ export class AutoMergeSystem {
     public update(path: string, content: TUpdateContentItem[]) {
         this.readyQueue.push({ path, content });
     }
+
+    private findIndex(str: string, update: TUpdateContentItem) {
+        const result = { start: -1, end: -1}
+
+        const length = str.length
+    
+        let row = 1;
+    
+        for (let i = 0; i < length; i++) {
+            if (str[i] === '\n') {
+                row += 1;
+            }
+    
+            if (update.startRow === row) {
+                result.start = i + update.startCol
+            } 
+            
+            if (update.endRow === row){
+                result.end = i + update.endCol
+                break;
+            }
+        }
+    
+        return result; 
+    }
+
+    private strReplace(str: string, start: number, end: number, replace: string) {
+        return str.substring(0, start) + replace + str.substring(end);
+    }
 }
 
 export interface TReadyQueueItem {
@@ -93,8 +118,11 @@ export interface TReadyQueueItem {
 }
 
 export interface TUpdateContentItem {
-    line: number;
-    updateContent: string;
+    startRow: number;
+    endRow: number;
+    startCol: number;
+    endCol: number;
+    data: string;
 }
 
 interface TDataHistory {
