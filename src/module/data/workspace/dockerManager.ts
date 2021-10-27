@@ -85,28 +85,10 @@ export default class DataDockerManager {
         fs.readdirSync(DataWorkspaceManager.getWorkspaceDefaultPath()).map((workspaceId) => {
             const dockerInfo = this.getDockerInfo(workspaceId) ? this.getDockerInfo(workspaceId) : undefined;
             if (dockerInfo !== undefined) {
-                const getRam = this.runDockerCommand(
-                    `docker stats --format '{{.MemPerc}}' ${dockerInfo.containerName}`,
-                    (result: Buffer) => {
-                        const ramUsage = result
-                            ?.toString("utf8")
-                            ?.replace(/\n/gi, "")
-                            ?.split("%")
-                            ?.filter((v) => v?.length > 0)
-                            ?.map((v) => v?.split("H")?.[1])
-                            ?.slice(-1)
-                            ?.pop();
-
-                        if (ramUsage?.length > 0) {
-                            this.setDockerInfo(workspaceId, { ...dockerInfo, ramUsage });
-                            getRam.stdout.pause();
-                            getRam.kill();
-                        }
-                    },
-                    (error) => {
-                        log.error(error);
-                    }
-                );
+                const ramUsage = this.runDockerCommandSync(
+                    `docker stats --format '{{.MemPerc}}' --no-stream ${dockerInfo.containerName}`
+                )?.split("%")?.[0];
+                this.setDockerInfo(workspaceId, { ...dockerInfo, ramUsage });
             }
         });
     }

@@ -5,8 +5,8 @@ export function getTime(time: Date | string | undefined = undefined, format: str
 }
 
 export function updateDate(dateElement: string, value: number) {
-    dateElement = setDateFormat(dateElement);
-    const date = new Date(dateElement);
+    const newDateElement = setDateFormat(dateElement);
+    const date = new Date(`"${newDateElement}"`);
     date.setDate(date.getDate() + value);
     return getTime(date, "YY-MM-DD");
 }
