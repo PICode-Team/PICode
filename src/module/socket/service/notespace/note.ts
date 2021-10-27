@@ -1,5 +1,5 @@
 import { TSocketPacket } from "../../../../types/module/socket.types";
-import DataNoteManager from "../../../data/service/notespace/noteManager";
+import DataNoteManager from "../../../data/notespace/noteManager";
 import { TNoteData } from "../../../../types/module/data/service/notespace/note.types";
 import { getSocket, makePacket } from "../etc/manager";
 
@@ -36,6 +36,6 @@ function deleteNote(userId: string, packet: any) {
     getSocket(userId).send(sendData);
 }
 
-export default function Note(userId: string, packet: TSocketPacket) {
+export default function note(userId: string, packet: TSocketPacket) {
     docuemntFunc[packet.type](userId, packet.data);
 }

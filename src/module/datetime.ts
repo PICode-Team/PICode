@@ -14,7 +14,8 @@ export function updateDate(dateElement: string, value: number) {
 export function getDateArray(startDate: string, dueDate: string) {
     let dateArray: string[] = [];
     for (let dateElement = startDate; dateElement <= dueDate; dateElement = updateDate(dateElement, 1)) {
-        dateArray.push(dateElement);
+        const date = dateElement.split("-")[0]?.length !== 4 ? dateElement : dateElement.substr(2);
+        dateArray.push(date);
     }
     return dateArray;
 }

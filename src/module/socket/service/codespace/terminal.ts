@@ -2,7 +2,7 @@ import { TSocketPacket } from "../../../../types/module/socket.types";
 import { v4 as uuidv4 } from "uuid";
 import log from "../../../log";
 import { getSocket, makePacket } from "../etc/manager";
-import DataTerminalManager from "../../../data/service/codespace/terminalManager";
+import DataTerminalManager from "../../../data/codespace/terminalManager";
 import { ResponseCode } from "../../../../constants/response";
 
 function createTerminal(userId: string, { workspaceId, size }: { workspaceId: string; size: { cols: number; rows: number } }) {

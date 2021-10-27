@@ -1,6 +1,6 @@
 import { TScheduleCreateData, TScheduleData } from "../../../../types/module/data/service/calendar/calendar.types";
 import { TSocketPacket } from "../../../../types/module/socket.types";
-import DataCalendarManager from "../../../data/service/calendar/calendarManager";
+import DataCalendarManager from "../../../data/calendar/calendarManager";
 import { getSocket, makePacket } from "../etc/manager";
 
 const calendarLoadFuncs: Record<string, (userId: string, scheduleData: any) => void> = {
@@ -27,6 +27,7 @@ function updateSchedule(userId: string, scheduleData: Partial<TScheduleData>) {
 
 function deleteSchedule(userId: string, scheduleData: Pick<TScheduleData, "scheduleId">) {
     const sendData = makePacket("calendar", "deleteSchedule", DataCalendarManager.deleteSchedule(scheduleData));
+    getSocket(userId).send(sendData);
 }
 
 export default function calendar(userId: string, packet: TSocketPacket) {

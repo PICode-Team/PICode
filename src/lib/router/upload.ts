@@ -1,7 +1,7 @@
 import multer from "multer";
 import { UploadDirectoryPath } from "../../types/module/data/data.types";
 import { v4 as uuidv4 } from "uuid";
-import DataUploadManager from "../../module/data/service/etc/uploadManager";
+import DataUploadManager from "../../module/data/etc/uploadManager";
 import fs from "fs";
 
 const upload = multer({

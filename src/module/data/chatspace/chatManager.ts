@@ -1,11 +1,9 @@
-import { DataDirectoryPath } from "../../../../types/module/data/data.types";
+import { DataDirectoryPath } from "../../../types/module/data/data.types";
 import fs from "fs";
-import { TChatChannelData, TChatLogData, TChatLogDataParam, TChatType } from "../../../../types/module/data/service/chatspace/chat.types";
+import { TChatChannelData, TChatLogData, TChatLogDataParam, TChatType } from "../../../types/module/data/service/chatspace/chat.types";
 import { getJsonData, setJsonData } from "../etc/fileManager";
-import { getTime } from "../../../datetime";
+import { getTime } from "../../datetime";
 import { v4 as uuidv4 } from "uuid";
-import log from "../../../log";
-import chat from "../../../socket/service/chatspace/chat";
 
 const ChatQueue: TChatLogDataParam[] = [];
 
@@ -93,8 +91,14 @@ export default class DataChatManager {
             .filter((v) => nameFilter(v))
             .map((v) => {
                 const recentMessageInfo = this.getRecentMessageInfo(userId, v);
+                const chatInfo = getJsonData(`${this.getChatDataPath()}/${v}/chatInfo.json`) as TChatChannelData;
+
+                if (this.getChatType(chatInfo.chatName) === "direct") {
+                    chatInfo.chatName = (chatInfo.chatParticipant ?? []).find((v) => v !== userId);
+                }
+
                 return {
-                    ...(getJsonData(`${this.getChatDataPath()}/${v}/chatInfo.json`) as TChatChannelData),
+                    ...chatInfo,
                     recentMessage: recentMessageInfo?.message,
                     recentTime: recentMessageInfo?.time,
                 };
@@ -108,7 +112,7 @@ export default class DataChatManager {
             return { message: "", time: "" };
         }
 
-        chatName = this.getChatType(chatName) === "channel" ? chatName : chatName.split("{sep}")[1];
+        chatName = this.getChatType(chatName) === "channel" ? chatName : chatName.split("{sep}")?.find((v) => userId !== v);
         return this.getChatLog(
             userId,
             chatName,
@@ -142,7 +146,7 @@ export default class DataChatManager {
     }
 
     static getDirectMessageDirName(userId1: string, userId2: string) {
-        return [`@${userId1}`, userId2].sort().join("{sep}");
+        return [`${userId1}`, userId2].sort().join("{sep}");
     }
 
     static createChannel(channelData: TChatChannelData) {

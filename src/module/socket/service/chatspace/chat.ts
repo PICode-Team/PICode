@@ -1,22 +1,23 @@
 import { TChatChannelData } from "../../../../types/module/data/service/chatspace/chat.types";
 import { TSocketPacket } from "../../../../types/module/socket.types";
-import DataAlarmManager from "../../../data/service/alarm/alarmManager";
-import DataChatManager from "../../../data/service/chatspace/chatManager";
+import DataAlarmManager from "../../../data/alarm/alarmManager";
+import DataChatManager from "../../../data/chatspace/chatManager";
 import { getTime } from "../../../datetime";
 import { getSocket, makePacket } from "../etc/manager";
 
 function sendMessage(sender: string, target: string, { message, parentChatId }: { message: string; parentChatId?: string }) {
-    const sendData = makePacket("chat", "sendMessage", { message, sender, parentChatId, time: getTime(), chatName: target });
+    const metaData = { message, sender, parentChatId, time: getTime(), chatName: target };
+    const sendData = makePacket("chat", "sendMessage", metaData);
     DataChatManager.saveChat(sender, target, message, parentChatId);
 
     if (DataChatManager.getChatType(target) === "direct") {
         if (sender !== target) {
             getSocket(sender)?.send(sendData);
         }
-        getSocket(target)?.send(sendData);
+        getSocket(target)?.send(makePacket("chat", "sendMessage", { ...metaData, chatName: sender }));
         DataAlarmManager.create(sender, {
             type: "chat",
-            location: `/chat?target=${sender}`,
+            location: `/chatspace?target=${sender}`,
             content: `${sender} send message to you : ${message}`,
             checkAlarm: { [target]: true },
         });
@@ -29,7 +30,7 @@ function sendMessage(sender: string, target: string, { message, parentChatId }: 
             });
             DataAlarmManager.create(sender, {
                 type: "chat",
-                location: `/chat?target=${target}`,
+                location: `/chatspace?target=${target}`,
                 content: `${sender} send message to channel ${target}: ${message}`,
                 checkAlarm: chatData.chatParticipant.reduce((list: { [ket in string]: boolean }, member) => {
                     list[member] = true;
@@ -58,7 +59,7 @@ function createChannel(creator: string, chatName: string, data: { description?: 
     });
     DataAlarmManager.create(creator, {
         type: "chat",
-        location: `/chat?target=${chatName}`,
+        location: `/chatspace?target=${chatName}`,
         content: `${creator} create channel ${chatName}`,
         checkAlarm: chatParticipant.reduce((list: { [ket in string]: boolean }, member) => {
             list[member] = true;

@@ -1,12 +1,13 @@
-import { ResponseCode } from "../../../../constants/response";
-import { DataDirectoryPath } from "../../../../types/module/data/data.types";
-import { TCalendarData, TScheduleCreateData, TScheduleData } from "../../../../types/module/data/service/calendar/calendar.types";
-import { getDateArray, updateDate } from "../../../datetime";
-import log from "../../../log";
+import { ResponseCode } from "../../../constants/response";
+import { DataDirectoryPath } from "../../../types/module/data/data.types";
+import { TCalendarData, TScheduleCreateData, TScheduleData } from "../../../types/module/data/service/calendar/calendar.types";
+import { getDateArray } from "../../datetime";
+import log from "../../log";
 import { getJsonData, isExists, setJsonData } from "../etc/fileManager";
 import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import DataIssueManager from "../issuespace/issueManager";
+import { TIssueData } from "../../../types/module/data/service/issuespace/issue.types";
 
 const calendarInfoFileName = "calendarInfo.json";
 
@@ -75,6 +76,9 @@ export default class DataCalendarManager {
      */
     static getScheduleIdByIssueUUID(issueUUID: string) {
         const calendarInfo = this.getCalendarInfo();
+        if (calendarInfo === undefined || calendarInfo === {}) {
+            return undefined;
+        }
         return Object.values(calendarInfo)
             .find((scheduleListInfo: TScheduleData[]) => {
                 return scheduleListInfo.find((scheduleInfo: TScheduleData) => {
@@ -121,13 +125,17 @@ export default class DataCalendarManager {
         const calendarInfo = this.getCalendarInfo() ? this.getCalendarInfo() : {};
         return Object.keys(calendarInfo)
             .filter((date) => {
-                return (options.startDate === undefined && options.dueDate === undefined) || (options.startDate <= date && date <= options.dueDate);
+                return (
+                    (options.startDate === undefined && options.dueDate === undefined) ||
+                    (options.startDate <= date && date <= options.dueDate)
+                );
             })
             .reduce((calendarData: TCalendarData, date: string) => {
                 const scheduleInfo = calendarInfo[date].filter((scheduleData: TScheduleData) => {
                     return (
-                        (options.issue === undefined || scheduleData.issue) &&
-                        (options.milestone === undefined || scheduleData.milestone) &&
+                        (options.issue === undefined || options.issue === scheduleData.issue) &&
+                        (options.kanban === undefined || options.kanban === scheduleData.kanban) &&
+                        (options.milestone === undefined || options.milestone === scheduleData.milestone) &&
                         (options.type === undefined || options.type === scheduleData.type) &&
                         (options.title === undefined || options.title === scheduleData.title) &&
                         (options.creator === undefined || options.creator === scheduleData.creator) &&
@@ -139,7 +147,7 @@ export default class DataCalendarManager {
             }, {});
     }
 
-    static createSchedule(scheduleData: TScheduleCreateData) {
+    static createSchedule(scheduleData: TScheduleCreateData, isCalledIssue: boolean = false) {
         if (!isExists(this.getCalendarPath())) {
             fs.mkdirSync(this.getCalendarPath(), { recursive: true });
         }
@@ -147,22 +155,53 @@ export default class DataCalendarManager {
             log.error(`[DataCalendarManager] create : startdate or dueDate is undefined `);
             return { code: ResponseCode.missingParameter, message: "Please input start date and due date" };
         }
+        let startDate = scheduleData.startDate;
+        startDate = startDate.split("-")[0]?.length === 4 ? startDate.substr(2) : startDate;
+        let dueDate = scheduleData.dueDate;
+        dueDate = dueDate.split("-")[0]?.length === 4 ? dueDate.substr(2) : dueDate;
+
         const calendarInfo = this.getCalendarInfo() ? this.getCalendarInfo() : {};
         const scheduleId = uuidv4();
+        if (isCalledIssue !== true && scheduleData.kanban !== undefined) {
+            const createIssueResult = DataIssueManager.create(
+                scheduleData.creator,
+                scheduleData.kanban,
+                {
+                    title: scheduleData.title,
+                    creator: scheduleData.creator,
+                    assigner: scheduleData.assigner,
+                    startDate: scheduleData.startDate,
+                    dueDate: scheduleData.dueDate,
+                    kanban: scheduleData.kanban,
+                    milestone: scheduleData.milestone,
+                } as Omit<TIssueData, "issueId">,
+                true
+            );
+            if (createIssueResult.code === ResponseCode.ok) {
+                scheduleData = { ...scheduleData, issue: createIssueResult.issue.uuid };
+            }
+        }
+
         try {
-            getDateArray(scheduleData.startDate, scheduleData.dueDate).forEach((dateElement) => {
+            getDateArray(startDate, dueDate).forEach((dateElement) => {
                 const calendarCreateData: TScheduleData = { ...scheduleData, scheduleId };
-                calendarInfo[dateElement] ? calendarInfo[dateElement].push(calendarCreateData) : (calendarInfo[dateElement] = [calendarCreateData]);
+                calendarInfo[dateElement]
+                    ? calendarInfo[dateElement].push(calendarCreateData)
+                    : (calendarInfo[dateElement] = [calendarCreateData]);
             });
             log.info(`[DataCalendarManager] create : Create schedule`);
-            return this.setCalendarInfo(calendarInfo) ? { code: ResponseCode.ok, uuid: scheduleId } : { code: ResponseCode.internalError, message: "Failed to create schedule data" };
+            if (!this.setCalendarInfo(calendarInfo)) {
+                return { code: ResponseCode.internalError, message: "Failed to create schedule data" };
+            }
         } catch (err) {
             log.error(err.stack);
             return { code: ResponseCode.internalError, message: "Failed to create schedule data" };
         }
+
+        return { code: ResponseCode.ok, uuid: scheduleId };
     }
 
-    static updateSchedule(scheduleData: Partial<TScheduleData>) {
+    static updateSchedule(scheduleData: Partial<TScheduleData>, isCalledIssue: boolean = false) {
         if (scheduleData.scheduleId === undefined) {
             log.error("[DataCalendarManager] update : scheduleId is undefined");
             return { code: ResponseCode.missingParameter, message: "Please input suhedule Id" };
@@ -171,18 +210,24 @@ export default class DataCalendarManager {
         let scheduleInfo: TScheduleData = this.getScheduleInfo(scheduleData.scheduleId);
 
         if (scheduleData.startDate !== undefined && scheduleData.dueDate !== undefined) {
-            getDateArray(scheduleInfo.startDate, scheduleInfo.dueDate).forEach((dateElement) => (newCalendarInfo = this.deleteScheduleInfo(newCalendarInfo, scheduleInfo.scheduleId, dateElement)));
+            getDateArray(scheduleInfo.startDate, scheduleInfo.dueDate).forEach(
+                (dateElement) => (newCalendarInfo = this.deleteScheduleInfo(newCalendarInfo, scheduleInfo.scheduleId, dateElement))
+            );
             scheduleInfo = { ...scheduleInfo, ...scheduleData };
-            getDateArray(scheduleInfo.startDate, scheduleInfo.dueDate).forEach((dateElement) => (newCalendarInfo = this.addScheduleInfo(newCalendarInfo, scheduleInfo, dateElement)));
+            getDateArray(scheduleInfo.startDate, scheduleInfo.dueDate).forEach(
+                (dateElement) => (newCalendarInfo = this.addScheduleInfo(newCalendarInfo, scheduleInfo, dateElement))
+            );
         } else if (scheduleData.startDate === undefined && scheduleData.dueDate === undefined) {
             scheduleInfo = { ...scheduleInfo, ...scheduleData };
-            getDateArray(scheduleData.startDate, scheduleData.dueDate).forEach((dateElement) => (newCalendarInfo = this.addScheduleInfo(newCalendarInfo, scheduleInfo, dateElement)));
+            getDateArray(scheduleData.startDate, scheduleData.dueDate).forEach(
+                (dateElement) => (newCalendarInfo = this.addScheduleInfo(newCalendarInfo, scheduleInfo, dateElement))
+            );
         } else {
         }
 
-        if (scheduleInfo.issue !== undefined) {
+        if (isCalledIssue !== true && scheduleInfo.issue !== undefined && scheduleData.kanban !== undefined) {
             const kanbanUUID = DataIssueManager.getKanbanUUID(scheduleInfo.issue);
-            if (kanbanUUID === undefined) {
+            if (kanbanUUID === undefined || kanbanUUID !== scheduleData.kanban) {
                 log.error(`[DataCalendarManager] update : kanbanUUID is undefined`);
             }
             if (
@@ -213,7 +258,7 @@ export default class DataCalendarManager {
         return { code: ResponseCode.ok };
     }
 
-    static deleteSchedule({ scheduleId }: Pick<TScheduleData, "scheduleId">) {
+    static deleteSchedule({ scheduleId }: Pick<TScheduleData, "scheduleId">, isCalledIssue: boolean = false) {
         let calendarInfo = this.getCalendarInfo();
         const scheduleInfo = this.getScheduleInfo(scheduleId);
         if (scheduleId === undefined || scheduleInfo == undefined) {
@@ -221,14 +266,19 @@ export default class DataCalendarManager {
             return { code: ResponseCode.missingParameter, message: "Could not find schedule info" };
         }
 
-        if (scheduleInfo.issue !== undefined) {
+        if (isCalledIssue !== true && scheduleInfo.issue !== undefined && scheduleInfo.kanban !== undefined) {
             const kanbanUUID = DataIssueManager.getKanbanUUID(scheduleInfo.issue);
+            if (kanbanUUID === undefined || kanbanUUID !== scheduleInfo.kanban) {
+                log.error(`[DataCalendarManager] update : kanbanUUID is undefined`);
+            }
             if (DataIssueManager.delete(scheduleInfo.creator, kanbanUUID, scheduleInfo.issue, true).code !== ResponseCode.ok) {
                 log.error(`[DataCalendarManager] delete : Failed to delete issue`);
             }
         }
 
-        getDateArray(scheduleInfo.startDate, scheduleInfo.dueDate).forEach((dateElement) => (calendarInfo = this.deleteScheduleInfo(calendarInfo, scheduleId, dateElement)));
+        getDateArray(scheduleInfo.startDate, scheduleInfo.dueDate).forEach(
+            (dateElement) => (calendarInfo = this.deleteScheduleInfo(calendarInfo, scheduleId, dateElement))
+        );
         if (!this.setCalendarInfo(calendarInfo)) {
             log.error(`[DataCalendarManager] delete : update calendar info`);
             return { code: ResponseCode.internalError, message: "Failed to delete schedule" };

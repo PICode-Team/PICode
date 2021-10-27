@@ -1,7 +1,7 @@
 import express from "express";
 import { ResponseCode } from "../../constants/response";
 import tokenRouter from "../../lib/router/token";
-import DataUserManager from "../../module/data/service/user/userManager";
+import DataUserManager from "../../module/data/user/userManager";
 import { signToken } from "../../module/token";
 
 const router = express.Router();
@@ -23,15 +23,15 @@ router.post("/", (req, res) => {
     }
 
     // set token Cookies
-    const token = signToken({ userId, userName: userData.userName })
-    res.cookie('authorization', token, { httpOnly: true, maxAge: 10 * 60 * 1000})
+    const token = signToken({ userId, userName: userData.userName });
+    res.cookie("authorization", token, { httpOnly: true, maxAge: 10 * 60 * 1000 });
 
-    res.json({ code: ResponseCode.ok })
+    res.json({ code: ResponseCode.ok });
 });
 
 router.delete("/", tokenRouter, (_, res) => {
-    res.clearCookie('Authorization')
-    res.json({ code: ResponseCode.ok })
+    res.clearCookie("Authorization");
+    res.json({ code: ResponseCode.ok });
 });
 
 export default router;

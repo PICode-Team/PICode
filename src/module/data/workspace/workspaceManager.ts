@@ -1,18 +1,31 @@
-import log from "../../../log";
-import { UploadDirectoryPath, WorkDirectoryPath, DataDirectoryPath, StaticDirectoryPath, TReturnData } from "../../../../types/module/data/data.types";
-import { TWorkspaceCreateData, TWorkspaceUpdateData, TWorkspaceData } from "../../../../types/module/data/service/workspace/workspace.type";
+import log from "../../log";
+import {
+    UploadDirectoryPath,
+    WorkDirectoryPath,
+    DataDirectoryPath,
+    TReturnData,
+    ExportDirectoryPath,
+} from "../../../types/module/data/data.types";
+import {
+    TWorkspaceCreateData,
+    TWorkspaceUpdateData,
+    TWorkspaceData,
+    TReturnWorkspaceData,
+} from "../../../types/module/data/service/workspace/workspace.type";
 import { setJsonData, getJsonData, isExists, removeData, handle, searchWorkspaceFiles } from "../etc/fileManager";
 import DataUploadManager from "../etc/uploadManager";
 import fs from "fs";
 import simpleGit from "simple-git";
 import { zip } from "zip-a-folder";
-import { TUploadFileLanguageToSize } from "../../../../types/module/data/service/etc/file.types";
+import { TUploadFileLanguageToSize } from "../../../types/module/data/service/etc/file.types";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import { TDockerCreateData, TDockerUpdateData } from "../../../../types/module/data/service/workspace/docker.types";
+import { TDockerCreateData, TDockerUpdateData } from "../../../types/module/data/service/workspace/docker.types";
 import DataDockerManager from "./dockerManager";
-import { ResponseCode } from "../../../../constants/response";
-import { getTime } from "../../../datetime";
+import { ResponseCode } from "../../../constants/response";
+import { getTime } from "../../datetime";
+import os from "os";
+import DataAlarmManager from "../alarm/alarmManager";
 
 const workspaceFileName = "workspaceInfo.json";
 
@@ -133,7 +146,9 @@ export default class DataWorkspaceManager {
      * @returns true if user ID has authority of this workspace, false if not
      */
     static canEditWorkspace(userId: string, workspaceId: string, participantIncluded: boolean) {
-        return this.isWorkspaceCreator(userId, workspaceId) || participantIncluded ? this.isWorkspaceParticipants(userId, workspaceId) : false;
+        return this.isWorkspaceCreator(userId, workspaceId) || participantIncluded
+            ? this.isWorkspaceParticipants(userId, workspaceId)
+            : false;
     }
 
     /**
@@ -306,7 +321,7 @@ export default class DataWorkspaceManager {
                 isExtract?: boolean;
             };
         }
-    ): TReturnData {
+    ): TReturnWorkspaceData {
         if (!fs.existsSync(this.getWorkspaceDefaultPath())) {
             fs.mkdirSync(this.getWorkspaceDefaultPath(), { recursive: true });
         }
@@ -326,13 +341,13 @@ export default class DataWorkspaceManager {
             fs.mkdirSync(this.getWorkspaceDataPath(workspaceId), { recursive: true });
 
             if (thumbnail !== undefined) {
-                if (!fs.existsSync(StaticDirectoryPath)) {
-                    fs.mkdirSync(StaticDirectoryPath, {
+                if (!fs.existsSync(UploadDirectoryPath)) {
+                    fs.mkdirSync(UploadDirectoryPath, {
                         recursive: true,
                     });
                 }
                 const extension = DataUploadManager.UploadFileManager[thumbnail].originalname.split(".").pop();
-                if (!handle(`${UploadDirectoryPath}/${thumbnail}`, `${StaticDirectoryPath}/${thumbnail}.${extension}`)) {
+                if (!handle(`${UploadDirectoryPath}/${thumbnail}`, `${UploadDirectoryPath}/${thumbnail}.${extension}`)) {
                     return { code: ResponseCode.internalError, message: "Failed to handle thumbnail image" };
                 }
                 thumbnail = `${thumbnail}.${extension}`;
@@ -357,11 +372,11 @@ export default class DataWorkspaceManager {
                 return { code: ResponseCode.internalError, message: `Failed to create workspace with ${source.type}` };
             }
             DataDockerManager.create(userId, dockerInfo, { workspaceId, workspaceName: name, workspaceParticipants });
+            return { code: ResponseCode.ok, workspaceId };
         } catch (err: any) {
             log.error(err.stack);
             return { code: ResponseCode.internalError, message: "Error occured" };
         }
-        return { code: ResponseCode.ok };
     }
 
     /**
@@ -374,7 +389,13 @@ export default class DataWorkspaceManager {
      * @description update workspace infomation
      * @returns {TReturnData } : code based on the result and message if function has error
      */
-    static update(userId: string, workspaceId: string, participantIncluded: boolean, workspaceInfo: TWorkspaceUpdateData, dockerInfo: TDockerUpdateData): TReturnData {
+    static update(
+        userId: string,
+        workspaceId: string,
+        participantIncluded: boolean,
+        workspaceInfo: TWorkspaceUpdateData,
+        dockerInfo: TDockerUpdateData
+    ): TReturnData {
         DataUploadManager.loadUploadFileInfo();
         const workspaceData = this.getWorkspaceInfo(workspaceId);
         if (workspaceData === undefined) {
@@ -388,11 +409,16 @@ export default class DataWorkspaceManager {
         try {
             if (workspaceInfo.thumbnail !== undefined && path.parse(workspaceData.thumbnail as string).name !== workspaceInfo.thumbnail) {
                 const extension = DataUploadManager.UploadFileManager[workspaceInfo.thumbnail].originalname.split(".").pop();
-                if (!handle(`${UploadDirectoryPath}/${workspaceInfo.thumbnail}`, `${StaticDirectoryPath}/${workspaceInfo.thumbnail}.${extension}`)) {
+                if (
+                    !handle(
+                        `${UploadDirectoryPath}/${workspaceInfo.thumbnail}`,
+                        `${UploadDirectoryPath}/${workspaceInfo.thumbnail}.${extension}`
+                    )
+                ) {
                     return { code: ResponseCode.internalError, message: "Failed to handle thumbnail image" };
                 }
                 if (workspaceData.thumbnail !== undefined) {
-                    fs.unlinkSync(`${StaticDirectoryPath}/${workspaceData.thumbnail}`);
+                    fs.unlinkSync(`${UploadDirectoryPath}/${workspaceData.thumbnail}`);
                 }
                 workspaceData.thumbnail = `${workspaceInfo.thumbnail}.${extension}`;
                 DataUploadManager.deleteUploadFileInfo(workspaceInfo.thumbnail);
@@ -444,17 +470,66 @@ export default class DataWorkspaceManager {
      * @param workspaceId workspace ID to export workspace
      * @returns true if you succeed to export workspace, false if not
      */
-    static export(userId: string, workspaceId: string) {
-        const workspaceName = this.getWorkspaceInfo(workspaceId).name;
+    static export(
+        userId: string,
+        { dockerOption, workspaceOption }: { dockerOption?: TDockerExportOption; workspaceOption: TWorkspaceExportOption }
+    ) {
+        if (dockerOption !== undefined) {
+            if (!DataDockerManager.export(userId, dockerOption)) {
+                return { code: ResponseCode.internalError, message: "Error occurred while exporting workspace" };
+            }
+            return { code: ResponseCode.ok, message: "Export container request confirmed" };
+        }
+
+        const workspaceId = workspaceOption.workspaceId;
         if (workspaceId === undefined) {
             return false;
         }
+
+        const extensionList = ["zip", "tar", "7z", "tar.gz", "egg"];
+        const extension = extensionList.includes(workspaceOption.extension)
+            ? workspaceOption.extension
+            : os.platform() === "win32"
+            ? "zip"
+            : "tar";
+
+        if (!isExists(ExportDirectoryPath)) {
+            fs.mkdirSync(ExportDirectoryPath, { recursive: true });
+        }
         try {
-            zip(this.getWorkspaceWorkPath(workspaceId), `${this.getWorkspaceWorkPath(workspaceId)}/${workspaceName}.zip`);
+            const downloadPath = `${ExportDirectoryPath}/${workspaceId}.${extension}`;
+            if (isExists(downloadPath)) {
+                fs.unlinkSync(downloadPath);
+            }
+
+            zip(this.getWorkspaceWorkPath(workspaceId), downloadPath).then(() => {
+                DataAlarmManager.create(userId, {
+                    type: "workspace",
+                    location: `/api/download/${workspaceId}.${extension}`,
+                    content: `Export workspace complete`,
+                    checkAlarm: { [userId]: true },
+                });
+            });
         } catch (e: any) {
             log.error(e.stack);
-            return false;
+            DataAlarmManager.create(userId, {
+                type: "workspace",
+                location: ``,
+                content: `Failed to export workspace`,
+                checkAlarm: { [userId]: true },
+            });
+            return { code: ResponseCode.internalError, message: "Error occurred while exporting workspace" };
         }
-        return true;
+        return { code: ResponseCode.ok, message: "Export workspace request confirmed" };
     }
 }
+
+type TDockerExportOption = {
+    containerId: string;
+    imageName: string;
+    tagName: string;
+};
+type TWorkspaceExportOption = {
+    workspaceId: string;
+    extension: string;
+};

@@ -1,11 +1,11 @@
-import { DataDirectoryPath, WorkDirectoryPath } from "../../../../types/module/data/data.types";
-import { TNoteData } from "../../../../types/module/data/service/notespace/note.types";
+import { DataDirectoryPath, WorkDirectoryPath } from "../../../types/module/data/data.types";
+import { TNoteData } from "../../../types/module/data/service/notespace/note.types";
 import { getJsonData, isExists, readFromFile, setJsonData } from "../etc/fileManager";
 import fs from "fs";
-import { AutoMergeSystem, TReadyQueueItem } from "../../../merge";
+import { AutoMergeSystem, TReadyQueueItem } from "../../merge";
 import path from "path";
-import log from "../../../log";
-import { ResponseCode } from "../../../../constants/response";
+import log from "../../log";
+import { ResponseCode } from "../../../constants/response";
 
 const noteDataFileName = "noteData.json";
 
@@ -32,7 +32,11 @@ export default class DataNoteManager {
             return "";
         }
         const defaultPath = this.getNoteWorkPath();
-        return readFromFile(defaultPath, `${noteId}.txt`);
+        return this.isIoFile(noteId) ? readFromFile(defaultPath, `${noteId}`) : readFromFile(defaultPath, `${noteId}.txt`);
+    }
+
+    static isIoFile(noteId: string) {
+        return path.extname(noteId) === "io" ? true : false;
     }
 
     static get(noteId?: string) {
@@ -59,11 +63,12 @@ export default class DataNoteManager {
         const defaultPath = this.getNoteWorkPath();
         const notePath = path.join(defaultPath, noteId) as string;
         const dirPath = path.dirname(notePath);
-        
+
         if (!isExists(dirPath)) {
             fs.mkdirSync(dirPath, { recursive: true });
         }
-        fs.openSync(`${notePath}.txt`, "w");
+
+        this.isIoFile(noteId) ? fs.openSync(`${notePath}`, "w") : fs.openSync(`${notePath}.txt`, "w");
 
         data = { ...data, noteId, content: this.getContent(noteId) };
 
@@ -122,7 +127,7 @@ export default class DataNoteManager {
 
         const defaultPath = this.getNoteWorkPath();
         const notePath = path.join(defaultPath, noteId);
-        fs.unlinkSync(notePath);
+        this.isIoFile(notePath) ? fs.unlinkSync(notePath) : fs.unlinkSync(`${notePath}.txt`);
 
         return setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, originData);
     }

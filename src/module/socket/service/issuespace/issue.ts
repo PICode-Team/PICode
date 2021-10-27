@@ -1,15 +1,22 @@
 import { ResponseCode } from "../../../../constants/response";
 import { TIssueData, TIssueListData } from "../../../../types/module/data/service/issuespace/issue.types";
 import { TSocketPacket } from "../../../../types/module/socket.types";
-import DataIssueManager from "../../../data/service/issuespace/issueManager";
+import DataIssueManager from "../../../data/issuespace/issueManager";
 import { getSocket, makePacket } from "../etc/manager";
 
 const issueLoadFuncs: Record<string, (userId: string, issueData: any) => void> = {
+    getIssueDetail,
     getIssue,
     createIssue,
     updateIssue,
     deleteIssue,
 };
+
+function getIssueDetail(userId: string, { issueUUID }: { issueUUID: string }) {
+    const metaData = DataIssueManager.getIssueOnlyIssueUUID(issueUUID);
+    const sendData = makePacket("issue", "getIssueDetail", metaData);
+    getSocket(userId).send(sendData);
+}
 
 function getIssue(userId: string, { kanbanUUID, options }: { kanbanUUID: string; options?: Partial<TIssueListData> }) {
     const metaData =

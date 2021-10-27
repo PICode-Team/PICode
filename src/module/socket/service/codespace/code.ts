@@ -1,6 +1,6 @@
 import { TSocketPacket } from "../../../../types/module/socket.types";
 import { getSocket, makePacket } from "../etc/manager";
-import DataCodeManager from "../../../data/service/codespace/codeManager";
+import DataCodeManager from "../../../data/codespace/codeManager";
 import { TReadyQueueItem } from "../../../merge";
 
 const codeLoadFuncs: Record<string, (userId: string, workspaceInfo: any) => void> = {

@@ -1,7 +1,8 @@
-import { DataDirectoryPath } from "../../../../types/module/data/data.types";
+import { DataDirectoryPath } from "../../../types/module/data/data.types";
 import { readdirSync, readFileSync, mkdirSync, writeFileSync, existsSync } from "fs";
 import { v4 as uuidv4 } from "uuid";
-import { TAlarmFullSet, TAlarmSet } from "../../../../types/module/data/service/alarm/alarm.types";
+import { TAlarmFullSet, TAlarmSet } from "../../../types/module/data/service/alarm/alarm.types";
+import { getSocket, makePacket } from "../../socket/service/etc/manager";
 
 export default class DataAlarmManager {
     private static getDefaultDataPath() {
@@ -21,7 +22,10 @@ export default class DataAlarmManager {
     }
 
     private static getAlarmData(alarmRoom: string) {
-        return (JSON.parse(readFileSync(`${this.getDefaultDataPath()}/${alarmRoom}`).toString()) as TAlarmSet[]).map((v) => ({ ...v, alarmRoom })) as TAlarmFullSet[];
+        return (JSON.parse(readFileSync(`${this.getDefaultDataPath()}/${alarmRoom}`).toString()) as TAlarmSet[]).map((v) => ({
+            ...v,
+            alarmRoom,
+        })) as TAlarmFullSet[];
     }
 
     private static saveAlarmData(fileName: string, data: TAlarmFullSet[]) {
@@ -69,6 +73,9 @@ export default class DataAlarmManager {
         };
 
         this.saveAlarmData(alarmRoom, [newAlarm, ...alarmObject.alarmList]);
+        Object.keys(alarmData.checkAlarm).map((user) => {
+            getSocket(user)?.send(makePacket("alarm", "createAlarm", newAlarm));
+        });
     }
 
     static checkAlarm(userId: string, alarmRoom: string, alarmId: string, alarmStatus: boolean = false) {

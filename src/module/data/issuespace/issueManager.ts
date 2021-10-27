@@ -1,13 +1,18 @@
-import { DataDirectoryPath, TReturnData } from "../../../../types/module/data/data.types";
+import { DataDirectoryPath, TReturnData } from "../../../types/module/data/data.types";
 import fs from "fs";
 import { isExists, getJsonData, setJsonData } from "../etc/fileManager";
-import { TIssueData, TIssueListData, TIssueListJsonData, TReturnIssueData } from "../../../../types/module/data/service/issuespace/issue.types";
+import {
+    TIssueData,
+    TIssueListData,
+    TIssueListJsonData,
+    TReturnIssueData,
+} from "../../../types/module/data/service/issuespace/issue.types";
 import { v4 as uuidv4 } from "uuid";
-import log from "../../../log";
+import log from "../../log";
 import DataKanbanManager from "./kanbanManager";
 import DataAlarmManager from "../alarm/alarmManager";
-import { ResponseCode } from "../../../../constants/response";
-import { getTime } from "../../../datetime";
+import { ResponseCode } from "../../../constants/response";
+import { getTime } from "../../datetime";
 import DataCalendarManager from "../calendar/calendarManager";
 
 const issueListFileName = "issueList.json";
@@ -30,6 +35,13 @@ export default class DataIssueManager {
         }
 
         return getJsonData(issueListPath) as TIssueListJsonData;
+    }
+
+    static getIssueOnlyIssueUUID(issueUUID: string) {
+        const kanbanUUID = fs.readdirSync(this.getIssueListPath()).find((kanban) => {
+            return this.getIssueInfo(kanban, issueUUID) !== undefined;
+        });
+        return this.getIssueInfo(kanbanUUID, issueUUID);
     }
 
     static getIssueInfo(kanbanUUID: string, issueUUID: string) {
@@ -111,7 +123,12 @@ export default class DataIssueManager {
             });
     }
 
-    static create(userId: string, kanbanUUID: string, { title, creator, assigner, label, column, content, milestone, startDate, dueDate }: Omit<TIssueData, "issueId">): TReturnIssueData {
+    static create(
+        userId: string,
+        kanbanUUID: string,
+        { title, creator, assigner, label, column, content, milestone, startDate, dueDate }: Omit<TIssueData, "issueId">,
+        isCallSchedule: boolean = false
+    ): TReturnIssueData {
         const issueUUID = uuidv4();
         const issueNumber = this.getIssueNumber(kanbanUUID);
 
@@ -129,14 +146,40 @@ export default class DataIssueManager {
         fs.mkdirSync(this.getIssueInfoPath(kanbanUUID, issueUUID), { recursive: true });
 
         startDate = startDate ?? getTime(undefined, "YY-MM-DD");
-        const issueData = { ...issueListData, content, milestone, kanban: kanbanUUID, startDate, dueDate, creation: startDate } as TIssueData;
+        const issueData = {
+            ...issueListData,
+            content,
+            milestone,
+            kanban: kanbanUUID,
+            startDate,
+            dueDate,
+            creation: startDate,
+        } as TIssueData;
         if (!this.setIssueInfo(kanbanUUID, issueUUID, issueData)) {
             log.error(`[dataIssueManager] create -> fail to setIssueInfo`);
             return { code: ResponseCode.internalError, message: "Failed to create issue" };
         }
-        if (DataCalendarManager.createSchedule({ type: "public", title, content, startDate, dueDate, milestone, creator, issue: issueUUID }).code !== ResponseCode.ok) {
-            log.error(`[dataIssueManager] create -> fail to create schedule`);
-            return { code: ResponseCode.internalError, message: "Failed to create issue" };
+        if (isCallSchedule !== true) {
+            if (
+                DataCalendarManager.createSchedule(
+                    {
+                        type: "public",
+                        title,
+                        content,
+                        startDate,
+                        dueDate,
+                        milestone,
+                        creator,
+                        assigner,
+                        issue: issueUUID,
+                        kanban: kanbanUUID,
+                    },
+                    true
+                ).code !== ResponseCode.ok
+            ) {
+                log.error(`[dataIssueManager] create -> fail to create schedule`);
+                return { code: ResponseCode.internalError, message: "Failed to create issue" };
+            }
         }
 
         DataKanbanManager.updateIssueCount(kanbanUUID, "totalIssue", "increase");
@@ -147,7 +190,7 @@ export default class DataIssueManager {
         log.info(`issue created: issueUUID ${issueData.uuid}`);
         DataAlarmManager.create(userId, {
             type: "issuespace",
-            location: "",
+            location: `/issuespace/detail?issueUUID=${issueUUID}`,
             content: `${userId} create ${issueData.title} issue : creator ${issueData.creator}, assigner ${issueData.assigner}`,
             checkAlarm: { [issueData.creator]: true, [issueData.assigner]: true },
         });
@@ -217,7 +260,12 @@ export default class DataIssueManager {
                 log.error(`[dataIssueManager] update -> scheduleId is undefined`);
                 return { code: ResponseCode.internalError, message: "scheduleId is undefined" };
             }
-            if (DataCalendarManager.updateSchedule({ scheduleId, issue: uuid, title, creator, content, milestone, startDate, dueDate }).code !== ResponseCode.ok) {
+            if (
+                DataCalendarManager.updateSchedule(
+                    { scheduleId, issue: uuid, title, creator, content, milestone, startDate, dueDate },
+                    true
+                ).code !== ResponseCode.ok
+            ) {
                 log.error(`[dataIssueManager] update -> Failed to update schedule`);
                 return { code: ResponseCode.internalError, message: "Failed to update schedule" };
             }
@@ -226,7 +274,7 @@ export default class DataIssueManager {
         log.info(`[dataIssueManager] update -> issue updated : ${JSON.stringify(updateIssueData)}`);
         DataAlarmManager.create(userId, {
             type: "issuespace",
-            location: "",
+            location: `/issuespace/detail?issueUUID=${issueData.uuid}`,
             content: `${userId} update ${title ?? issueData.title} issue`,
             checkAlarm: { [creator ?? issueData.creator]: true, [assigner ?? issueData.assigner]: true },
         });
@@ -259,7 +307,7 @@ export default class DataIssueManager {
 
         if (isCallSchedule !== true) {
             const scheduleId = DataCalendarManager.getScheduleIdByIssueUUID(issueUUID);
-            if (DataCalendarManager.deleteSchedule({ scheduleId }).code !== ResponseCode.ok) {
+            if (DataCalendarManager.deleteSchedule({ scheduleId }, true).code !== ResponseCode.ok) {
                 log.error(`[dataIssueManager] delete -> Failed to delete schedule`);
                 return { code: ResponseCode.internalError, message: "Failed to delete schedule" };
             }
@@ -268,7 +316,7 @@ export default class DataIssueManager {
         log.info(`issue deleted: ${issueUUID}`);
         DataAlarmManager.create(userId, {
             type: "issuespace",
-            location: "",
+            location: `/issuespace`,
             content: `${userId} delete ${deleteIssueInfo.title} issue`,
             checkAlarm: { [deleteIssueInfo.creator]: true, [deleteIssueInfo.assigner]: true },
         });

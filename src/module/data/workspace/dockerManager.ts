@@ -11,19 +11,20 @@ import {
     TDockerPortVisualData,
     TDockerNetworkVisualData,
     TPortMappingData,
-} from "../../../../types/module/data/service/workspace/docker.types";
+} from "../../../types/module/data/service/workspace/docker.types";
 import path from "path";
 import DataWorkspaceManager from "./workspaceManager";
-import log from "../../../log";
+import log from "../../log";
 import os from "os";
 import fs from "fs";
 import { getJsonData, isExists, removeData, setJsonData } from "../etc/fileManager";
-import { DataDirectoryPath, TReturnData } from "../../../../types/module/data/data.types";
+import { DataDirectoryPath, ExportDirectoryPath, TReturnData } from "../../../types/module/data/data.types";
 import DataAlarmManager from "../alarm/alarmManager";
-import { ResponseCode } from "../../../../constants/response";
+import { ResponseCode } from "../../../constants/response";
 
 const dockerNetworkFileName = "dockerNetworkList.json";
 const dockerInfoFileName = "dockerInfo.json";
+const defaultNetwork = ["host", "bridge", "none"];
 
 export default class DataDockerManager {
     static getDockerNetworkPath() {
@@ -49,9 +50,18 @@ export default class DataDockerManager {
         return setJsonData(networkFilePath, dockerNetworkJsonData);
     }
 
+    static getSpawnParams(command: string) {
+        if (os.platform() === "win32") {
+            return { mainCommand: "powershell.exe", subCommand: [command] };
+        }
+
+        const splitData = command.split(" ");
+        return { mainCommand: splitData?.[0], subCommand: splitData?.slice(1) };
+    }
+
     static runDockerCommandSync(command: string) {
-        const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
-        const commandDocker = spawnSync(shell, [command]);
+        const params = this.getSpawnParams(command);
+        const commandDocker = spawnSync(params.mainCommand, params.subCommand);
         return commandDocker.stdout.toString().replace(/\n/gi, "");
     }
 
@@ -61,8 +71,8 @@ export default class DataDockerManager {
         stderr: (error: any) => void,
         close: (code: any) => void = () => {}
     ) {
-        const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
-        const commandDocker = spawn(shell, [command]);
+        const params = this.getSpawnParams(command);
+        const commandDocker = spawn(params.mainCommand, params.subCommand);
         commandDocker.stdout.on("data", stdout);
         commandDocker.stderr.on("data", stderr);
         if (close !== undefined) {
@@ -76,7 +86,7 @@ export default class DataDockerManager {
             const dockerInfo = this.getDockerInfo(workspaceId) ? this.getDockerInfo(workspaceId) : undefined;
             if (dockerInfo !== undefined) {
                 const getRam = this.runDockerCommand(
-                    `docker stats --format "{{.MemPerc}}" ${dockerInfo.containerName}`,
+                    `docker stats --format '{{.MemPerc}}' ${dockerInfo.containerName}`,
                     (result: Buffer) => {
                         const ramUsage = result
                             ?.toString("utf8")
@@ -105,8 +115,8 @@ export default class DataDockerManager {
         if (!isExists(this.getDockerNetworkPath())) {
             fs.mkdirSync(this.getDockerNetworkPath(), { recursive: true });
         }
-        ["host", "bridge", "none"].map((networkName) => {
-            const command = `docker network inspect --format="{{".IPAM.Config"}}" ${networkName}`;
+        defaultNetwork.map((networkName) => {
+            const command = `docker network inspect --format='{{.IPAM.Config}}' ${networkName}`;
             this.runDockerCommand(
                 command,
                 (result: Buffer) => {
@@ -122,7 +132,7 @@ export default class DataDockerManager {
                         name: networkName,
                         subnet: networkInfo?.[0]?.split(",")[0],
                         gateway: networkInfo?.[0]?.split(",")[1],
-                        networkId: this.runDockerCommandSync(`docker network inspect --format="{{.Id}}" ${networkName}`),
+                        networkId: this.runDockerCommandSync(`docker network inspect --format='{{.Id}}' ${networkName}`),
                     });
                 },
                 (error) => {
@@ -138,12 +148,12 @@ export default class DataDockerManager {
             if (dockerInfo !== undefined) {
                 this.setDockerInfo(workspaceId, {
                     ...dockerInfo,
-                    status: this.runDockerCommandSync(`docker inspect --format="{{.State.Status}}" ${dockerInfo.containerName}`) as
+                    status: this.runDockerCommandSync(`docker inspect --format='{{.State.Status}}' ${dockerInfo.containerName}`) as
                         | "created"
                         | "running"
                         | "exited",
                     containerIP: this.runDockerCommandSync(
-                        `docker inspect --format="{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${dockerInfo.containerName}`
+                        `docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${dockerInfo.containerName}`
                     ),
                 });
             }
@@ -184,7 +194,7 @@ export default class DataDockerManager {
             command,
             (networkId: Buffer) => {
                 const networkInfo = this.runDockerCommandSync(
-                    `docker network inspect --format="{{".IPAM.Config"}} {{".Containers"}}" ${dockerNetworkInfo.name}`
+                    `docker network inspect --format='{{.IPAM.Config}} {{.Containers}}' ${dockerNetworkInfo.name}`
                 ).split(" ");
                 log.debug(`create network result: ${networkInfo}`);
                 this.setDockerNetWorkInfo({
@@ -345,9 +355,8 @@ CMD ["./server-linux", "${socketPort}"]`;
         const workspacePath = DataWorkspaceManager.getWorkspaceWorkPath(workspaceId);
         const containerName = dockerInfo.containerName ?? workspaceName;
 
-        let command = `docker run -itd --volume="${path.resolve(
-            path.normalize(workspacePath)
-        )}:/home/${workspaceName}" -w /home/${workspaceName} `;
+        let command = `docker run -itd -v ${path.resolve(path.normalize(workspacePath))}:/home/${workspaceName} -w /home/${workspaceName} `;
+
         if (dockerInfo.portInfo !== undefined) {
             Object.keys(dockerInfo.portInfo).map((hostPort: string) => {
                 command += `-p ${hostPort}:${(dockerInfo.portInfo as TPortMappingData)[hostPort]} `;
@@ -398,7 +407,7 @@ CMD ["./server-linux", "${socketPort}"]`;
                     image: dockerInfo.image,
                     tag: tag,
                     containerId: containerId.toString().replace("\n", ""),
-                    status: this.runDockerCommandSync(`docker inspect --format="{{.State.Status}}" ${containerName}`) as
+                    status: this.runDockerCommandSync(`docker inspect --format='{{.State.Status}}' ${containerName}`) as
                         | "created"
                         | "running"
                         | "exited",
@@ -458,7 +467,7 @@ CMD ["./server-linux", "${socketPort}"]`;
         this.runDockerCommand(
             `docker ${dockerCommand} ${dockerInfo.containerName}`,
             () => {
-                const status = this.runDockerCommandSync(`docker inspect --format="{{.State.Status}}" ${dockerInfo.containerName}`) as
+                const status = this.runDockerCommandSync(`docker inspect --format='{{.State.Status}}' ${dockerInfo.containerName}`) as
                     | "created"
                     | "running"
                     | "exited";
@@ -499,6 +508,14 @@ CMD ["./server-linux", "${socketPort}"]`;
         const updateOption = { disconnect: false, connect: false, link: false, rename: false };
         const newDockerInfo = this.getDockerInfo(workspaceId) as TDockerData;
         if (newDockerInfo === undefined) {
+            return false;
+        }
+
+        const networkInfo = this.getDockerNetworkInfo();
+        const defaultNetworkIdList = defaultNetwork.map((networkName: string) => {
+            return networkInfo[networkName].networkId;
+        });
+        if (defaultNetworkIdList.includes(dockerInfo.bridgeId)) {
             return false;
         }
 
@@ -705,6 +722,47 @@ CMD ["./server-linux", "${socketPort}"]`;
         });
 
         return visualizationInfo;
+    }
+
+    static export(userId: string, { containerId, imageName, tagName }: { containerId: string; imageName: string; tagName: string }) {
+        imageName = (imageName ?? containerId)?.toLowerCase();
+        tagName = tagName ?? "latest";
+        try {
+            this.runDockerCommand(
+                `docker commit ${containerId} ${imageName}:${tagName}`,
+                () => {
+                    const workspaceId = this.getworkspaceId(userId, containerId);
+                    this.runDockerCommand(
+                        `docker save -o ${ExportDirectoryPath}/${workspaceId}.tar ${imageName}:${tagName}`,
+                        () => {},
+                        () => {},
+                        (code) => {
+                            code === 0
+                                ? DataAlarmManager.create(userId, {
+                                      type: "workspace",
+                                      location: `/api/download/${imageName}.tar`,
+                                      content: `Export workspace container complete`,
+                                      checkAlarm: { [userId]: true },
+                                  })
+                                : DataAlarmManager.create(userId, {
+                                      type: "workspace",
+                                      location: ``,
+                                      content: `Failed to export workspace container`,
+                                      checkAlarm: { [userId]: true },
+                                  });
+                            this.runDockerCommandSync(`docker rmi ${imageName}:${tagName}`);
+                        }
+                    );
+                },
+                (error) => {
+                    log.error(error);
+                }
+            );
+            return true;
+        } catch (err) {
+            log.error(err.stack);
+            return false;
+        }
     }
 
     static async run() {

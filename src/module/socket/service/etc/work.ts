@@ -1,7 +1,7 @@
 import { TSocketPacket } from "../../../../types/module/socket.types";
 import { makePacket, getSocket, userWorkInfo, getUserWork, SocketInfo } from "./manager";
 import { TWorkInfo, TUserToWork } from "../../../../types/module/data/service/etc/work.types";
-import DataUserManager from "../../../data/service/user/userManager";
+import DataUserManager from "../../../data/user/userManager";
 import { ResponseCode } from "../../../../constants/response";
 
 const workLoadFuncs: Record<string, (userId: string, workingPath: any) => void> = {

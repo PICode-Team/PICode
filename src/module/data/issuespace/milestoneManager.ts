@@ -1,13 +1,18 @@
-import { DataDirectoryPath } from "../../../../types/module/data/data.types";
-import { TMilestoneCreateData, TMilestoneData, TMilestoneJsonData, TMilestoneUpdateData } from "../../../../types/module/data/service/issuespace/milestone.types";
+import { DataDirectoryPath } from "../../../types/module/data/data.types";
+import {
+    TMilestoneCreateData,
+    TMilestoneData,
+    TMilestoneJsonData,
+    TMilestoneUpdateData,
+} from "../../../types/module/data/service/issuespace/milestone.types";
 import { getJsonData, isExists, setJsonData } from "../etc/fileManager";
 import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
-import log from "../../../log";
+import log from "../../log";
 import DataAlarmManager from "../alarm/alarmManager";
 import DataUserManager from "../user/userManager";
-import { ResponseCode } from "../../../../constants/response";
-import { TReturnMilestoneData } from "../../../../types/module/data/service/issuespace/milestone.types";
+import { ResponseCode } from "../../../constants/response";
+import { TReturnMilestoneData } from "../../../types/module/data/service/issuespace/milestone.types";
 
 const milestoneInfoFileName = "milestoneListInfo.json";
 
@@ -16,13 +21,22 @@ export default class DataMilestoneManager {
         return `${DataDirectoryPath}/issues`;
     }
 
-    static getMilestoneInfo(milestoneUUID?: string) {
+    static getMilestoneInfo(milestoneUUID: string) {
         const milestoneInfoPath = `${this.getMilestonePath()}/${milestoneInfoFileName}`;
         if (!isExists(milestoneInfoPath)) {
             setJsonData(milestoneInfoPath, {});
         }
         const milestoneListData = getJsonData(milestoneInfoPath);
-        return milestoneUUID ? (milestoneListData[milestoneUUID] as TMilestoneData) : (milestoneListData as TMilestoneJsonData);
+        return milestoneListData[milestoneUUID] as TMilestoneData;
+    }
+
+    static getMilestoneListInfo() {
+        const milestoneInfoPath = `${this.getMilestonePath()}/${milestoneInfoFileName}`;
+        if (!isExists(milestoneInfoPath)) {
+            setJsonData(milestoneInfoPath, {});
+        }
+        const milestoneListData = getJsonData(milestoneInfoPath);
+        return milestoneListData as TMilestoneJsonData;
     }
 
     static setMilestoneInfo(milestoneUUID: string, addOrDelete: "add" | "delete", milestoneData?: TMilestoneData) {
@@ -30,7 +44,7 @@ export default class DataMilestoneManager {
         if (!isExists(milestoneInfoPath)) {
             return false;
         }
-        const milestoneListData = this.getMilestoneInfo();
+        const milestoneListData = this.getMilestoneListInfo();
         if (addOrDelete === "add") {
             milestoneListData[milestoneUUID] = milestoneData;
         } else if (addOrDelete === "delete") {
@@ -45,7 +59,7 @@ export default class DataMilestoneManager {
     static get(options?: Partial<TMilestoneData>) {
         return options?.uuid
             ? this.getMilestoneInfo(options.uuid)
-            : Object.values(this.getMilestoneInfo()).filter((mileStoneData) => {
+            : Object.values(this.getMilestoneListInfo()).filter((mileStoneData) => {
                   return (
                       (options?.content === undefined || options.content === mileStoneData.content) &&
                       (options?.startDate === undefined || options.startDate === mileStoneData.content) &&
@@ -70,7 +84,7 @@ export default class DataMilestoneManager {
         log.info(`milestoneData created: ${milestoneUUID}`);
         DataAlarmManager.create(userId, {
             type: "issuespace",
-            location: "",
+            location: `/issuespace?type=Milestone`,
             content: `${userId} create ${milestoneData.title} milestone (${milestoneData.startDate}~${milestoneData.dueDate})`,
             checkAlarm: fs
                 .readdirSync(`${DataDirectoryPath}/user`)
@@ -98,7 +112,7 @@ export default class DataMilestoneManager {
         log.info(`milestoneData updated: ${JSON.stringify(milestoneData)}`);
         DataAlarmManager.create(userId, {
             type: "issuespace",
-            location: "",
+            location: `/issuespace?type=Milestone`,
             content: `${userId} update ${newMilestoneData.title} milestone (${newMilestoneData.startDate}~${newMilestoneData.dueDate})`,
             checkAlarm: fs
                 .readdirSync(`${DataDirectoryPath}/user`)
@@ -118,7 +132,7 @@ export default class DataMilestoneManager {
             log.error(`[DataMilestoneManager] delete -> milestoneUUID is undefined`);
             return { code: ResponseCode.missingParameter, message: "milestoneUUID is undefined" };
         }
-        const milestoneListData = this.getMilestoneInfo() as TMilestoneJsonData;
+        const milestoneListData = this.getMilestoneListInfo() as TMilestoneJsonData;
         const deleteMilestoneTitle = milestoneListData[milestoneUUID].title;
         if (!Object.keys(milestoneListData).includes(milestoneUUID)) {
             log.error(`[DataMilestoneManager] delete -> milestoneUUID is not in ListData`);
@@ -131,7 +145,7 @@ export default class DataMilestoneManager {
         log.info(`milestoneData deleted: ${JSON.stringify(milestoneUUID)}`);
         DataAlarmManager.create(userId, {
             type: "issuespace",
-            location: "",
+            location: `/issuespace?type=Milestone`,
             content: `${userId} delete ${deleteMilestoneTitle} milestone`,
             checkAlarm: fs
                 .readdirSync(`${DataDirectoryPath}/user`)
@@ -143,6 +157,6 @@ export default class DataMilestoneManager {
                     return list;
                 }, {}),
         });
-        return { code: ResponseCode.ok };
+        return { code: ResponseCode.ok, uuid: milestoneUUID };
     }
 }
