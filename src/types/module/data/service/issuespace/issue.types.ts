@@ -5,7 +5,7 @@ export type TIssueListJsonData = Record<string, TIssueListData>;
 export interface TIssueUpdateData {
     title: string;
     creator: string;
-    assigner: string;
+    assigner: string[];
     label?: string;
     column?: string;
     startDate?: string;

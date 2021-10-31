@@ -7,7 +7,7 @@ export interface TScheduleCreateData {
     milestone?: string;
     kanban?: string;
     creator: string;
-    assigner: string;
+    assigner: string[];
     issue?: string;
 }
 
