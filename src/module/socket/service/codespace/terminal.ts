@@ -22,7 +22,7 @@ function commandTerminal(terminal: { command?: string; id: string }) {
     try {
         DataTerminalManager.commandToTerminal(terminal);
     } catch (e) {
-        DataTerminalManager.getUserTerminal(terminal.id).socket.send(
+        DataTerminalManager.getUserTerminal(terminal.id).socket?.send(
             makePacket("terminal", "commandTerminal", { code: ResponseCode.internalError, message: "fail to command terminal" })
         );
     }
@@ -32,7 +32,7 @@ function deleteTerminal(terminal: { command?: string; id: string }) {
     try {
         DataTerminalManager.deleteTerminal(terminal);
     } catch (e) {
-        DataTerminalManager.getUserTerminal(terminal.id).socket.send(
+        DataTerminalManager.getUserTerminal(terminal.id).socket?.send(
             makePacket("terminal", "deleteTerminal", { message: "fail to delete terminal" })
         );
     }

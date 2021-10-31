@@ -1,13 +1,11 @@
-import { Worker } from "worker_threads";
+import { ChildProcess } from "child_process";
 
 export interface terminal {
     socket: WebSocket;
-    worker: Worker;
+    childProcess: ChildProcess;
 }
 
-export type UUIDToWorker = {
-    [key in string]: terminal;
-};
+export type UUIDToTerminal = Record<string, terminal>;
 
 export interface TCommandData {
     type: "command" | "exit" | "setup";
