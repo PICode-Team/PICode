@@ -22,7 +22,9 @@ export type TUploadFileLanguageToSize = {
 };
 
 export type TFileData = {
-    [key in string]: string;
+    filePath?: string;
+    fileContent?: string;
+    rowInfo?: Record<string, number>;
 };
 
 export interface TFile {

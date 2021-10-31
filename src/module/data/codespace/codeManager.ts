@@ -55,10 +55,12 @@ export default class DataCodeManager {
             return checkError;
         }
         const fileData: TFileData = {};
-        const codeData = readFromFile(DataWorkspaceManager.getWorkspaceWorkPath(workspaceId), filePath);
+        const fullPath = path.join(DataWorkspaceManager.getWorkspaceWorkPath(workspaceId), filePath);
+        const codeData = this.codeMergeManager.read(fullPath);
         if (codeData !== undefined) {
-            fileData["filePath"] = filePath;
-            fileData["fileContent"] = codeData;
+            fileData.filePath = filePath;
+            fileData.fileContent = codeData.data;
+            fileData.rowInfo = codeData.rowInfo
         }
         return fileData;
     }
@@ -110,7 +112,7 @@ export default class DataCodeManager {
 
         try {
             const fullPath = path.join(DataWorkspaceManager.getWorkspaceWorkPath(workspaceId), updateContent.path);
-            this.codeMergeManager.update(fullPath, updateContent.content);
+            this.codeMergeManager.update(fullPath, updateContent.content, userId);
             return { code: ResponseCode.ok, path: updateContent.path };
         } catch (e) {
             return { code: ResponseCode.internalError, message: "Failed to merge code" };

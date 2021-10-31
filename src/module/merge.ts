@@ -1,5 +1,6 @@
 import { MemoryDisk } from "memory-disk";
 import { v4 } from "uuid";
+import { getTime } from "./datetime";
 
 /**
  * @description It is an auto-merge object. It is an object for simultaneous editing, and data is managed in memory and on disk.
@@ -9,11 +10,13 @@ export class AutoMergeSystem {
     private readonly memoryDisk: MemoryDisk;
     private readonly readyQueue: TReadyQueueItem[];
     private readonly dataHistoryObject: Record<string, TDataHistory>;
+    private readonly focusData: Record<string, Record<string, number>>;
 
     constructor(path?: string) {
         this.memoryDisk = new MemoryDisk(path, true);
         this.readyQueue = [];
         this.dataHistoryObject = {};
+        this.focusData = {};
         this.run();
     }
 
@@ -29,16 +32,44 @@ export class AutoMergeSystem {
 
         const item = this.readyQueue.shift();
         const path = item.path;
+        const userId = item.userId;
 
         let orgContent = this.memoryDisk.read(path) as string;
         const updContent = item.content;
 
-        orgContent = typeof orgContent === 'number' ? '' : orgContent;
+        orgContent = typeof orgContent === 'number' ? '' : orgContent.replace(/\r\n/g, '\n');
+
+        if (userId !== undefined) {
+            this.focusData[path] = this.focusData[path] ?? {}; 
+        }
+
+        let lineDiff = 0;
+        const focusPathData = this.focusData[path];
 
         for (const updateItem of updContent) {
+            if (updateItem.rowInfo.isUpdate) {
+                focusPathData[userId] = updateItem.rowInfo.lineNumber;
+            } 
+            lineDiff -= (focusPathData[userId] ?? updateItem.rowInfo.lineNumber) - updateItem.rowInfo.lineNumber
+            
+            console.log(getTime(), updateItem, lineDiff, focusPathData[userId]);
+            for (const user in focusPathData) {
+                if (user === userId) {
+                    continue
+                }
+
+                if (focusPathData[user] > updateItem.endRow) {
+                    focusPathData[user] += updateItem.rowInfo.lineNumber - updateItem.endRow;
+                    console.log(user, focusPathData[user])
+                }
+            }   
+            
+            updateItem.startRow += lineDiff;
+            updateItem.endRow += lineDiff;
+
             const strIndex = this.findIndex(orgContent, updateItem);
-            console.log(orgContent, updateItem);
-            orgContent = this.strReplace(orgContent, strIndex.start, strIndex.end, updateItem.data);
+            orgContent = this.strReplace(orgContent, strIndex.start, strIndex.end, updateItem.data.replace(/\r\n/g, '\n')); 
+
             this.memoryDisk.write(path, orgContent);
         }
 
@@ -53,7 +84,7 @@ export class AutoMergeSystem {
     private async run() {
         setInterval(() => {
             this.autoMerge();
-        }, 500);
+        }, 100);
     }
 
     /**
@@ -71,15 +102,15 @@ export class AutoMergeSystem {
             };
         }
 
-        return { readId, data };
+        return { readId, data, rowInfo: this.focusData?.[path] };
     }
 
     /**
      * @public
      * @returns
      */
-    public update(path: string, content: TUpdateContentItem[]) {
-        this.readyQueue.push({ path, content });
+    public update(path: string, content: TUpdateContentItem[], userId?: string) {
+        this.readyQueue.push({ path, content, userId });
     }
 
     private findIndex(str: string, update: TUpdateContentItem) {
@@ -93,17 +124,23 @@ export class AutoMergeSystem {
             if (str[i] === '\n') {
                 row += 1;
             }
-    
-            if (update.startRow === row) {
-                result.start = i + update.startCol
-            } 
-            
-            if (update.endRow === row){
-                result.end = i + update.endCol
-                break;
+
+            const logic = update.startRow === 1 && update.startRow === update.endRow
+
+            if (update.startRow === row && result.start === -1) {
+                result.start = i + update.startCol - Number(logic)
             }
-        }
     
+            if (update.endRow === row && result.end === -1) {
+                result.end = i + update.endCol - Number(logic)
+                break;
+            }    
+        }
+
+        if (update.startRow === 1 && update.startCol === 1) {
+            result.start = 0;
+        }
+
         return result; 
     }
 
@@ -115,6 +152,7 @@ export class AutoMergeSystem {
 export interface TReadyQueueItem {
     path: string;
     content: TUpdateContentItem[];
+    userId?: string;
 }
 
 export interface TUpdateContentItem {
@@ -123,6 +161,11 @@ export interface TUpdateContentItem {
     startCol: number;
     endCol: number;
     data: string;
+    
+    rowInfo: {
+        lineNumber: number;
+        isUpdate: boolean;
+    }
 }
 
 interface TDataHistory {
