@@ -474,6 +474,9 @@ export default class DataWorkspaceManager {
         userId: string,
         { dockerOption, workspaceOption }: { dockerOption?: TDockerExportOption; workspaceOption: TWorkspaceExportOption }
     ) {
+        if (!isExists(ExportDirectoryPath)) {
+            fs.mkdirSync(ExportDirectoryPath, { recursive: true });
+        }
         if (dockerOption !== undefined) {
             if (!DataDockerManager.export(userId, dockerOption)) {
                 return { code: ResponseCode.internalError, message: "Error occurred while exporting workspace" };
@@ -493,9 +496,6 @@ export default class DataWorkspaceManager {
             ? "zip"
             : "tar";
 
-        if (!isExists(ExportDirectoryPath)) {
-            fs.mkdirSync(ExportDirectoryPath, { recursive: true });
-        }
         try {
             const downloadPath = `${ExportDirectoryPath}/${workspaceId}.${extension}`;
             if (isExists(downloadPath)) {

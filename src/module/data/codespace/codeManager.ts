@@ -60,7 +60,7 @@ export default class DataCodeManager {
         if (codeData !== undefined) {
             fileData.filePath = filePath;
             fileData.fileContent = codeData.data;
-            fileData.rowInfo = codeData.rowInfo
+            fileData.rowInfo = codeData.rowInfo;
         }
         return fileData;
     }
@@ -142,6 +142,9 @@ export default class DataCodeManager {
         if (!isExists(fullOldPath)) {
             return { code: ResponseCode.internalError, message: "Could not find path" };
         }
+        if (isExists(fullNewPath)) {
+            return { code: ResponseCode.confilct, message: "Same path exists" };
+        }
         try {
             fs.renameSync(fullOldPath, fullNewPath);
         } catch (e: any) {
@@ -196,13 +199,16 @@ export default class DataCodeManager {
         if (checkError.code !== ResponseCode.ok) {
             return checkError;
         }
-        const fullPath = path.join(DataWorkspaceManager.getWorkspaceWorkPath(workspaceId), filePath?.replace(/\\/g, '/'));
+        const fullPath = path.join(DataWorkspaceManager.getWorkspaceWorkPath(workspaceId), filePath?.replace(/\\/g, "/"));
+        if (isExists(fullPath)) {
+            return { code: ResponseCode.confilct, message: "File already exists" };
+        }
 
         try {
-            fs.openSync(fullPath, 'w');
-            if(!fs.existsSync(fullPath)) {
-                throw new Error('Not exists file.')
-            }    
+            fs.openSync(fullPath, "w");
+            if (!fs.existsSync(fullPath)) {
+                throw new Error("Not exists file.");
+            }
         } catch {
             return { code: ResponseCode.internalError, message: "Failed to create file" };
         }
@@ -226,6 +232,9 @@ export default class DataCodeManager {
 
         try {
             const fullPath = path.join(DataWorkspaceManager.getWorkspaceWorkPath(workspaceId), dirPath);
+            if (isExists(fullPath)) {
+                return { code: ResponseCode.confilct, message: "Same path already exists" };
+            }
             fs.mkdirSync(fullPath, { recursive: true });
         } catch (e: any) {
             log.error(e.stack);

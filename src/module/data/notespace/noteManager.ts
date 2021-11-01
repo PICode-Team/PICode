@@ -59,6 +59,12 @@ export default class DataNoteManager {
     static create(data: TNoteData) {
         const originData = this.get();
         const noteId = data.path;
+        const noteIndex = originData.findIndex((noteData: TNoteData) => {
+            return noteData.noteId === noteId;
+        });
+        if (noteIndex > -1) {
+            return { code: ResponseCode.confilct, message: "Same note file exists" };
+        }
 
         const defaultPath = this.getNoteWorkPath();
         const notePath = path.join(defaultPath, noteId) as string;
