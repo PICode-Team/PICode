@@ -5,5 +5,5 @@ export interface TNoteData {
     path?: string;
     creator?: string;
     createTime?: string;
-    content?: string | TMemoryReadItem;
+    content?: string | Omit<TMemoryReadItem,"readId">;
 }

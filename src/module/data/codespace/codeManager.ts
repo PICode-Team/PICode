@@ -3,7 +3,7 @@ import { TReturnData, WorkDirectoryPath } from "../../../types/module/data/data.
 import { TFile, TFileData, TReturnFileData } from "../../../types/module/data/service/etc/file.types";
 import { AutoMergeSystem } from "../../merge";
 import { TReadyQueueItem } from "../../../types/module/data/service/etc/merge.types";
-import { getAllChildren, isExists, writeCodeToFile } from "../etc/fileManager";
+import { getAllChildren, isExists, writeToFile } from "../etc/fileManager";
 import DataWorkspaceManager from "../workspace/workspaceManager";
 import path from "path";
 import fs from "fs";
@@ -84,7 +84,7 @@ export default class DataCodeManager {
             return checkError;
         }
 
-        if (!writeCodeToFile(DataWorkspaceManager.getWorkspaceWorkPath(workspaceId), filePath, code)) {
+        if (!writeToFile(DataWorkspaceManager.getWorkspaceWorkPath(workspaceId), filePath, code)) {
             return { code: ResponseCode.internalError, message: "Failed to change code" };
         }
         return { code: ResponseCode.ok, path: filePath };

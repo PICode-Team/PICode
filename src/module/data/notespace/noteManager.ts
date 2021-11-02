@@ -1,12 +1,13 @@
 import { DataDirectoryPath, WorkDirectoryPath } from "../../../types/module/data/data.types";
 import { TNoteData } from "../../../types/module/data/service/notespace/note.types";
-import { getJsonData, isExists, readFromFile, setJsonData } from "../etc/fileManager";
+import { getJsonData, isExists, readFromFile, setJsonData, writeToFile } from "../etc/fileManager";
 import fs from "fs";
 import { AutoMergeSystem } from "../../merge";
 import { TReadyQueueItem } from "../../../types/module/data/service/etc/merge.types";
 import path from "path";
 import log from "../../log";
 import { ResponseCode } from "../../../constants/response";
+import { getTime } from "../../datetime";
 
 const noteDataFileName = "noteData.json";
 
@@ -37,11 +38,12 @@ export default class DataNoteManager {
             return readFromFile(defaultPath, `${noteId}`);
         }
         const fullPath = path.join(defaultPath, `${noteId}.txt`);
-        return this.noteMergeManager.read(fullPath);
+        const readInfo = this.noteMergeManager.read(fullPath);
+        return { data: readInfo.data, rowInfo: readInfo.rowInfo };
     }
 
     static isIoFile(noteId: string) {
-        return path.extname(noteId) === "io" ? true : false;
+        return path.extname(noteId) === ".io" ? true : false;
     }
 
     static get(noteId?: string) {
@@ -81,10 +83,18 @@ export default class DataNoteManager {
 
         this.isIoFile(noteId) ? fs.openSync(`${notePath}`, "w") : fs.openSync(`${notePath}.txt`, "w");
 
-        data = { ...data, noteId, content: this.getContent(noteId) };
+        data = {
+            ...data,
+            noteId,
+            content: this.getContent(noteId),
+            createTime: getTime(),
+        };
 
         if (!setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, [...originData, data])) {
-            return { code: ResponseCode.internalError, message: "Failed to create note" };
+            return {
+                code: ResponseCode.internalError,
+                message: "Failed to create note",
+            };
         }
         return { code: ResponseCode.ok, noteId };
     }
@@ -97,8 +107,38 @@ export default class DataNoteManager {
             return { code: ResponseCode.ok };
         } catch (err) {
             log.error(err);
-            return { code: ResponseCode.internalError, message: "Failed to merge note" };
+            return {
+                code: ResponseCode.internalError,
+                message: "Failed to merge note",
+            };
         }
+    }
+
+    static saveIOFile(noteData: TNoteData) {
+        const noteId = noteData.noteId;
+        if (!this.isIoFile(noteId)) {
+            return {
+                code: ResponseCode.invaildRequest,
+                message: "this note is not IO file. Invalid request.",
+            };
+        }
+        const originData = this.get();
+        const targetData = originData.find((v: TNoteData) => v.noteId === noteId);
+        if (targetData === undefined) {
+            return {
+                code: ResponseCode.invaildRequest,
+                message: "Could not find IO file.",
+            };
+        }
+
+        if (!writeToFile(this.getNoteWorkPath(), noteData.path, noteData.content as string)) {
+            return {
+                code: ResponseCode.internalError,
+                message: "Failed to save IO file.",
+            };
+        }
+
+        return { code: ResponseCode.ok };
     }
 
     static update(noteId: string, newNotePath: string) {
@@ -106,7 +146,10 @@ export default class DataNoteManager {
         const targetData = originData.find((v: TNoteData) => v.noteId === noteId);
 
         if (targetData === undefined) {
-            return false;
+            return {
+                code: ResponseCode.invaildRequest,
+                message: "Could not find note.",
+            };
         }
         const oldPath = path.join(this.getNoteWorkPath(), `${targetData.path}.txt`);
         const newPath = path.join(this.getNoteWorkPath(), `${newNotePath}.txt`);
@@ -116,13 +159,22 @@ export default class DataNoteManager {
             fs.renameSync(oldPath, newPath);
         } catch (err) {
             log.error(err);
-            return { code: ResponseCode.internalError, message: "Failed to move data" };
+            return {
+                code: ResponseCode.internalError,
+                message: "Failed to move data",
+            };
         }
 
         targetData.path = newPath;
         targetData.noteId = newPath;
 
-        return setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, originData);
+        if (setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, originData)) {
+            return {
+                code: ResponseCode.internalError,
+                message: "Failed to move note",
+            };
+        }
+        return { code: ResponseCode.ok };
     }
 
     static delete(noteId: string) {
@@ -140,6 +192,13 @@ export default class DataNoteManager {
         const notePath = path.join(defaultPath, noteId);
         this.isIoFile(notePath) ? fs.unlinkSync(notePath) : fs.unlinkSync(`${notePath}.txt`);
 
-        return setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, originData);
+        if (setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, originData)) {
+            return {
+                code: ResponseCode.internalError,
+                message: "Failed to delete note",
+            };
+        }
+
+        return { code: ResponseCode.ok };
     }
 }

@@ -6,6 +6,7 @@ import { getSocket, makePacket } from "../etc/manager";
 const docuemntFunc: Record<string, (userId: string, packet: any) => void> = {
     getNote,
     createNote,
+    saveIOFile,
     updateNote,
     mergeNote,
     deleteNote,
@@ -18,6 +19,11 @@ function getNote(userId: string, packet: any) {
 
 function createNote(userId: string, packet: TNoteData) {
     const sendData = makePacket("note", "createNote", DataNoteManager.create(packet));
+    getSocket(userId)?.send(sendData);
+}
+
+function saveIOFile(userId: string, packet: any){
+    const sendData = makePacket("note","saveIOFile", DataNoteManager.saveIOFile(packet.noteData));
     getSocket(userId)?.send(sendData);
 }
 

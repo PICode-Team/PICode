@@ -168,7 +168,7 @@ export function readFromFile(serverPath: string, clientPath: string) {
     return fs.readFileSync(fullPath).toString();
 }
 
-export function writeCodeToFile(serverPath: string, clientPath: string, code: string) {
+export function writeToFile(serverPath: string, clientPath: string, code: string) {
     const fullPath = path.join(serverPath, clientPath);
     if (!isExists(fullPath)) return false;
     try {
