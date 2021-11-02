@@ -2,7 +2,8 @@ import { DataDirectoryPath, WorkDirectoryPath } from "../../../types/module/data
 import { TNoteData } from "../../../types/module/data/service/notespace/note.types";
 import { getJsonData, isExists, readFromFile, setJsonData } from "../etc/fileManager";
 import fs from "fs";
-import { AutoMergeSystem, TReadyQueueItem } from "../../merge";
+import { AutoMergeSystem } from "../../merge";
+import { TReadyQueueItem } from "../../../types/module/data/service/etc/merge.types";
 import path from "path";
 import log from "../../log";
 import { ResponseCode } from "../../../constants/response";
@@ -32,7 +33,11 @@ export default class DataNoteManager {
             return "";
         }
         const defaultPath = this.getNoteWorkPath();
-        return this.isIoFile(noteId) ? readFromFile(defaultPath, `${noteId}`) : readFromFile(defaultPath, `${noteId}.txt`);
+        if (this.isIoFile(noteId)) {
+            return readFromFile(defaultPath, `${noteId}`);
+        }
+        const fullPath = path.join(defaultPath, `${noteId}.txt`);
+        return this.noteMergeManager.read(fullPath);
     }
 
     static isIoFile(noteId: string) {

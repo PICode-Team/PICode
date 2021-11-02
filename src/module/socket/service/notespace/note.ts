@@ -13,27 +13,27 @@ const docuemntFunc: Record<string, (userId: string, packet: any) => void> = {
 
 function getNote(userId: string, packet: any) {
     const sendData = makePacket("note", "getNote", DataNoteManager.get(packet.noteId));
-    getSocket(userId).send(sendData);
+    getSocket(userId)?.send(sendData);
 }
 
 function createNote(userId: string, packet: TNoteData) {
     const sendData = makePacket("note", "createNote", DataNoteManager.create(packet));
-    getSocket(userId).send(sendData);
+    getSocket(userId)?.send(sendData);
 }
 
 function updateNote(userId: string, packet: any) {
     const sendData = makePacket("note", "updateNote", DataNoteManager.update(packet.noteId, packet.newNotePath));
-    getSocket(userId).send(sendData);
+    getSocket(userId)?.send(sendData);
 }
 
 function mergeNote(userId: string, packet: any) {
     const sendData = makePacket("note", "mergeNote", DataNoteManager.merge(packet.updateContent));
-    getSocket(userId).send(sendData);
+    getSocket(userId)?.send(sendData);
 }
 
 function deleteNote(userId: string, packet: any) {
     const sendData = makePacket("note", "deleteNote", DataNoteManager.delete(packet.noteId));
-    getSocket(userId).send(sendData);
+    getSocket(userId)?.send(sendData);
 }
 
 export default function note(userId: string, packet: TSocketPacket) {

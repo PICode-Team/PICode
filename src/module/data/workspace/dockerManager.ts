@@ -445,7 +445,13 @@ CMD ["./server-linux", "${socketPort}"]`;
             },
             (error) => {
                 log.error(`${error}`);
-                if ((error.includes("Error") || error.includes("error") || error.includes("permission")) && !error.includes("port")) {
+                if (
+                    (error.includes("Error") ||
+                        error.includes("error") ||
+                        error.includes("permission") ||
+                        error.includes("containerPort")) &&
+                    !error.includes("port")
+                ) {
                     removeData(DataWorkspaceManager.getWorkspaceWorkPath(workspaceId));
                     removeData(DataWorkspaceManager.getWorkspaceDataPath(workspaceId));
                     DataAlarmManager.create(userId, {
@@ -814,6 +820,6 @@ CMD ["./server-linux", "${socketPort}"]`;
         setInterval(() => {
             this.updateStatus();
             this.updateRamUsage();
-        }, 60000);
+        }, 60 * 1000);
     }
 }

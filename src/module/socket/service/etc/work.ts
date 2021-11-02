@@ -33,13 +33,13 @@ function getWorkingPath(userId: string, workInfo: TWorkInfo) {
 function createInfo(userId: string, workInfo: TWorkInfo) {
     userWorkInfo[userId] = workInfo;
     const sendData = makePacket("work", "createInfo", { code: ResponseCode.ok, message: "create complete" });
-    getSocket(userId).send(sendData);
+    getSocket(userId)?.send(sendData);
 }
 
 function deleteInfo(userId: string) {
     delete userWorkInfo[userId];
     const sendData = makePacket("work", "deleteInfo", { code: ResponseCode.ok, message: "delete complete" });
-    getSocket(userId).send(sendData);
+    getSocket(userId)?.send(sendData);
 }
 
 export default function work(userId: string, packet: TSocketPacket) {

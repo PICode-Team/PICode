@@ -1,8 +1,9 @@
 import { ResponseCode } from "../../../constants/response";
 import { TReturnData, WorkDirectoryPath } from "../../../types/module/data/data.types";
 import { TFile, TFileData, TReturnFileData } from "../../../types/module/data/service/etc/file.types";
-import { AutoMergeSystem, TReadyQueueItem } from "../../merge";
-import { getAllChildren, isExists, readFromFile, writeCodeToFile } from "../etc/fileManager";
+import { AutoMergeSystem } from "../../merge";
+import { TReadyQueueItem } from "../../../types/module/data/service/etc/merge.types";
+import { getAllChildren, isExists, writeCodeToFile } from "../etc/fileManager";
 import DataWorkspaceManager from "../workspace/workspaceManager";
 import path from "path";
 import fs from "fs";

@@ -75,12 +75,12 @@ function getChat(userId: string) {
 
 function getChatLog(userId: string, chatName: string, page: string) {
     const sendData = makePacket("chat", "getChatLog", DataChatManager.getChatLog(userId, chatName, page));
-    getSocket(userId).send(sendData);
+    getSocket(userId)?.send(sendData);
 }
 
 function getChatLogList(userId: string, chatName: string) {
     const sendData = makePacket("chat", "getChatLogList", DataChatManager.getChatLogList(userId, chatName));
-    getSocket(userId).send(sendData);
+    getSocket(userId)?.send(sendData);
 }
 
 export default function chat(userId: string, packet: TSocketPacket) {
