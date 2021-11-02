@@ -15,7 +15,6 @@ const issueLoadFuncs: Record<string, (userId: string, issueData: any) => void> =
 
 function getIssueDetail(userId: string, { issueUUID }: { issueUUID: string }) {
     const metaData = DataIssueManager.getIssueOnlyIssueUUID(issueUUID);
-    log.debug(`metaData : ${JSON.stringify(metaData)}`);
     const sendData = makePacket("issue", "getIssueDetail", metaData);
     getSocket(userId)?.send(sendData);
 }
@@ -40,6 +39,7 @@ function createIssue(userId: string, { kanbanUUID, issueData }: { kanbanUUID: st
 }
 
 function updateIssue(userId: string, { kanbanUUID, issueData }: { kanbanUUID: string; issueData: Partial<TIssueData> }) {
+    log.debug(`kanbanUUID: ${kanbanUUID}, issueData : ${JSON.stringify(issueData)}`);
     const metaData = DataIssueManager.update(userId, kanbanUUID, issueData);
     const sendData = makePacket("issue", "updateIssue", metaData);
     getSocket(userId)?.send(sendData);

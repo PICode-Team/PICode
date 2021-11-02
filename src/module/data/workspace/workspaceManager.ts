@@ -407,7 +407,11 @@ export default class DataWorkspaceManager {
         }
 
         try {
-            if (workspaceInfo.thumbnail !== undefined && path.parse(workspaceData.thumbnail as string).name !== workspaceInfo.thumbnail) {
+            if (
+                workspaceInfo.thumbnail !== undefined &&
+                path.parse(workspaceData.thumbnail as string).name !== workspaceInfo.thumbnail &&
+                workspaceData.thumbnail !== workspaceInfo.thumbnail
+            ) {
                 const extension = DataUploadManager.UploadFileManager[workspaceInfo.thumbnail].originalname.split(".").pop();
                 if (
                     !handle(
