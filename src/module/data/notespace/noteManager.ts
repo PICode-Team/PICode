@@ -8,6 +8,8 @@ import path from "path";
 import log from "../../log";
 import { ResponseCode } from "../../../constants/response";
 import { getTime } from "../../datetime";
+import DataAlarmManager from "../alarm/alarmManager";
+import DataUserManager from "../user/userManager";
 
 const noteDataFileName = "noteData.json";
 
@@ -34,12 +36,8 @@ export default class DataNoteManager {
             return "";
         }
         const defaultPath = this.getNoteWorkPath();
-        if (this.isIoFile(noteId)) {
-            return readFromFile(defaultPath, `${noteId}`);
-        }
-        const fullPath = path.join(defaultPath, `${noteId}.txt`);
-        const readInfo = this.noteMergeManager.read(fullPath);
-        return { data: readInfo.data, rowInfo: readInfo.rowInfo };
+        const notePath = this.isIoFile(noteId) ? noteId : `${noteId}.txt`;
+        return readFromFile(defaultPath, notePath);
     }
 
     static isIoFile(noteId: string) {
@@ -63,7 +61,7 @@ export default class DataNoteManager {
             });
     }
 
-    static create(data: TNoteData) {
+    static create(userId: string, data: TNoteData) {
         const originData = this.get();
         const noteId = data.path;
         const noteIndex = originData.findIndex((noteData: TNoteData) => {
@@ -87,6 +85,7 @@ export default class DataNoteManager {
             ...data,
             noteId,
             content: this.getContent(noteId),
+            creator: userId,
             createTime: getTime(),
         };
 
@@ -96,6 +95,15 @@ export default class DataNoteManager {
                 message: "Failed to create note",
             };
         }
+        DataAlarmManager.create(userId, {
+            type: "notespace",
+            location: `/notespace`,
+            content: `${userId} create ${path.basename(data.path)} at notespace`,
+            checkAlarm: DataUserManager.getUserList().reduce((list: { [ket in string]: boolean }, member) => {
+                list[member] = true;
+                return list;
+            }, {}),
+        });
         return { code: ResponseCode.ok, noteId };
     }
 
@@ -114,27 +122,21 @@ export default class DataNoteManager {
         }
     }
 
-    static saveIOFile(noteData: TNoteData) {
+    static save(noteData: TNoteData) {
         const noteId = noteData.noteId;
-        if (!this.isIoFile(noteId)) {
-            return {
-                code: ResponseCode.invaildRequest,
-                message: "this note is not IO file. Invalid request.",
-            };
-        }
         const originData = this.get();
         const targetData = originData.find((v: TNoteData) => v.noteId === noteId);
         if (targetData === undefined) {
             return {
                 code: ResponseCode.invaildRequest,
-                message: "Could not find IO file.",
+                message: "Could not find note.",
             };
         }
-
-        if (!writeToFile(this.getNoteWorkPath(), noteData.path, noteData.content as string)) {
+        const path = this.isIoFile(noteId) ? noteId : `${noteId}.txt`;
+        if (!writeToFile(this.getNoteWorkPath(), path, noteData.content)) {
             return {
                 code: ResponseCode.internalError,
-                message: "Failed to save IO file.",
+                message: "Failed to save note",
             };
         }
 
@@ -153,9 +155,11 @@ export default class DataNoteManager {
         }
         const oldPath = path.join(this.getNoteWorkPath(), `${targetData.path}.txt`);
         const newPath = path.join(this.getNoteWorkPath(), `${newNotePath}.txt`);
-
-        log.debug(`oldPath : ${oldPath}, newPath : ${newPath}`);
         try {
+            const newDirPath = path.dirname(newPath);
+            if (!isExists(newDirPath)) {
+                fs.mkdirSync(newDirPath, { recursive: true });
+            }
             fs.renameSync(oldPath, newPath);
         } catch (err) {
             log.error(err);
@@ -165,8 +169,8 @@ export default class DataNoteManager {
             };
         }
 
-        targetData.path = newPath;
-        targetData.noteId = newPath;
+        targetData.path = newNotePath;
+        targetData.noteId = newNotePath;
 
         if (setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, originData)) {
             return {
@@ -191,6 +195,16 @@ export default class DataNoteManager {
         const defaultPath = this.getNoteWorkPath();
         const notePath = path.join(defaultPath, noteId);
         this.isIoFile(notePath) ? fs.unlinkSync(notePath) : fs.unlinkSync(`${notePath}.txt`);
+        if (isExists(notePath) && fs.lstatSync(notePath).isDirectory()) {
+            fs.rmdirSync(notePath, { recursive: true });
+        }
+        const childNotes = originData.filter((v) => v.noteId.includes(noteId));
+        childNotes?.map((v) => {
+            const childIndex = originData.findIndex((note) => note.noteId === noteId);
+            if (targetIndex > -1) {
+                originData.splice(childIndex, 1);
+            }
+        });
 
         if (setJsonData(`${this.getNoteDataPath()}/${noteDataFileName}`, originData)) {
             return {

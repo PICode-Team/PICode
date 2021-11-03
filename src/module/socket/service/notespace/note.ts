@@ -2,11 +2,12 @@ import { TSocketPacket } from "../../../../types/module/socket.types";
 import DataNoteManager from "../../../data/notespace/noteManager";
 import { TNoteData } from "../../../../types/module/data/service/notespace/note.types";
 import { getSocket, makePacket } from "../etc/manager";
+import log from "../../../log";
 
 const docuemntFunc: Record<string, (userId: string, packet: any) => void> = {
     getNote,
     createNote,
-    saveIOFile,
+    saveNote,
     updateNote,
     mergeNote,
     deleteNote,
@@ -18,12 +19,12 @@ function getNote(userId: string, packet: any) {
 }
 
 function createNote(userId: string, packet: TNoteData) {
-    const sendData = makePacket("note", "createNote", DataNoteManager.create(packet));
+    const sendData = makePacket("note", "createNote", DataNoteManager.create(userId, packet));
     getSocket(userId)?.send(sendData);
 }
 
-function saveIOFile(userId: string, packet: any){
-    const sendData = makePacket("note","saveIOFile", DataNoteManager.saveIOFile(packet.noteData));
+function saveNote(userId: string, packet: any){
+    const sendData = makePacket("note","saveNote", DataNoteManager.save(packet.noteData));
     getSocket(userId)?.send(sendData);
 }
 
