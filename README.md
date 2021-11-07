@@ -2,111 +2,99 @@
 
 ### Project-Integrated COllaborative Development Environment
 
-## What is the PICode?
+<br>
+
+## PICode-Client
+
+<https://github.com/PICode-Team/PICode-Client>
 
 ---
+
+<br>
+
+## What is the PICode?
 
 PIcode is a web page that supports all development environments of the project so that users can collaborate without additional programs.
 
-## What's the difference from other IDEs?
+---
+
+<br>
+
+## How to build PICode?
+
+```
+1. Use git to clone this repository
+2. Enter `cd PICode` on terminal
+3. Enter `export PORT=3000` on terminal (essential). Any PORT number that can be connected is possible.
+4. Enter `npm i` on terminal
+5. Enter `npm run build` on terminal
+6. Enter `npm run start` on terminal
+7. Enter the url set in PICode-Client on web browser and login (See `How to link with PICode-client?`)
+8. it's worked!
+```
+
+<br>
 
 ---
 
-### Work without any external modules
+## How to link with PICode-Client?
 
-If you are going to start a project, you need a program for document management function, chat function to communicate with team members, and issue management function in addition to the code editor. However, if you use PICode, you can use all of the above functions on just a single web page.
+```
+1. Use git to clone PICode-Client repository (https://github.com/PICode-Team/PICode-Client)
+2. Enter `cd PICode-Client` on terminal
+3. Create and Open .env file with any text editor and Write
+`
+PORT=4000
+NODE_ENV=production
+NEXT_FE_API_URL=http://localhost:3000
+NEXT_PUBLIC_WS_URL=localhost
+NEXT_PUBLIC_WS_PORT=9000
+`
+on .env and Save file (essential).
+PORT is the port number to open the web page. Therefore, the same number as the PICode's PORT should not be used.
+If node_env is set to `dev`, it may be executed in the developer mode using `npm run dev`.
 
-* code edit function
-
-![module_code](https://user-images.githubusercontent.com/28240077/132558933-19ab1a1d-b240-40b1-bac4-1f18dbdc7f4e.gif)
-
-* chat function
-
-![module_chat](https://user-images.githubusercontent.com/28240077/132558942-65d9b40e-072b-4097-8e30-511b2222bd52.gif)
-
-* note function
-
-![module_note](https://user-images.githubusercontent.com/28240077/132638418-a97da4c3-a315-4681-9679-4e38c5f2efb8.gif)
-
-### Possible collaboration
-
-Through PICode real-time communication, you can see in real time where your team members are working, what they are working on. Therefore, you can work on documents or codes with them, or you can discuss the team's work by chatting in real time.
-
-![collaborate_code](https://user-images.githubusercontent.com/28240077/132559165-3f49e62d-d0f9-4ef7-a25f-c8fee82e3c02.gif)
-
-### Visualization
-
-Through container visualization, you can see all workspace structures and states. In addition, you can simply control network creation, container and network connection, and connection between containers by clicking nodes and buttons.
-
-* visualization view
-
-![visualization_hover](https://user-images.githubusercontent.com/28240077/132559247-3b0667b1-6486-4267-bc90-1913c6a57f69.gif)
-
-
-* power on the container through visualization view
-
-![visualization_poweron](https://user-images.githubusercontent.com/28240077/132559253-f06e02dd-362b-4a8e-9410-d1b95ed5ab75.gif)
-
-* connect container to network through visualization view
-
-![visualization_connect](https://user-images.githubusercontent.com/28240077/132559258-15ac563e-d60c-41f2-a6d4-ea24dbf0357a.gif)
-
-### Work without changing environment
-
-If you want to work in vscode editor, use the vscode extension supported by PICode.
-Connect with PICode server, input ID and password in the vscode extension. Once you login, select workspace then you can get the selected workspace codes and work in the vscode.
-
-![extension_vscode](https://user-images.githubusercontent.com/28240077/132559602-a2a90470-b371-4331-901d-ef9f5300d8ea.gif)
-
-## Development Environment
-
----
-
--   Linux or related OS
--   Docker v20.X
--   npm v7.X
--   node v14.X
-
-## How to start PICode?
-
----
-
-1. Install all of our npm module on terminal ( `npm i` )
-2. Create .env file (essential)
-3. Enter `PORT=4000 SERVER_API=4000` in the env file (essential)
-4. Enter `npm run-script build` on terminal
-5. Enter `npm run-script server:build` on terminal
-6. Enter `npm run-script start` on terminal
-7. Enter the url on web browser and login
+4. Enter `npm i` on terminal
+5. Enter `npm run build` on terminal
+6. Enter `npm run start` on terminal
+7. Enter the url set in PICode-Client on web browser and login
 8. it's worked!
 
-## Documentation
+```
 
 ---
 
-Documentation is on our website.
+<br>
 
-<https://picode-team.github.io/picode-page/>
+## Contribute to PICode
 
-## CONTRIBUTE
+### PICode Server
+
+[Contribute PICode Server](https://github.com/PICode-Team/PICode/blob/develop/contribute.md)
+
+<br>
+
+### PICode Client
+
+[Contribute PICode-Client](https://github.com/PICode-Team/PICode/blob/develop/contribute.md)
 
 ---
 
-If you want contribute our projcect, please read it!
+<br>
 
-[contribute](https://github.com/PICode-Team/PICode/blob/develop/contribute.md)
+## License for PICode
 
-## LICENSE
+[license](https://github.com/PICode-Team/PICode/blob/develop/license.md)
 
 ---
-[license](https://github.com/PICode-Team/PICode/blob/develop/license.md/)
 
+<br>
 
 ## Contact us
 
----
+[Nevation](https://github.com/Nevation) <br>
+[EunPyoLee1010](https://github.com/EunPyoLee1010)<br>
+[benovice](https://github.com/benovice)<br>
+[wlsrn3684](https://github.com/wlsrn3684)<br>
 
-[Nevation](https://github.com/Nevation)
-[EunPyoLee1010](https://github.com/EunPyoLee1010)
-[benovice](https://github.com/benovice)
-[wlsrn3684](https://github.com/wlsrn3684)
+---
