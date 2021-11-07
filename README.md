@@ -22,16 +22,20 @@ PIcode is a web page that supports all development environments of the project s
 
 ## How to build PICode?
 
-```
 1. Use git to clone this repository
-2. Enter `cd PICode` on terminal
-3. Enter `export PORT=3000` on terminal (essential). Any PORT number that can be connected is possible.
-4. Enter `npm i` on terminal
-5. Enter `npm run build` on terminal
-6. Enter `npm run start` on terminal
-7. Enter the url set in PICode-Client on web browser and login (See `How to link with PICode-client?`)
-8. it's worked!
+2. Go to the terminal
+3. Execute the command written below in the terminal.
+
 ```
+cd PICode
+export PORT=3000
+npm i
+npm run build
+npm run start
+```
+
+4. Enter the url set in PICode-Client on web browser and login (See `How to link with PICode-client?`)
+5. it's worked!
 
 <br>
 
@@ -39,28 +43,26 @@ PIcode is a web page that supports all development environments of the project s
 
 ## How to link with PICode-Client?
 
+1. Use git to clone https://github.com/PICode-Team/PICode-Client
+2. Go to the terminal
+3. Execute the command written below in the terminal.
+
 ```
-1. Use git to clone PICode-Client repository (https://github.com/PICode-Team/PICode-Client)
-2. Enter `cd PICode-Client` on terminal
-3. Create and Open .env file with any text editor and Write
-`
+cd PICode-Client
+npm i
+echo "
 PORT=4000
 NODE_ENV=production
 NEXT_FE_API_URL=http://localhost:3000
 NEXT_PUBLIC_WS_URL=localhost
 NEXT_PUBLIC_WS_PORT=9000
-`
-on .env and Save file (essential).
-PORT is the port number to open the web page. Therefore, the same number as the PICode's PORT should not be used.
-If node_env is set to `dev`, it may be executed in the developer mode using `npm run dev`.
-
-4. Enter `npm i` on terminal
-5. Enter `npm run build` on terminal
-6. Enter `npm run start` on terminal
-7. Enter the url set in PICode-Client on web browser and login
-8. it's worked!
-
+" > .env
+npm run build
+npm run start
 ```
+
+4. Enter the url set in PICode-Client on web browser and login
+5. it's worked!
 
 ---
 
