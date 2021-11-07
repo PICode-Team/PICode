@@ -1,7 +1,7 @@
 import { TUserData } from "../src/types/module/data/service/user/user.types";
 import { TDockerCreateData } from "../src/types/module/data/service/workspace/docker.types";
 import { TWorkspaceCreateData } from "../src/types/module/data/service/workspace/workspace.type";
-
+import DataUserManager from "../src/module/data/user/userManager";
 export function getTestUser(userId: string): TUserData {
     return {
         userId,
@@ -9,6 +9,10 @@ export function getTestUser(userId: string): TUserData {
         userName: "testUser",
         userThumbnail: undefined,
     };
+}
+
+export function createUser({ userId, userName, passwd }: TUserData) {
+    return DataUserManager.create({ userId, userName, passwd, userThumbnail: undefined });
 }
 
 export function getTestWorkspaceInfo(workspaceName: string, userId: string): TWorkspaceCreateData {
